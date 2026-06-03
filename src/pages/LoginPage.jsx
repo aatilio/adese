@@ -52,7 +52,7 @@ export default function LoginPage({ onLogin }) {
         {/* Form — un solo acceso; el código define si es estudiante o administrador */}
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label className="form-label">Código de acceso</label>
+            <label className="form-label">CUI</label>
             <div style={{ position: "relative" }}>
               <input
                 className="form-input"
@@ -62,7 +62,7 @@ export default function LoginPage({ onLogin }) {
                 autoComplete="username"
                 value={codigo}
                 onChange={(e) => setCodigo(e.target.value)}
-                placeholder="CUI o Código"
+                placeholder="20201234"
               />
             </div>
           </div>
@@ -76,7 +76,7 @@ export default function LoginPage({ onLogin }) {
                 autoComplete="current-password"
                 value={pass}
                 onChange={(e) => setPass(e.target.value)}
-                placeholder="Contraseña (opcional para alumnos)"
+                placeholder="••••••••"
                 style={{ paddingRight: "2.8rem" }}
               />
               <button
@@ -102,9 +102,6 @@ export default function LoginPage({ onLogin }) {
               >
                 {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
-            </div>
-            <div style={{fontSize: '0.75rem', color: 'var(--gray-500)', marginTop: '4px'}}>
-              (Si eres alumno y no tienes contraseña, déjalo en blanco)
             </div>
           </div>
 

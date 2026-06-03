@@ -46,6 +46,7 @@ export const api = {
   // Estudiantes
   getEstudiantes: ()                 => request('GET', '/api/estudiantes'),
   updateEstudiante: (id, payload)    => request('PUT', `/api/estudiantes/${id}`, payload),
+  updatePerfil:     (id, payload)    => request('PUT', `/api/usuarios/${id}/perfil`, payload),
   getEstudianteCursos: (id)          => request('GET', `/api/estudiantes/${id}/cursos`),
 
   // Usuarios (CRUD completo)
@@ -56,7 +57,7 @@ export const api = {
 
 
   // Cursos
-  getCursos:       ()                => request('GET', '/api/cursos'),
+  getCursos:       (qs='')           => request('GET', '/api/cursos' + qs),
   crearCurso:      (datos)           => request('POST', '/api/cursos', datos),
   updateCurso:     (id, datos)       => request('PUT', `/api/cursos/${id}`, datos),
   deleteCurso:     (id)              => request('DELETE', `/api/cursos/${id}`),

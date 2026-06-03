@@ -38,8 +38,8 @@ export default function App() {
     <>
       <ToastContainer />
       {!user && <LoginPage onLogin={handleLogin} />}
-      {(user?.role === 'admin' || user?.role === 'profesor') && <TeacherPage user={user} isAdmin={user?.role === 'admin'} onLogout={handleLogout} />}
-      {user?.role === 'alumno' && <StudentPage user={user} onLogout={handleLogout} />}
+      {(user?.role === 'admin' || user?.role === 'profesor') && <TeacherPage user={user} isAdmin={user?.role === 'admin'} onLogout={handleLogout} onUpdateUser={handleLogin} />}
+      {user?.role === 'alumno' && <StudentPage user={user} onLogout={handleLogout} onUpdateUser={handleLogin} />}
     </>
   );
 }

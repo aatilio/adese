@@ -31,9 +31,10 @@ import UserMenu from "../components/UserMenu";
 import Footer from "../components/Footer";
 import QrGenerator from "../components/QrGenerator";
 import AttendanceTable from "../components/AttendanceTable";
+import ProfileView from "../components/ProfileView";
 import ExcelIcon from "../assets/excel.svg";
 
-export default function TeacherPage({ user, onLogout, isAdmin = false }) {
+export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateUser }) {
   // ── Course-level state ──────────────────────────────────
   const [cursos, setCursos] = useState([]);
   const [cursoActivo, setCursoActivo] = useState(null);
@@ -95,7 +96,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false }) {
   // ── Init: load courses ──────────────────────────────────
   useEffect(() => {
     api
-      .getCursos()
+      .getCursos(isAdmin ? '' : `?profesor_id=${user.id}`)
       .then((res) => {
         setCursos(res.cursos);
         if (res.cursos.length > 0) setCursoActivo(res.cursos[0]);
@@ -703,6 +704,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false }) {
               user.rol === 1 ? 'Administrador' : user.rol === 2 ? 'Profesor' : 'Alumno'
             }
             onLogout={onLogout}
+            onOpenProfile={() => setViewMode("perfil")}
             extraOptions={
               viewMode === "curso"
                 ? [
@@ -717,6 +719,12 @@ export default function TeacherPage({ user, onLogout, isAdmin = false }) {
                       icon: Calendar,
                       onClick: () => setActiveTab("clases"),
                       active: activeTab === "clases",
+                    },
+                    {
+                      label: "Alumnos",
+                      icon: Users,
+                      onClick: () => setActiveTab("alumnos"),
+                      active: activeTab === "alumnos",
                     },
                     {
                       label: "Historial y Exportar",
@@ -736,6 +744,39 @@ export default function TeacherPage({ user, onLogout, isAdmin = false }) {
           />
         </div>
       </div>
+
+      {/* PROFILE: Edit user data */}
+      {viewMode === "perfil" && (
+        <div className="page-body">
+          <div style={{ padding: "0 1rem", marginBottom: "1rem" }}>
+            <button
+              type="button"
+              className="btn btn-sm btn-ghost"
+              onClick={() => setViewMode("dashboard")}
+              style={{
+                color: "var(--gray-600)",
+                fontSize: "0.8rem",
+                fontWeight: 600,
+                display: "flex",
+                alignItems: "center",
+                gap: "4px",
+                padding: "8px 12px",
+                border: "1px solid var(--gray-200)",
+                borderRadius: "12px",
+                background: "white"
+              }}
+            >
+              « Volver al Panel
+            </button>
+          </div>
+          <ProfileView 
+            user={user} 
+            roleLabel={user.rol === 1 ? 'Administrador' : 'Profesor'}
+            onUpdateUser={onUpdateUser} 
+            onCancel={() => setViewMode("dashboard")} 
+          />
+        </div>
+      )}
 
       {/* DASHBOARD: Grid of Courses */}
       {viewMode === "dashboard" ? (
@@ -1191,6 +1232,13 @@ export default function TeacherPage({ user, onLogout, isAdmin = false }) {
                 <Calendar size={16} /> Clases
               </button>
               <button
+                className={`tab ${activeTab === "alumnos" ? "active" : ""}`}
+                onClick={() => setActiveTab("alumnos")}
+                style={{ padding: "12px 0" }}
+              >
+                <Users size={16} /> Alumnos
+              </button>
+              <button
                 className={`tab ${activeTab === "historial" ? "active" : ""}`}
                 onClick={() => setActiveTab("historial")}
                 style={{ padding: "12px 0" }}
@@ -1388,26 +1436,35 @@ export default function TeacherPage({ user, onLogout, isAdmin = false }) {
                 <div style={{ display: "flex", flexDirection: "column" }}>
                   {estudiantesCurso.map((est) => (
                     <div key={est.id} className="editable-row">
-                      <input
-                        type="text"
-                        defaultValue={est.nombre_completo}
-                        onBlur={(e) =>
-                          updateEstudiante(
-                            est.id,
-                            "nombre_completo",
-                            e.target.value,
-                          )
-                        }
-                        placeholder="Nombre"
-                      />
-                      <input
-                        type="text"
-                        defaultValue={est.codigo}
-                        onBlur={(e) =>
-                          updateEstudiante(est.id, "codigo", e.target.value)
-                        }
-                        placeholder="CUI"
-                      />
+                      {isAdmin ? (
+                        <>
+                          <input
+                            type="text"
+                            defaultValue={est.nombre_completo}
+                            onBlur={(e) =>
+                              updateEstudiante(
+                                est.id,
+                                "nombre_completo",
+                                e.target.value,
+                              )
+                            }
+                            placeholder="Nombre"
+                          />
+                          <input
+                            type="text"
+                            defaultValue={est.codigo}
+                            onBlur={(e) =>
+                              updateEstudiante(est.id, "codigo", e.target.value)
+                            }
+                            placeholder="CUI"
+                          />
+                        </>
+                      ) : (
+                        <>
+                          <span style={{ padding: '8px 12px', flex: 1, fontSize: '0.85rem' }}>{est.nombre_completo}</span>
+                          <span style={{ padding: '8px 12px', flex: 1, fontSize: '0.85rem' }}>{est.codigo}</span>
+                        </>
+                      )}
                       <button
                         className="btn btn-sm btn-ghost"
                         onClick={() => removeAlumno(est.id)}

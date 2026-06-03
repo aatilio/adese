@@ -17,12 +17,13 @@ import { api } from "../api/client";
 import { toast } from "../components/Toast";
 import appLogo from "../assets/ac-d.svg";
 import UserMenu from "../components/UserMenu";
+import ProfileView from "../components/ProfileView";
 import Footer from "../components/Footer";
 import EconometricsPage from "./app";
 
 const STEPS = { SELECT: "select", SCANNING: "scanning", DONE: "done" };
 
-export default function StudentPage({ user, onLogout }) {
+export default function StudentPage({ user, onLogout, onUpdateUser }) {
   const [viewMode, setViewMode] = useState("dashboard"); // dashboard | curso | econometrics
   const [cursos, setCursos] = useState([]);
   const [cursoActivo, setCursoActivo] = useState(null);
@@ -235,6 +236,7 @@ export default function StudentPage({ user, onLogout }) {
             user={user} 
             roleLabel="Estudiante" 
             onLogout={onLogout}
+            onOpenProfile={() => setViewMode("perfil")}
             extraOptions={
               viewMode === "curso" ? [
                 {
@@ -264,7 +266,37 @@ export default function StudentPage({ user, onLogout }) {
       </div>
 
       <div className="page-body" style={{ width: "100%", padding: "1rem" }}>
-        {viewMode === "econometrics" ? (
+        {viewMode === "perfil" ? (
+          <div>
+            <div style={{ marginBottom: "1rem" }}>
+              <button
+                type="button"
+                className="btn btn-sm btn-ghost"
+                onClick={() => setViewMode("dashboard")}
+                style={{
+                  color: "var(--gray-600)",
+                  fontSize: "0.8rem",
+                  fontWeight: 600,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "4px",
+                  padding: "8px 12px",
+                  border: "1px solid var(--gray-200)",
+                  borderRadius: "12px",
+                  background: "white"
+                }}
+              >
+                « Volver al Panel
+              </button>
+            </div>
+            <ProfileView 
+              user={user} 
+              roleLabel="Estudiante"
+              onUpdateUser={onUpdateUser} 
+              onCancel={() => setViewMode("dashboard")} 
+            />
+          </div>
+        ) : viewMode === "econometrics" ? (
           <EconometricsPage onBack={() => setViewMode("dashboard")} />
         ) : viewMode === "dashboard" ? (
           <div>

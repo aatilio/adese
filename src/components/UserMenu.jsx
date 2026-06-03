@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { LogOut, User, ChevronDown } from "lucide-react";
 
-export default function UserMenu({ user, roleLabel, onLogout, extraOptions = [] }) {
+export default function UserMenu({ user, roleLabel, onLogout, extraOptions = [], onOpenProfile }) {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
 
@@ -61,7 +61,15 @@ export default function UserMenu({ user, roleLabel, onLogout, extraOptions = [] 
           }}
         >
           {/* Header */}
-          <div style={{ padding: "12px 16px", borderBottom: "1px solid var(--gray-100)" }}>
+          <div 
+            style={{ padding: "12px 16px", borderBottom: "1px solid var(--gray-100)", cursor: "pointer" }}
+            onClick={() => {
+              if (onOpenProfile) onOpenProfile();
+              setIsOpen(false);
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.background = "var(--gray-50)"}
+            onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+          >
             <div style={{ fontWeight: 700, color: "var(--gray-800)", fontSize: "0.9rem", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
               {user?.nombre_completo || "Usuario"}
             </div>

@@ -394,6 +394,28 @@ app.put('/api/estudiantes/:id', async (req, res) => {
   }
 });
 
+// PUT /api/usuarios/:id/perfil
+app.put('/api/usuarios/:id/perfil', async (req, res) => {
+  const { nombre_completo, pass } = req.body;
+  try {
+    if (pass !== undefined) {
+      const r = await pool.query(
+        'UPDATE usuarios SET nombre_completo = $1, pass = $2 WHERE id = $3 RETURNING *',
+        [nombre_completo, pass, req.params.id]
+      );
+      res.json({ usuario: r.rows[0] });
+    } else {
+      const r = await pool.query(
+        'UPDATE usuarios SET nombre_completo = $1 WHERE id = $2 RETURNING *',
+        [nombre_completo, req.params.id]
+      );
+      res.json({ usuario: r.rows[0] });
+    }
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // GET /api/estudiantes/:id/cursos
 app.get('/api/estudiantes/:id/cursos', async (req, res) => {
   try {
