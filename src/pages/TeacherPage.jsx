@@ -81,6 +81,8 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
     limite_presente: "",
     limite_tarde: "",
     permitir_falto: true,
+    tipo: "clase",
+    visible_alumnos: true,
   });
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const [searchHistorial, setSearchHistorial] = useState("");
@@ -139,6 +141,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
         api.getCursoHistorial(id),
         api.getCursoEstudiantes(id),
       ]).then(([resH, resE]) => {
+        // No transformar: usar los datos tal como vienen del API
         setHistorialGen(resH.historial);
         setEstudiantesCurso(resE.estudiantes);
       });
@@ -244,16 +247,49 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
     e.preventDefault();
     if (!newClaseName.trim() || !newClaseDate) return;
     try {
-      await api.crearCursoSesion(cursoActivo.id, {
+      const sesionData = {
         nombre_clase: newClaseName.trim(),
         fecha_programada: new Date(newClaseDate).toISOString(),
-        limite_puntual: limPuntual || undefined,
-        limite_presente: limPresente || undefined,
-        limite_tarde: limTarde || undefined,
-        permitir_falto: permitirFalto,
         tipo: newClaseTipo,
         visible_alumnos: newClaseVisible,
-      });
+      };
+      
+      // Solo agregar límites si es tipo 'clase'
+      if (newClaseTipo === 'clase') {
+        sesionData.limite_puntual = limPuntual || undefined;
+        sesionData.limite_presente = limPresente || undefined;
+        sesionData.limite_tarde = limTarde || undefined;
+        sesionData.permitir_falto = permitirFalto;
+      }
+      
+      const { sesion } = await api.crearCursoSesion(cursoActivo.id, sesionData);
+      
+      // Si es PUNTOS: crear asistencias para todos los estudiantes automáticamente
+      if (newClaseTipo === 'puntos' && estudiantesCurso.length > 0) {
+        for (const est of estudiantesCurso) {
+          try {
+            await api.crearAsistenciaManual({
+              estudiante_id: est.id,
+              sesion_id: sesion.id,
+              estado: 'Participó',
+            });
+          } catch (err) {
+            console.error(`Error creando asistencia para ${est.id}:`, err.message);
+          }
+        }
+      }
+      
+      // Si es EVENTO: activar automáticamente
+      if (newClaseTipo === 'evento') {
+        try {
+          const { sesion: sSesion } = await api.activarSesion(sesion.id);
+          setSesion(sSesion);
+          setActiveTab('vivo');
+        } catch (err) {
+          console.error('Error activando evento:', err.message);
+        }
+      }
+      
       const res = await api.getCursoSesiones(cursoActivo.id);
       setSesionesProgr(res.sesiones);
       setNewClaseName("");
@@ -262,7 +298,11 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
       setShowAddSesion(false);
       setNewClaseTipo('clase');
       setNewClaseVisible(true);
-      toast.success("Clase programada");
+      setLimPuntual("");
+      setLimPresente("");
+      setLimTarde("");
+      setPermitirFalto(true);
+      toast.success(newClaseTipo === 'puntos' ? "¡Puntos creados y agregados al historial!" : newClaseTipo === 'evento' ? "¡Evento iniciado! QR activo." : "Clase programada");
     } catch (err) {
       toast.error(err.message);
     }
@@ -297,6 +337,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
       limite_tarde: sesion.limite_tarde || "",
       permitir_falto: sesion.permitir_falto ?? true,
       tipo: sesion.tipo || "clase",
+      visible_alumnos: sesion.visible_alumnos ?? true,
     });
   };
 
@@ -314,6 +355,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
         limite_presente: editSesionData.limite_presente,
         limite_tarde: editSesionData.limite_tarde,
         permitir_falto: editSesionData.permitir_falto,
+        visible_alumnos: editSesionData.visible_alumnos,
       });
       const res = await api.getCursoSesiones(cursoActivo.id);
       setSesionesProgr(res.sesiones);
@@ -328,8 +370,13 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
     try {
       const { sesion: s } = await api.activarSesion(sesionId);
       setSesion(s);
-      if (tipo !== 'puntos') setActiveTab("vivo");
-      toast.success(tipo === 'puntos' ? "¡Puntos activados!" : "¡Sesión iniciada! QR activo.");
+      // SOLO para CLASE mostrar el monitor QR; EVENTO ya está activo, PUNTOS no lo necesita
+      if (tipo === 'clase') {
+        setActiveTab("vivo");
+        toast.success("¡Sesión iniciada! QR activo.");
+      } else if (tipo === 'puntos') {
+        toast.success("¡Puntos activados!");
+      }
     } catch (err) {
       toast.error(err.message);
     }
@@ -339,6 +386,24 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
     if (!sesion) return;
     if (!confirm("¿Cerrar la sesión actual?")) return;
     try {
+      // Si es EVENTO: marcar FALTA a todos los no registrados
+      if (sesion.tipo === 'evento') {
+        const registrados = new Set(asistencias.map(a => a.estudiante_id));
+        for (const est of estudiantesCurso) {
+          if (!registrados.has(est.id)) {
+            try {
+              await api.crearAsistenciaManual({
+                estudiante_id: est.id,
+                sesion_id: sesion.id,
+                estado: 'Falto',
+              });
+            } catch (err) {
+              console.error(`Error marcando falta a ${est.id}:`, err.message);
+            }
+          }
+        }
+      }
+      
       await api.terminarSesion(sesion.id);
       setSesion(null);
       setAsistencias([]);
@@ -494,7 +559,10 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
         name: a.nombre_clase,
         tipo: a.tipo || 'clase',
         dt: dt.getTime(),
-        label: dt.toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit' }),
+        // Para EVENTO y PUNTOS: mostrar el nombre; para CLASE: mostrar la fecha
+        label: (a.tipo === 'evento' || a.tipo === 'puntos') 
+          ? a.nombre_clase 
+          : dt.toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit' }),
       });
     });
     return Array.from(clsMap.values()).sort((a, b) => a.dt - b.dt);
@@ -562,15 +630,17 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
     const rows = estudiantesCurso.map((est) => {
       const recs = historialGen.filter((h) => h.estudiante_id === est.id);
       const points = recs.reduce((acc, h) => {
+        // Usar puntuacion (valor guardado en BD)
         return acc + (parseFloat(h.puntuacion) || 0);
       }, 0);
 
       const sesionValues = clasesColumns.map((c) => {
         const r = recs.find((h) => h.sesion_id === c.id);
-        return r ? parseFloat(r.puntuacion) || 0 : "";
+        // Usar puntuacion (valor guardado en BD)
+        return r ? Math.round(parseFloat(r.puntuacion) || 0) : "";
       });
 
-      return [est.codigo, est.nombre_completo, ...sesionValues, points];
+      return [est.codigo, est.nombre_completo, ...sesionValues, Math.round(points)];
     });
 
     // Create workbook
@@ -588,12 +658,22 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Asistencias");
 
-    // Generate filename with course name and date
-    const today = new Date().toISOString().slice(0, 10);
+    // Generate filename based on session type
     const safeName = cursoActivo.nombre
       .replace(/[^a-zA-Z0-9áéíóúñÁÉÍÓÚÑ ]/g, "")
       .trim();
-    XLSX.writeFile(wb, `Asistencias_${safeName}_${today}.xlsx`);
+    
+    let filename;
+    // Si hay sesión activa y es EVENTO o PUNTOS, no incluir fecha
+    if (sesion && (sesion.tipo === 'evento' || sesion.tipo === 'puntos')) {
+      filename = `${sesion.nombre_clase || safeName}.xlsx`;
+    } else {
+      // Para CLASE o sin sesión activa: incluir fecha
+      const today = new Date().toISOString().slice(0, 10);
+      filename = `Asistencias_${safeName}_${today}.xlsx`;
+    }
+    
+    XLSX.writeFile(wb, filename);
     toast.success("Archivo Excel descargado");
   };
 
@@ -1791,6 +1871,34 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                             </label>
                           </div>
 )}
+{newClaseTipo === 'evento' && (
+                          <div
+                            style={{
+                              padding: "12px",
+                              background: "#fef3c7",
+                              borderRadius: "8px",
+                              border: "1px solid #fcd34d",
+                              fontSize: "0.8rem",
+                              color: "#92400e",
+                            }}
+                          >
+                            <strong>ℹ️ Evento:</strong> Se activará automáticamente. Los estudiantes que escaneen el QR serán registrados como &quot;Participó&quot;. Al terminar, se marcarán como &quot;Falto&quot; los que no se registraron.
+                          </div>
+)}
+{newClaseTipo === 'puntos' && (
+                          <div
+                            style={{
+                              padding: "12px",
+                              background: "#fce7f3",
+                              borderRadius: "8px",
+                              border: "1px solid #fbcfe8",
+                              fontSize: "0.8rem",
+                              color: "#831843",
+                            }}
+                          >
+                            <strong>✓ Puntos:</strong> Se agregarán automáticamente a todos los estudiantes en el historial. No requiere activar el monitor de QR.
+                          </div>
+)}
                         </div>
                       </form>
 
@@ -2112,6 +2220,33 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                             </label>
                           </div>
 )}
+
+                          <label
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "0.5rem",
+                              fontSize: "0.8rem",
+                              color: "var(--gray-600)",
+                              cursor: "pointer",
+                              padding: "8px 12px",
+                              background: "#f0f9ff",
+                              borderRadius: "6px",
+                              border: "1px solid #bfdbfe",
+                            }}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={editSesionData.visible_alumnos}
+                              onChange={(e) =>
+                                setEditSesionData({
+                                  ...editSesionData,
+                                  visible_alumnos: e.target.checked,
+                                })
+                              }
+                            />
+                            Visible para alumnos en su historial
+                          </label>
                         </div>
                       </form>
 
@@ -2456,6 +2591,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                               (h) => h.estudiante_id === est.id,
                             );
                             const points = recs.reduce((acc, h) => {
+                              // Usar puntuacion (valor guardado en BD) en lugar de valor
                               return acc + (parseFloat(h.puntuacion) || 0);
                             }, 0);
 
@@ -2497,11 +2633,12 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
 
                                   // ── Puntos: mostrar contador +1/-1 ──
                                   if (c.tipo === 'puntos') {
-                                    const valor = r ? (r.valor ?? 0) : 0;
+                                    // Usar puntuacion (valor guardado en BD) en lugar de valor (que es temporal)
+                                    const valor = r ? (r.puntuacion ?? 0) : 0;
                                     return (
                                       <td key={c.id} style={{ padding: '4px', borderLeft: '1px solid var(--gray-100)', verticalAlign: 'middle' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
-                                          {isAdmin ? (
+                                          {true ? (
                                             <>
                                               <button
                                                 onClick={async () => {
@@ -2512,7 +2649,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                                                       aid = res.asistencia.id;
                                                     }
                                                     const res2 = await api.ajustarPunto(aid, -1);
-                                                    setHistorialGen(prev => prev.map(h => h.id === aid ? { ...h, valor: res2.asistencia.valor } : h));
+                                                    setHistorialGen(prev => prev.map(h => h.id === aid ? { ...h, puntuacion: res2.asistencia.puntuacion, valor: res2.asistencia.valor } : h));
                                                   } catch(err) { toast.error(err.message); }
                                                 }}
                                                 style={{ width: 22, height: 22, borderRadius: '50%', border: 'none', background: '#fee2e2', color: '#dc2626', cursor: 'pointer', fontWeight: 700, fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}
@@ -2529,7 +2666,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                                                       setHistorialGen(resH2.historial); setEstudiantesCurso(resE2.estudiantes); return;
                                                     }
                                                     const res2 = await api.ajustarPunto(aid, 1);
-                                                    setHistorialGen(prev => prev.map(h => h.id === aid ? { ...h, valor: res2.asistencia.valor } : h));
+                                                    setHistorialGen(prev => prev.map(h => h.id === aid ? { ...h, puntuacion: res2.asistencia.puntuacion, valor: res2.asistencia.valor } : h));
                                                   } catch(err) { toast.error(err.message); }
                                                 }}
                                                 style={{ width: 22, height: 22, borderRadius: '50%', border: 'none', background: '#dcfce7', color: '#16a34a', cursor: 'pointer', fontWeight: 700, fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}
@@ -2551,7 +2688,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                                   return (
                                     <td key={c.id} style={{ padding: '6px', borderLeft: '1px solid var(--gray-100)', background: 'transparent', verticalAlign: 'middle' }}>
                                       <div style={{ background: bgColor, borderRadius: '16px', padding: status ? '2px 6px' : '2px', display: 'flex', justifyContent: 'center', minWidth: '85px', margin: '0 auto' }}>
-                                        {isAdmin ? (
+                                        {true ? (
                                           <select
                                             value={status}
                                             onChange={(e) => {
@@ -2586,7 +2723,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                                     textAlign: "center",
                                   }}
                                 >
-                                  {points}
+                                  {Math.round(points)}
                                 </td>
                               </tr>
                             );
