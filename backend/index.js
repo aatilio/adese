@@ -11,9 +11,10 @@ const PORT = process.env.PORT || 3000;
 const QR_SECRET = process.env.QR_SECRET || 'sai-qr-super-secret-key-2024';
 const QR_EXPIRY_SECONDS = 60;
 
-/** Coincide con columna usuarios.rol (1 = admin/profesor, 2 = estudiante). */
-const ROL_ADMIN = 1;
-const ROL_ESTUDIANTE = 2;
+/** Roles de usuario */
+const ROL_ADMIN      = 1; // Super Admin
+const ROL_PROFESOR   = 2; // Profesor
+const ROL_ESTUDIANTE = 3; // Estudiante
 
 app.use(cors());
 app.use(express.json());
@@ -54,15 +55,21 @@ const generateRandomCode = generateQrToken;
 const autoFillAbsences = async (pool, sesionId, force = false) => {
   try {
     // 1. Obtener datos de la sesión
-    const sesRes = await pool.query('SELECT curso_id, limite_tarde, activa, faltas_procesadas FROM sesiones_clase WHERE id = $1', [sesionId]);
+    const sesRes = await pool.query(
+      'SELECT curso_id, limite_tarde, activa, faltas_procesadas, tipo FROM sesiones WHERE id = $1',
+      [sesionId]
+    );
     if (sesRes.rows.length === 0) return;
     const s = sesRes.rows[0];
 
     // Si ya se procesó y no es un forzado, no hacer nada
     if (s.faltas_procesadas && !force) return;
 
-    // 2. ¿Debe llenarse ahora? 
-    // El usuario solicitó que el "Auto-Falto" SOLO se active al dar "Terminar Sesión" (manual).
+    // Para sesiones de tipo 'puntos', no auto-llenar faltas
+    if (s.tipo === 'puntos') return;
+
+    // 2. ¿Debe llenarse ahora?
+    // El auto-falto SOLO se activa al dar "Terminar Sesión" (manual).
     let shouldFill = force;
 
     if (!shouldFill) {
@@ -84,7 +91,7 @@ const autoFillAbsences = async (pool, sesionId, force = false) => {
       `, [sesionId, s.curso_id]);
 
       // 4. Marcar como procesada PARA SIEMPRE para esta sesión
-      await pool.query('UPDATE sesiones_clase SET faltas_procesadas = true WHERE id = $1', [sesionId]);
+      await pool.query('UPDATE sesiones SET faltas_procesadas = true WHERE id = $1', [sesionId]);
       console.log(`[Auto-Falto] Sesión ${sesionId} procesada exitosamente.`);
     }
   } catch (err) {
@@ -96,7 +103,7 @@ const autoFillAbsences = async (pool, sesionId, force = false) => {
 const runMigrations = async (pool) => {
   try {
     await pool.query(`
-      ALTER TABLE sesiones_clase 
+      ALTER TABLE sesiones 
       ADD COLUMN IF NOT EXISTS faltas_procesadas BOOLEAN DEFAULT FALSE;
     `);
   } catch (err) {
@@ -114,16 +121,29 @@ app.get('/api/health', (_, res) =>
   res.json({ status: 'ok', env: !!(process.env.DATABASE_URL || process.env.DB_HOST) })
 );
 
-// POST /api/auth/login — un solo campo `codigo`; el rol (1=admin/profesor, 2=estudiante) viene de la BD
+// POST /api/auth/login — acepta { codigo, pass }. Roles: 1=admin, 2=profesor, 3=estudiante
 app.post('/api/auth/login', async (req, res) => {
-  const raw = req.body?.codigo ?? req.body?.codigo_estudiante;
+  const raw  = req.body?.codigo ?? req.body?.codigo_estudiante;
+  const pass = req.body?.pass ?? '';
   if (!raw || String(raw).trim() === '') return res.status(400).json({ error: 'Código requerido' });
   try {
-    const r = await pool.query('SELECT * FROM usuarios WHERE codigo = $1', [String(raw).trim().toUpperCase()]);
+    const r = await pool.query(
+      'SELECT * FROM usuarios WHERE UPPER(codigo) = UPPER($1)',
+      [String(raw).trim()]
+    );
     if (r.rows.length === 0) return res.status(404).json({ error: 'Código no encontrado' });
     const u = r.rows[0];
     const rol = Number(u.rol);
-    if (rol !== ROL_ADMIN && rol !== ROL_ESTUDIANTE) {
+
+    // Verificar contraseña: si el usuario tiene pass definida y no vacía, debe coincidir
+    if (u.pass && u.pass !== '') {
+      if (String(pass) !== String(u.pass)) {
+        return res.status(401).json({ error: 'Contraseña incorrecta' });
+      }
+    }
+    // Si pass es null o vacía en BD, se permite cualquier contraseña (acceso libre)
+
+    if (rol !== ROL_ADMIN && rol !== ROL_PROFESOR && rol !== ROL_ESTUDIANTE) {
       return res.status(403).json({ error: 'Rol de usuario no válido' });
     }
     res.json({ usuario: { ...u, rol } });
@@ -132,16 +152,15 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
-// GET /api/sesiones/activa
+// GET /api/sesiones/activa — solo devuelve sesiones de tipo 'clase' o 'evento'
 app.get('/api/sesiones/activa', async (req, res) => {
   try {
-    // 1. Buscamos sesión marcada como activa O programada para YA (hora actual >= hora programada)
     const r = await pool.query(`
-      SELECT * FROM sesiones_clase 
+      SELECT * FROM sesiones 
       WHERE activa = true 
+        AND (tipo = 'clase' OR tipo = 'evento' OR tipo IS NULL)
       LIMIT 1
     `);
-
     if (r.rows.length === 0) return res.status(404).json({ error: 'No hay sesión activa' });
     res.json({ sesion: r.rows[0] });
   } catch (err) {
@@ -149,16 +168,19 @@ app.get('/api/sesiones/activa', async (req, res) => {
   }
 });
 
-// POST /api/sesiones
+// POST /api/sesiones — crea y activa una sesión. Acepta tipo y visible_alumnos.
 app.post('/api/sesiones', async (req, res) => {
-  const { nombre_clase, curso_id } = req.body;
+  const { nombre_clase, curso_id, tipo, visible_alumnos } = req.body;
+  const tipoFinal           = tipo           ?? 'clase';
+  const visibleAlumnosFinal = visible_alumnos ?? true;
   try {
     // Deactivate any other active session
-    await pool.query('UPDATE sesiones_clase SET activa = false WHERE activa = true');
+    await pool.query('UPDATE sesiones SET activa = false WHERE activa = true');
     const token = generateRandomCode();
     const r = await pool.query(
-      'INSERT INTO sesiones_clase (nombre_clase, token_qr, activa, curso_id, fecha_inicio) VALUES ($1, $2, true, $3, NOW()) RETURNING *',
-      [nombre_clase, token, curso_id]
+      `INSERT INTO sesiones (nombre_clase, token_qr, activa, curso_id, fecha_inicio, tipo, visible_alumnos)
+       VALUES ($1, $2, true, $3, NOW(), $4, $5) RETURNING *`,
+      [nombre_clase, token, curso_id, tipoFinal, visibleAlumnosFinal]
     );
     res.json({ sesion: r.rows[0] });
   } catch (err) {
@@ -170,7 +192,7 @@ app.post('/api/sesiones', async (req, res) => {
 app.delete('/api/sesiones/:id', async (req, res) => {
   try {
     // ON DELETE CASCADE will handle asistencias
-    const r = await pool.query('DELETE FROM sesiones_clase WHERE id = $1 RETURNING *', [req.params.id]);
+    const r = await pool.query('DELETE FROM sesiones WHERE id = $1 RETURNING *', [req.params.id]);
     if (r.rows.length === 0) return res.status(404).json({ error: 'Sesión no encontrada' });
     res.json({ ok: true });
   } catch (err) {
@@ -178,17 +200,79 @@ app.delete('/api/sesiones/:id', async (req, res) => {
   }
 });
 
-
 // PUT /api/sesiones/:id/token
 app.put('/api/sesiones/:id/token', async (req, res) => {
   const { id } = req.params;
   const token = generateQrToken(id);
   try {
-    const r = await pool.query('UPDATE sesiones_clase SET token_qr = $1 WHERE id = $2 RETURNING *', [token, id]);
+    const r = await pool.query('UPDATE sesiones SET token_qr = $1 WHERE id = $2 RETURNING *', [token, id]);
     res.json({ sesion: r.rows[0] });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
+});
+
+// PUT /api/sesiones/:id — actualiza detalles, incluyendo tipo y visible_alumnos si se proporcionan
+app.put('/api/sesiones/:id', async (req, res) => {
+  const { nombre_clase, fecha_programada, limite_puntual, limite_presente, limite_tarde, permitir_falto, tipo, visible_alumnos } = req.body;
+  try {
+    const r = await pool.query(
+      `UPDATE sesiones 
+       SET nombre_clase = $1,
+           fecha_programada = $2,
+           limite_puntual = $3,
+           limite_presente = $4,
+           limite_tarde = $5,
+           permitir_falto = $6,
+           tipo = COALESCE($7, tipo),
+           visible_alumnos = COALESCE($8, visible_alumnos)
+       WHERE id = $9 RETURNING *`,
+      [nombre_clase, fecha_programada, limite_puntual, limite_presente, limite_tarde, permitir_falto,
+       tipo ?? null, visible_alumnos ?? null, req.params.id]
+    );
+    if (r.rows.length === 0) return res.status(404).json({ error: 'Sesión no encontrada' });
+    res.json({ sesion: r.rows[0] });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// PUT /api/sesiones/:id/activar  (start a scheduled session)
+app.put('/api/sesiones/:id/activar', async (req, res) => {
+  try {
+    // Deactivate any other active session
+    await pool.query('UPDATE sesiones SET activa = false WHERE activa = true');
+    const token = generateRandomCode();
+    const r = await pool.query(
+      'UPDATE sesiones SET activa = true, token_qr = $1, fecha_inicio = NOW() WHERE id = $2 RETURNING *',
+      [token, req.params.id]
+    );
+    res.json({ sesion: r.rows[0] });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// PUT /api/sesiones/:id/refrescar  (rotate QR token)
+app.put('/api/sesiones/:id/refrescar', async (req, res) => {
+  try {
+    const token = generateRandomCode();
+    const r = await pool.query(
+      'UPDATE sesiones SET token_qr = $1 WHERE id = $2 RETURNING *',
+      [token, req.params.id]
+    );
+    res.json({ sesion: r.rows[0] });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// PUT /api/sesiones/:id/terminar  (manually end a session)
+app.put('/api/sesiones/:id/terminar', async (req, res) => {
+  try {
+    const sesionId = req.params.id;
+    // 1. Desactivar la sesión
+    await pool.query('UPDATE sesiones SET activa = false WHERE id = $1', [sesionId]);
+    
+    // 2. Ejecutar auto-llenado de faltas FORZADO (ignorando el reloj)
+    await autoFillAbsences(pool, sesionId, true);
+    
+    res.json({ ok: true, message: 'Sesión terminada y inasistencias registradas' });
+  } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 // POST /api/asistencias
@@ -208,7 +292,7 @@ app.post('/api/asistencias', async (req, res) => {
 
     // Buscamos sesión activa con ese token
     const sesion = await pool.query(`
-      SELECT * FROM sesiones_clase 
+      SELECT * FROM sesiones 
       WHERE token_qr = $1 
       AND (activa = true OR fecha_programada::date = CURRENT_DATE)
     `, [token_qr]);
@@ -230,9 +314,7 @@ app.post('/api/asistencias', async (req, res) => {
   }
 });
 
-
-
-// GET /api/estudiantes (Now usuarios)
+// GET /api/estudiantes (usuarios con rol estudiante)
 app.get('/api/estudiantes', async (req, res) => {
   try {
     const r = await pool.query(
@@ -264,6 +346,20 @@ app.get('/api/usuarios', async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+// GET /api/usuarios/buscar?codigo=X — busca usuario por código (case insensitive)
+app.get('/api/usuarios/buscar', async (req, res) => {
+  const { codigo } = req.query;
+  if (!codigo) return res.status(400).json({ error: 'Parámetro codigo requerido' });
+  try {
+    const r = await pool.query(
+      'SELECT * FROM usuarios WHERE UPPER(codigo) = UPPER($1)',
+      [String(codigo).trim()]
+    );
+    if (r.rows.length === 0) return res.status(404).json({ error: 'Usuario no encontrado' });
+    res.json({ usuario: r.rows[0] });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 // POST /api/usuarios
 app.post('/api/usuarios', async (req, res) => {
   const { codigo, nombre_completo, rol } = req.body;
@@ -284,7 +380,7 @@ app.delete('/api/usuarios/:id', async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// PUT /api/estudiantes/:id (Now usuarios)
+// PUT /api/estudiantes/:id (usuarios)
 app.put('/api/estudiantes/:id', async (req, res) => {
   const { codigo, nombre_completo } = req.body;
   try {
@@ -333,15 +429,37 @@ app.put('/api/asistencias/:id', async (req, res) => {
   }
 });
 
-// GET /api/asistencias/alumno/:id
+// PUT /api/asistencias/:id/punto — incrementa o decrementa valor (puntos) de una asistencia
+app.put('/api/asistencias/:id/punto', async (req, res) => {
+  const { delta } = req.body; // 1 o -1
+  if (delta !== 1 && delta !== -1) return res.status(400).json({ error: 'delta debe ser 1 o -1' });
+  try {
+    const r = await pool.query(
+      `UPDATE asistencias
+       SET valor = COALESCE(valor, 0) + $1
+       WHERE id = $2
+       RETURNING *`,
+      [delta, req.params.id]
+    );
+    if (r.rows.length === 0) return res.status(404).json({ error: 'Asistencia no encontrada' });
+    res.json({ asistencia: r.rows[0] });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/asistencias/alumno/:id — solo devuelve registros con visible_alumnos = true
 app.get('/api/asistencias/alumno/:id', async (req, res) => {
   try {
     const r = await pool.query(
-      `SELECT a.id, ea.nombre AS estado, ea.color, ea.puntuacion, a.fecha_hora, s.nombre_clase, s.curso_id
+      `SELECT a.id, ea.nombre AS estado, ea.color, ea.puntuacion, a.fecha_hora, a.valor,
+              s.nombre_clase, s.curso_id, s.tipo, s.visible_alumnos
        FROM asistencias a
-       JOIN sesiones_clase s ON a.sesion_id = s.id
+       JOIN sesiones s ON a.sesion_id = s.id
        JOIN estados_asistencia ea ON ea.id = a.estado_id
-       WHERE a.estudiante_id = $1 ORDER BY a.fecha_hora DESC`, [req.params.id]
+       WHERE a.estudiante_id = $1 AND s.visible_alumnos = true
+       ORDER BY a.fecha_hora DESC`,
+      [req.params.id]
     );
     res.json({ historial: r.rows });
   } catch (err) {
@@ -353,10 +471,12 @@ app.get('/api/asistencias/alumno/:id', async (req, res) => {
 app.get('/api/asistencias/historial', async (req, res) => {
   try {
     const r = await pool.query(
-      `SELECT a.id, ea.nombre AS estado, ea.color, ea.puntuacion, a.fecha_hora, a.sesion_id, a.estudiante_id, u.nombre_completo, u.codigo, s.nombre_clase
+      `SELECT a.id, ea.nombre AS estado, ea.color, ea.puntuacion, a.fecha_hora, a.sesion_id,
+              a.estudiante_id, u.nombre_completo, u.codigo,
+              s.nombre_clase, s.tipo, s.visible_alumnos
        FROM asistencias a
        JOIN usuarios u ON u.id = a.estudiante_id
-       JOIN sesiones_clase s ON s.id = a.sesion_id
+       JOIN sesiones s ON s.id = a.sesion_id
        JOIN estados_asistencia ea ON ea.id = a.estado_id
        ORDER BY a.fecha_hora DESC`
     );
@@ -374,11 +494,13 @@ app.get('/api/asistencias/:sesion_id', async (req, res) => {
     await autoFillAbsences(pool, sesion_id);
 
     const r = await pool.query(
-      `SELECT a.id, ea.nombre AS estado, ea.color, ea.puntuacion, a.fecha_hora, u.nombre_completo, u.codigo
+      `SELECT a.id, ea.nombre AS estado, ea.color, ea.puntuacion, a.fecha_hora, a.valor,
+              u.nombre_completo, u.codigo
        FROM asistencias a
        JOIN usuarios u ON u.id = a.estudiante_id
        JOIN estados_asistencia ea ON ea.id = a.estado_id
-       WHERE a.sesion_id = $1 ORDER BY a.fecha_hora ASC`, [sesion_id]
+       WHERE a.sesion_id = $1 ORDER BY a.fecha_hora ASC`,
+      [sesion_id]
     );
     res.json({ asistencias: r.rows });
   } catch (err) {
@@ -405,51 +527,37 @@ app.post('/api/asistencias/manual', async (req, res) => {
   }
 });
 
-// GET /api/configuracion
-app.get('/api/configuracion', async (req, res) => {
-  try {
-    const r = await pool.query('SELECT * FROM configuracion_horario WHERE id = 1');
-    res.json({ config: r.rows[0] });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// PUT /api/configuracion
-app.put('/api/configuracion', async (req, res) => {
-  const { limite_puntual, limite_presente, limite_tarde, permitir_falto } = req.body;
-  try {
-    const r = await pool.query(
-      `UPDATE configuracion_horario 
-       SET limite_puntual = $1, limite_presente = $2, limite_tarde = $3, permitir_falto = $4 
-       WHERE id = 1 RETURNING *`,
-      [limite_puntual, limite_presente, limite_tarde, permitir_falto]
-    );
-    res.json({ config: r.rows[0] });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
 // ── CURSOS ─────────────────────────────────────────────────
 
-// GET /api/cursos
+// GET /api/cursos — soporta ?profesor_id=X para filtrar por profesor
 app.get('/api/cursos', async (req, res) => {
+  const { profesor_id } = req.query;
   try {
-    const r = await pool.query(`
-      SELECT c.*, 
+    let query = `
+      SELECT c.*,
         (SELECT COUNT(*) FROM curso_estudiantes ce WHERE ce.curso_id = c.id)::int AS total_alumnos,
-        (SELECT COUNT(*) FROM sesiones_clase sc WHERE sc.curso_id = c.id)::int AS total_clases
-      FROM cursos c ORDER BY c.created_at DESC
-    `);
+        (SELECT COUNT(*) FROM sesiones sc WHERE sc.curso_id = c.id)::int AS total_clases
+      FROM cursos c
+    `;
+    const params = [];
+    if (profesor_id) {
+      params.push(profesor_id);
+      query += ` WHERE c.profesor_id = $1`;
+    }
+    query += ` ORDER BY c.created_at DESC`;
+    const r = await pool.query(query, params);
     res.json({ cursos: r.rows });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// POST /api/cursos
+// POST /api/cursos — acepta nombre, descripcion, profesor_id
 app.post('/api/cursos', async (req, res) => {
-  const { nombre, descripcion } = req.body;
+  const { nombre, descripcion, profesor_id } = req.body;
   try {
-    const r = await pool.query('INSERT INTO cursos (nombre, descripcion) VALUES ($1, $2) RETURNING *', [nombre, descripcion || '']);
+    const r = await pool.query(
+      'INSERT INTO cursos (nombre, descripcion, profesor_id) VALUES ($1, $2, $3) RETURNING *',
+      [nombre, descripcion || '', profesor_id || null]
+    );
     res.json({ curso: r.rows[0] });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
@@ -490,7 +598,10 @@ app.get('/api/cursos/:id/estudiantes', async (req, res) => {
 app.post('/api/cursos/:id/estudiantes', async (req, res) => {
   const { estudiante_id } = req.body;
   try {
-    await pool.query('INSERT INTO curso_estudiantes (curso_id, estudiante_id) VALUES ($1, $2) ON CONFLICT DO NOTHING', [req.params.id, estudiante_id]);
+    await pool.query(
+      'INSERT INTO curso_estudiantes (curso_id, estudiante_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+      [req.params.id, estudiante_id]
+    );
     res.json({ ok: true });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
@@ -498,127 +609,121 @@ app.post('/api/cursos/:id/estudiantes', async (req, res) => {
 // DELETE /api/cursos/:cursoId/estudiantes/:estudianteId
 app.delete('/api/cursos/:cursoId/estudiantes/:estudianteId', async (req, res) => {
   try {
-    await pool.query('DELETE FROM curso_estudiantes WHERE curso_id=$1 AND estudiante_id=$2', [req.params.cursoId, req.params.estudianteId]);
+    await pool.query(
+      'DELETE FROM curso_estudiantes WHERE curso_id=$1 AND estudiante_id=$2',
+      [req.params.cursoId, req.params.estudianteId]
+    );
     res.json({ ok: true });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// GET /api/sesiones/activa
-app.get('/api/sesiones/activa', async (req, res) => {
-  try {
-    const r = await pool.query('SELECT * FROM sesiones_clase WHERE activa = true LIMIT 1');
-    if (r.rows.length === 0) {
-      return res.json({ sesion: null });
-    }
-    res.json({ sesion: r.rows[0] });
-  } catch (err) { res.status(500).json({ error: err.message }); }
-});
-
-// GET /api/cursos/:id/sesiones
+// GET /api/cursos/:id/sesiones — incluye tipo y visible_alumnos
 app.get('/api/cursos/:id/sesiones', async (req, res) => {
   try {
     const r = await pool.query(`
-      SELECT sc.*, 
+      SELECT sc.*, sc.tipo, sc.visible_alumnos,
         (SELECT COUNT(*) FROM asistencias a WHERE a.sesion_id = sc.id)::int AS total_asistencias
-      FROM sesiones_clase sc WHERE sc.curso_id = $1 ORDER BY sc.fecha_programada DESC NULLS LAST, sc.fecha_inicio DESC
+      FROM sesiones sc WHERE sc.curso_id = $1
+      ORDER BY sc.fecha_programada DESC NULLS LAST, sc.fecha_inicio DESC
     `, [req.params.id]);
     res.json({ sesiones: r.rows });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// POST /api/cursos/:id/sesiones  (schedule a class)
+// POST /api/cursos/:id/sesiones  (schedule a class — incluye tipo y visible_alumnos)
 app.post('/api/cursos/:id/sesiones', async (req, res) => {
-  const { nombre_clase, fecha_programada, limite_puntual, limite_presente, limite_tarde, permitir_falto } = req.body;
+  const { nombre_clase, fecha_programada, limite_puntual, limite_presente, limite_tarde, permitir_falto, tipo, visible_alumnos } = req.body;
+  const tipoFinal           = tipo           ?? 'clase';
+  const visibleAlumnosFinal = visible_alumnos ?? true;
   try {
     const token = generateRandomCode();
     const r = await pool.query(
-      `INSERT INTO sesiones_clase 
-        (nombre_clase, token_qr, activa, curso_id, fecha_programada, limite_puntual, limite_presente, limite_tarde, permitir_falto) 
-       VALUES ($1, $2, false, $3, $4, $5, $6, $7, $8) 
+      `INSERT INTO sesiones 
+        (nombre_clase, token_qr, activa, curso_id, fecha_programada,
+         limite_puntual, limite_presente, limite_tarde, permitir_falto,
+         tipo, visible_alumnos) 
+       VALUES ($1, $2, false, $3, $4, $5, $6, $7, $8, $9, $10) 
        RETURNING *`,
-      [nombre_clase, token, req.params.id, fecha_programada, limite_puntual, limite_presente, limite_tarde, permitir_falto]
+      [nombre_clase, token, req.params.id, fecha_programada,
+       limite_puntual, limite_presente, limite_tarde, permitir_falto,
+       tipoFinal, visibleAlumnosFinal]
     );
     res.json({ sesion: r.rows[0] });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// PUT /api/sesiones/:id (update session details)
-app.put('/api/sesiones/:id', async (req, res) => {
-  const { nombre_clase, fecha_programada, limite_puntual, limite_presente, limite_tarde, permitir_falto } = req.body;
-  try {
-    const r = await pool.query(
-      `UPDATE sesiones_clase 
-       SET nombre_clase = $1, fecha_programada = $2, limite_puntual = $3, limite_presente = $4, limite_tarde = $5, permitir_falto = $6
-       WHERE id = $7 RETURNING *`,
-      [nombre_clase, fecha_programada, limite_puntual, limite_presente, limite_tarde, permitir_falto, req.params.id]
-    );
-    if (r.rows.length === 0) return res.status(404).json({ error: 'Sesión no encontrada' });
-    res.json({ sesion: r.rows[0] });
-  } catch (err) { res.status(500).json({ error: err.message }); }
-});
-
-// PUT /api/sesiones/:id/activar  (start a scheduled session)
-app.put('/api/sesiones/:id/activar', async (req, res) => {
-  try {
-    // Deactivate any other active session
-    await pool.query('UPDATE sesiones_clase SET activa = false WHERE activa = true');
-    const token = generateRandomCode();
-    const r = await pool.query(
-      'UPDATE sesiones_clase SET activa = true, token_qr = $1, fecha_inicio = NOW() WHERE id = $2 RETURNING *',
-      [token, req.params.id]
-    );
-    res.json({ sesion: r.rows[0] });
-  } catch (err) { res.status(500).json({ error: err.message }); }
-});
-
-// PUT /api/sesiones/:id/refrescar  (rotate QR token)
-app.put('/api/sesiones/:id/refrescar', async (req, res) => {
-  try {
-    const token = generateRandomCode();
-    const r = await pool.query(
-      'UPDATE sesiones_clase SET token_qr = $1 WHERE id = $2 RETURNING *',
-      [token, req.params.id]
-    );
-    res.json({ sesion: r.rows[0] });
-  } catch (err) { res.status(500).json({ error: err.message }); }
-});
-
-// PUT /api/sesiones/:id/terminar  (manually end a session)
-app.put('/api/sesiones/:id/terminar', async (req, res) => {
-  try {
-    const sesionId = req.params.id;
-    // 1. Desactivar la sesión
-    await pool.query('UPDATE sesiones_clase SET activa = false WHERE id = $1', [sesionId]);
-    
-    // 2. Ejecutar auto-llenado de faltas FORZADO (ignorando el reloj)
-    await autoFillAbsences(pool, sesionId, true);
-    
-    res.json({ ok: true, message: 'Sesión terminada y inasistencias registradas' });
-  } catch (err) { res.status(500).json({ error: err.message }); }
-});
-
-// GET /api/cursos/:id/historial  (attendance matrix filtered by course)
+// GET /api/cursos/:id/historial — incluye tipo y visible_alumnos desde sesiones
 app.get('/api/cursos/:id/historial', async (req, res) => {
   try {
     const cursoId = req.params.id;
 
     // Auto-llenar faltas para las sesiones de este curso
-    const sesionesRes = await pool.query('SELECT id FROM sesiones_clase WHERE curso_id = $1', [cursoId]);
+    const sesionesRes = await pool.query('SELECT id FROM sesiones WHERE curso_id = $1', [cursoId]);
     for (const s of sesionesRes.rows) {
       await autoFillAbsences(pool, s.id);
     }
 
     const r = await pool.query(`
-      SELECT a.id, ea.nombre AS estado, ea.color, ea.puntuacion, a.fecha_hora, a.sesion_id, a.estudiante_id, 
-             u.nombre_completo, u.codigo, s.nombre_clase
+      SELECT a.id, ea.nombre AS estado, ea.color, ea.puntuacion, a.fecha_hora, a.sesion_id,
+             a.estudiante_id, u.nombre_completo, u.codigo,
+             s.nombre_clase, s.tipo, s.visible_alumnos
       FROM asistencias a
       JOIN usuarios u ON u.id = a.estudiante_id
-      JOIN sesiones_clase s ON s.id = a.sesion_id
+      JOIN sesiones s ON s.id = a.sesion_id
       JOIN estados_asistencia ea ON ea.id = a.estado_id
       WHERE s.curso_id = $1
       ORDER BY a.fecha_hora DESC
     `, [cursoId]);
     res.json({ historial: r.rows });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// POST /api/cursos/:id/importar — importa alumnos al curso (upsert)
+app.post('/api/cursos/:id/importar', async (req, res) => {
+  const cursoId = req.params.id;
+  const { alumnos } = req.body; // [{ codigo, nombre_completo }]
+  if (!Array.isArray(alumnos)) return res.status(400).json({ error: 'alumnos debe ser un array' });
+
+  let creados = 0, existentes = 0, vinculados = 0;
+  try {
+    for (const alumno of alumnos) {
+      const { codigo, nombre_completo } = alumno;
+      if (!codigo) continue;
+
+      // Intentar insertar usuario; si ya existe, ignorar
+      const insertRes = await pool.query(
+        `INSERT INTO usuarios (codigo, nombre_completo, rol)
+         VALUES (UPPER($1), $2, $3)
+         ON CONFLICT (codigo) DO NOTHING
+         RETURNING id`,
+        [codigo, nombre_completo, ROL_ESTUDIANTE]
+      );
+
+      let userId;
+      if (insertRes.rows.length > 0) {
+        userId = insertRes.rows[0].id;
+        creados++;
+      } else {
+        // Ya existía: buscar su id
+        const selRes = await pool.query(
+          'SELECT id FROM usuarios WHERE UPPER(codigo) = UPPER($1)',
+          [codigo]
+        );
+        if (selRes.rows.length === 0) continue;
+        userId = selRes.rows[0].id;
+        existentes++;
+      }
+
+      // Vincular al curso (ignorar si ya está inscrito)
+      const linkRes = await pool.query(
+        `INSERT INTO curso_estudiantes (curso_id, estudiante_id)
+         VALUES ($1, $2)
+         ON CONFLICT DO NOTHING`,
+        [cursoId, userId]
+      );
+      if ((linkRes.rowCount ?? 0) > 0) vinculados++;
+    }
+    res.json({ creados, existentes, vinculados });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 

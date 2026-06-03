@@ -1,0 +1,59 @@
+[33m6254190[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m, [m[1;31morigin/main[m[33m, [m[1;32mmain[m[33m, [m[1;32mcopilot/worktree-2026-06-02T23-10-36[m[33m)[m HEAD@{0}: reset: moving to HEAD
+[33m6254190[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m, [m[1;31morigin/main[m[33m, [m[1;32mmain[m[33m, [m[1;32mcopilot/worktree-2026-06-02T23-10-36[m[33m)[m HEAD@{1}: checkout: moving from main to master
+[33m6254190[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m, [m[1;31morigin/main[m[33m, [m[1;32mmain[m[33m, [m[1;32mcopilot/worktree-2026-06-02T23-10-36[m[33m)[m HEAD@{2}: commit: modificacion de la calculo de py
+[33mb5a5983[m HEAD@{3}: commit: feat: mover herramienta de econometria a la vista de curso y renombrar a Estimador
+[33m64bbb6b[m HEAD@{4}: commit: clean: remover variables no utilizadas en el cálculo
+[33md5080b5[m HEAD@{5}: commit: fix: remover model_final y corregir indexación de gráfica
+[33m43204e0[m HEAD@{6}: commit: fix: remover última referencia a statsmodels
+[33m2a28eac[m HEAD@{7}: commit: feat: remover scipy y usar aproximaciones matematicas nativas
+[33mb9c813b[m HEAD@{8}: commit: feat: remover statsmodels y hacer calculos manuales para reducir peso
+[33m3bb4f5a[m HEAD@{9}: commit: Good
+[33mbed3392[m HEAD@{10}: commit: fix: corregir excludeFiles a string en vercel.json
+[33mb112a61[m HEAD@{11}: commit: chore: reducir tamaño del bundle de python para vercel
+[33m3c728db[m HEAD@{12}: commit: feat: módulo de regresión econométrica listo para producción
+[33m7862332[m HEAD@{13}: commit: feat: normalización de base de datos y corrección de historial
+[33m1a19131[m HEAD@{14}: commit: ui: modernizar dashboard, optimizar filtros responsivos y refinar iconografía
+[33md1d2cc4[m HEAD@{15}: commit: feat: v1.6.4 - Auto-Falto balanceado (ignora sesiones programadas)
+[33m225141f[m HEAD@{16}: commit: feat: v1.6.3 - Auto-Falto refinado (solo por horario o cierre manual)
+[33m136cfff[m HEAD@{17}: commit: feat: v1.6.2 - Auto-Falto inteligente, branding ADESE y corrección definitiva de estabilidad
+[33m98f8f31[m HEAD@{18}: commit: feat: v1.6.1 - Auto-Falto inteligente, marca ADESE y corrección de polling infinito
+[33m706a749[m HEAD@{19}: commit: feat: v1.6.1 - Auto-Falto inteligente, marca ADESE y corrección de polling infinito
+[33m3cb981b[m HEAD@{20}: commit: feat: ADESE v1.6.0 - Auto-Falto, notificaciones sonoras, temporizador visual y mejoras de seguridad
+[33mdbd6c85[m HEAD@{21}: commit: feat: ADESE v1.6.0 - Auto-Falto, notificaciones sonoras, temporizador visual y mejoras de seguridad
+[33mf459f67[m HEAD@{22}: commit: rfeat: v1.5.0 - QR simplificado de 16 caracteres, rotación de 60s y buscador en historial2
+[33mc1a6b94[m HEAD@{23}: commit: rfeat: v1.5.0 - QR simplificado de 16 caracteres, rotación de 60s y buscador en historial
+[33m6d1735d[m HEAD@{24}: commit: release: v1.5.0 - optimización de seguridad y filtros de historial
+[33m84a9256[m HEAD@{25}: commit: docs: actualizar descripción de horarios dinámicos y ajustes finales de UI
+[33m72da1f9[m HEAD@{26}: commit: chore: aplicar gitignore y dejar de seguir archivos ignorados
+[33m723a108[m HEAD@{27}: commit: chore: dejar de seguir init.sql para proteger datos reales
+[33m241597e[m HEAD@{28}: commit: chore: sincronizar archivos y actualizar gitignore
+[33m8935aeb[m HEAD@{29}: commit: estabilidad de sesiones, zona horaria y rebranding a ADESE
+[33maa86a91[m HEAD@{30}: commit: correccion de UTF
+[33mb58e071[m HEAD@{31}: commit: cambio de nombre de la app
+[33m60eef26[m HEAD@{32}: commit: cambio de nombre de la app
+[33mec8f3da[m HEAD@{33}: commit: mejora de diseño
+[33m4f55b72[m HEAD@{34}: commit: okk
+[33m7ff61d6[m HEAD@{35}: commit: mok
+[33mb44dcea[m HEAD@{36}: commit: feat: class edit, responsive tables, login redesign & rebrand to sky-blue
+[33m140b9a8[m HEAD@{37}: commit: mejora de diseño
+[33mc79e039[m HEAD@{38}: commit: cambio a roll
+[33m2e3d559[m HEAD@{39}: commit: mvista qr y mejora
+[33m4cf77b0[m HEAD@{40}: commit: mejora de diseño y clases
+[33m4db976b[m HEAD@{41}: commit: mejora de diseño
+[33mae09bf4[m HEAD@{42}: commit: refactor: migrar base de datos de uuids a ids (serial)
+[33m28a870b[m HEAD@{43}: commit: feat: init.sql v2 multi-curso con UUIDs consistentes
+[33m4133b1d[m HEAD@{44}: commit: feat: interfaz tipo Excel con colores específicos para asitencias
+[33maba4aa9[m HEAD@{45}: commit: fix: corregir crasheo de historial por jerarquía de rutas Express y nuevo config
+[33m6774eca[m HEAD@{46}: commit: feat: Horarios dinamicos ajustables por profesor con opcion de falta
+[33m2df4d2c[m HEAD@{47}: commit: fix: wildcard /api/* rewrite to Express serverless function
+[33m4bdf812[m HEAD@{48}: commit: fix: self-contained api/index.js for Vercel
+[33m9ec3e13[m HEAD@{49}: commit: ok
+[33m3d09e91[m HEAD@{50}: commit: fix: simplified vercel.json - auto-detect API + build Vite
+[33mf60952f[m HEAD@{51}: commit: fix: SPA routing y API URL relativa para Vercel
+[33m32fa819[m HEAD@{52}: commit: fix: Vercel serverless function structure for Express API
+[33m6429711[m HEAD@{53}: commit: fix: Vercel serverless function structure for Express API
+[33m0a07a25[m HEAD@{54}: commit: cambio de nombre
+[33m13615ab[m HEAD@{55}: commit: configuracion de vercel
+[33mfa8fd0f[m HEAD@{56}: commit: segundo commit
+[33maf1f1cb[m HEAD@{57}: Branch: renamed refs/heads/master to refs/heads/main
+[33maf1f1cb[m HEAD@{59}: commit (initial): first commit

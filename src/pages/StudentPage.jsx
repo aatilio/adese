@@ -36,7 +36,6 @@ export default function StudentPage({ user, onLogout }) {
   const [loading, setLoading] = useState(false);
   const [registered, setRegistered] = useState(null);
   const [historial, setHistorial] = useState([]);
-  const [config, setConfig] = useState(null);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [estadosDB, setEstadosDB] = useState([]);
 
@@ -61,12 +60,8 @@ export default function StudentPage({ user, onLogout }) {
     return () => clearInterval(t);
   }, []);
 
-  // Config, Cursos & Estados fetch
+  // Cursos & Estados fetch
   useEffect(() => {
-    api
-      .getConfiguracion()
-      .then((res) => setConfig(res.config))
-      .catch(() => {});
     api
       .getEstudianteCursos(user.id)
       .then((res) => setCursos(res.cursos))
@@ -118,34 +113,31 @@ export default function StudentPage({ user, onLogout }) {
 
   // Determine valid statuses based on rules
   const getValidStatuses = () => {
-    let limits = config;
-    if (sesionActiva && sesionActiva.limite_puntual) {
-      limits = {
-        limite_puntual: sesionActiva.limite_puntual,
-        limite_presente: sesionActiva.limite_presente,
-        limite_tarde: sesionActiva.limite_tarde,
-        permitir_falto: sesionActiva.permitir_falto ?? config?.permitir_falto,
-      };
-    }
+    // Only use session-level limits
+    const limits = sesionActiva?.limite_puntual ? {
+      limite_puntual: sesionActiva.limite_puntual,
+      limite_presente: sesionActiva.limite_presente,
+      limite_tarde: sesionActiva.limite_tarde,
+      permitir_falto: sesionActiva.permitir_falto ?? true,
+    } : null;
 
     if (!limits) return [];
-    const currentHM = currentTime.toLocaleTimeString("es-MX", {
-      hour: "2-digit",
-      minute: "2-digit",
+    const currentHM = currentTime.toLocaleTimeString('es-MX', {
+      hour: '2-digit',
+      minute: '2-digit',
       hour12: false,
     });
 
     let valid = [];
     if (currentHM <= limits.limite_puntual) {
-      valid.push("Puntual");
+      valid.push('Puntual');
     } else if (currentHM <= limits.limite_presente) {
-      valid.push("Presente");
+      valid.push('Presente');
     } else if (currentHM <= limits.limite_tarde) {
-      valid.push("Tarde");
+      valid.push('Tarde');
     }
-
     if (limits.permitir_falto && currentHM > limits.limite_tarde) {
-      valid.push("Falto");
+      valid.push('Falto');
     }
     return valid;
   };
@@ -434,7 +426,7 @@ export default function StudentPage({ user, onLogout }) {
                             color: "#fff",
                           }}
                         >
-                          {h.estado}
+                          {h.tipo === 'puntos' ? `${h.valor >= 0 ? '+' : ''}${h.valor ?? 0}` : h.estado}
                         </span>
                         <div
                           className="attendance-item-info"
@@ -444,10 +436,17 @@ export default function StudentPage({ user, onLogout }) {
                             width: "100%",
                           }}
                         >
-                          <span>{h.nombre_clase}</span>
-                          <span className="attendance-item-time">
-                            {fmtFecha(h.fecha_hora)} - {fmtHora(h.fecha_hora)}
-                          </span>
+                          {h.tipo === 'clase' ? (
+                            <div style={{display: 'flex', flexDirection: 'column'}}>
+                              <span style={{fontWeight: 600, fontSize: '0.85rem'}}>{fmtFecha(h.fecha_hora)}</span>
+                              <span style={{fontSize: '0.72rem', color: 'var(--gray-500)', fontStyle: 'italic'}}>{h.nombre_clase}</span>
+                            </div>
+                          ) : (
+                            <span style={{fontWeight: 600}}>{h.nombre_clase}</span>
+                          )}
+                          {h.tipo === 'clase' && (
+                            <span className="attendance-item-time">{fmtHora(h.fecha_hora)}</span>
+                          )}
                         </div>
                       </div>
                     ))
@@ -566,7 +565,7 @@ export default function StudentPage({ user, onLogout }) {
                     )}
                   </div>
 
-                  {sesionActiva && sesionActiva.curso_id === cursoActivo.id && (
+                  {sesionActiva && sesionActiva.curso_id === cursoActivo.id && sesionActiva.tipo !== 'puntos' && (
                     <div className="alert alert-success animate-pulse">
                       <Radio size={16} className="live-dot" />
                       <div>

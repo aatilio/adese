@@ -9,15 +9,16 @@ import Footer from "../components/Footer";
 
 export default function LoginPage({ onLogin }) {
   const [codigo, setCodigo] = useState("");
+  const [pass, setPass] = useState("");
   const [loading, setLoading] = useState(false);
-  const [showCode, setShowCode] = useState(false);
+  const [showPass, setShowPass] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!codigo.trim()) return;
     setLoading(true);
     try {
-      const { usuario } = await api.login(codigo.trim());
+      const { usuario } = await api.login(codigo.trim(), pass.trim());
       const role = mapRolToUiRole(usuario.rol);
       if (!role) {
         toast.error("Rol de usuario no reconocido");
@@ -55,19 +56,33 @@ export default function LoginPage({ onLogin }) {
             <div style={{ position: "relative" }}>
               <input
                 className="form-input"
-                type={showCode ? "text" : "password"}
+                type="text"
                 autoFocus
                 spellCheck={false}
                 autoComplete="username"
                 value={codigo}
-                onChange={(e) => setCodigo(e.target.value.toUpperCase())}
-                placeholder="CUI"
+                onChange={(e) => setCodigo(e.target.value)}
+                placeholder="CUI o Código"
+              />
+            </div>
+          </div>
+
+          <div className="form-group" style={{ marginTop: '1rem' }}>
+            <label className="form-label">Contraseña</label>
+            <div style={{ position: "relative" }}>
+              <input
+                className="form-input"
+                type={showPass ? "text" : "password"}
+                autoComplete="current-password"
+                value={pass}
+                onChange={(e) => setPass(e.target.value)}
+                placeholder="Contraseña (opcional para alumnos)"
                 style={{ paddingRight: "2.8rem" }}
               />
               <button
                 type="button"
-                onClick={() => setShowCode(v => !v)}
-                aria-label={showCode ? "Ocultar código" : "Mostrar código"}
+                onClick={() => setShowPass(v => !v)}
+                aria-label={showPass ? "Ocultar contraseña" : "Mostrar contraseña"}
                 style={{
                   position: "absolute",
                   right: "0.8rem",
@@ -85,8 +100,11 @@ export default function LoginPage({ onLogin }) {
                 onMouseEnter={e => e.currentTarget.style.color = "var(--primary)"}
                 onMouseLeave={e => e.currentTarget.style.color = "var(--gray-400)"}
               >
-                {showCode ? <EyeOff size={18} /> : <Eye size={18} />}
+                {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
+            </div>
+            <div style={{fontSize: '0.75rem', color: 'var(--gray-500)', marginTop: '4px'}}>
+              (Si eres alumno y no tienes contraseña, déjalo en blanco)
             </div>
           </div>
 

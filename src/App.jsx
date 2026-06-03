@@ -3,7 +3,7 @@ import LoginPage from './pages/LoginPage';
 import StudentPage from './pages/StudentPage';
 import TeacherPage from './pages/TeacherPage';
 import { ToastContainer } from './components/Toast';
-import { normalizeSessionUser, UI_ROLE } from './constants/roles';
+import { normalizeSessionUser } from './constants/roles';
 import './index.css';
 
 export default function App() {
@@ -38,8 +38,8 @@ export default function App() {
     <>
       <ToastContainer />
       {!user && <LoginPage onLogin={handleLogin} />}
-      {user?.role === UI_ROLE.ALUMNO && <StudentPage user={user} onLogout={handleLogout} />}
-      {user?.role === UI_ROLE.PROFESOR && <TeacherPage user={user} onLogout={handleLogout} />}
+      {(user?.role === 'admin' || user?.role === 'profesor') && <TeacherPage user={user} isAdmin={user?.role === 'admin'} onLogout={handleLogout} />}
+      {user?.role === 'alumno' && <StudentPage user={user} onLogout={handleLogout} />}
     </>
   );
 }

@@ -284,6 +284,26 @@ app.delete('/api/usuarios/:id', async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+// PUT /api/usuarios/:id
+app.put('/api/usuarios/:id', async (req, res) => {
+  const { codigo, nombre_completo, pass } = req.body;
+  try {
+    let query;
+    let values;
+    if (pass && String(pass).trim() !== '') {
+      query = 'UPDATE usuarios SET codigo=$1, nombre_completo=$2, pass=$3 WHERE id=$4 RETURNING *';
+      values = [codigo, nombre_completo, String(pass).trim(), req.params.id];
+    } else {
+      query = 'UPDATE usuarios SET codigo=$1, nombre_completo=$2 WHERE id=$3 RETURNING *';
+      values = [codigo, nombre_completo, req.params.id];
+    }
+    const r = await pool.query(query, values);
+    res.json({ usuario: r.rows[0] });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // PUT /api/estudiantes/:id (Now usuarios)
 app.put('/api/estudiantes/:id', async (req, res) => {
   const { codigo, nombre_completo } = req.body;

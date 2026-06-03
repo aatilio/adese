@@ -23,11 +23,11 @@ const request = async (method, path, body) => {
 
 export const api = {
   // Auth
-  login:          (codigo) => request('POST', '/api/auth/login', { codigo }),
+  login:          (codigo, pass) => request('POST', '/api/auth/login', { codigo, pass: pass || '' }),
 
   // Sesiones
   getSesionActiva:() => request('GET', '/api/sesiones/activa'),
-  crearSesion:    (nombre_clase, curso_id) => request('POST', '/api/sesiones', { nombre_clase, curso_id }),
+  crearSesion:    (nombre_clase, curso_id, tipo='clase', visible_alumnos=true) => request('POST', '/api/sesiones', { nombre_clase, curso_id, tipo, visible_alumnos }),
   cerrarSesion:   (id)               => request('DELETE', `/api/sesiones/${id}`),
   terminarSesion: (id)               => request('PUT', `/api/sesiones/${id}/terminar`),
   updateSesion:   (id, payload)      => request('PUT', `/api/sesiones/${id}`, payload),
@@ -38,6 +38,7 @@ export const api = {
   registrarAsistencia: (payload)     => request('POST', '/api/asistencias', payload),
   getAsistencias: (sesion_id)        => request('GET', `/api/asistencias/${sesion_id}`),
   updateAsistencia: (id, payload)    => request('PUT', `/api/asistencias/${id}`, payload),
+  ajustarPunto:   (id, delta)        => request('PUT', `/api/asistencias/${id}/punto`, { delta }),
   crearAsistenciaManual: (payload)   => request('POST', '/api/asistencias/manual', payload),
   getHistorialAlumno: (id)           => request('GET', `/api/asistencias/alumno/${id}`),
   getHistorialGeneral: ()            => request('GET', '/api/asistencias/historial'),
@@ -51,10 +52,8 @@ export const api = {
   getUsuarios:     ()                => request('GET', '/api/usuarios'),
   crearUsuario:    (datos)           => request('POST', '/api/usuarios', datos),
   deleteUsuario:   (id)              => request('DELETE', `/api/usuarios/${id}`),
+  buscarUsuario:   (codigo)          => request('GET', `/api/usuarios/buscar?codigo=${encodeURIComponent(codigo)}`),
 
-  // Configuración
-  getConfiguracion:    ()            => request('GET', '/api/configuracion'),
-  updateConfiguracion: (datos)       => request('PUT', '/api/configuracion', datos),
 
   // Cursos
   getCursos:       ()                => request('GET', '/api/cursos'),
@@ -66,6 +65,7 @@ export const api = {
   getCursoEstudiantes:    (cursoId)              => request('GET', `/api/cursos/${cursoId}/estudiantes`),
   addEstudianteCurso:     (cursoId, estudianteId)=> request('POST', `/api/cursos/${cursoId}/estudiantes`, { estudiante_id: estudianteId }),
   removeEstudianteCurso:  (cursoId, estudianteId)=> request('DELETE', `/api/cursos/${cursoId}/estudiantes/${estudianteId}`),
+  importarAlumnos:        (cursoId, alumnos)     => request('POST', `/api/cursos/${cursoId}/importar`, { alumnos }),
 
   // Cursos → Sesiones
   getCursoSesiones:       (cursoId)              => request('GET', `/api/cursos/${cursoId}/sesiones`),

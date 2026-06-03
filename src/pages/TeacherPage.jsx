@@ -33,7 +33,7 @@ import QrGenerator from "../components/QrGenerator";
 import AttendanceTable from "../components/AttendanceTable";
 import ExcelIcon from "../assets/excel.svg";
 
-export default function TeacherPage({ user, onLogout }) {
+export default function TeacherPage({ user, onLogout, isAdmin = false }) {
   // ── Course-level state ──────────────────────────────────
   const [cursos, setCursos] = useState([]);
   const [cursoActivo, setCursoActivo] = useState(null);
@@ -57,7 +57,7 @@ export default function TeacherPage({ user, onLogout }) {
   const [todosEstudiantes, setTodosEstudiantes] = useState([]);
   const [sesionesProgr, setSesionesProgr] = useState([]);
   const [historialGen, setHistorialGen] = useState([]);
-  const [config, setConfig] = useState(null);
+
   const [estadosDB, setEstadosDB] = useState([]);
 
   // ── New class scheduling ────────────────────────────────
@@ -69,6 +69,8 @@ export default function TeacherPage({ user, onLogout }) {
   const [limTarde, setLimTarde] = useState("");
   const [permitirFalto, setPermitirFalto] = useState(true);
   const [showAddSesion, setShowAddSesion] = useState(false);
+  const [newClaseTipo, setNewClaseTipo] = useState('clase');
+  const [newClaseVisible, setNewClaseVisible] = useState(true);
 
   const [editingSesion, setEditingSesion] = useState(null);
   const [editSesionData, setEditSesionData] = useState({
@@ -82,14 +84,13 @@ export default function TeacherPage({ user, onLogout }) {
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const [searchHistorial, setSearchHistorial] = useState("");
 
-  useEffect(() => {
-    if (config) {
-      setLimPuntual(config.limite_puntual);
-      setLimPresente(config.limite_presente);
-      setLimTarde(config.limite_tarde);
-      setPermitirFalto(config.permitir_falto);
-    }
-  }, [config]);
+  // ── Nuevo Alumno modal state ─────────────────────────────
+  const [showNuevoAlumno, setShowNuevoAlumno] = useState(false);
+  const [nuevoAlumnoCodigo, setNuevoAlumnoCodigo] = useState('');
+  const [nuevoAlumnoNombre, setNuevoAlumnoNombre] = useState('');
+  const [nuevoAlumnoEncontrado, setNuevoAlumnoEncontrado] = useState(null);
+  const [buscandoAlumno, setBuscandoAlumno] = useState(false);
+  const [csvImportando, setCsvImportando] = useState(false);
 
   // ── Init: load courses ──────────────────────────────────
   useEffect(() => {
@@ -101,11 +102,6 @@ export default function TeacherPage({ user, onLogout }) {
       })
       .catch(() => {})
       .finally(() => setChecking(false));
-    // Load config (suggested times)
-    api
-      .getConfiguracion()
-      .then((res) => setConfig(res.config))
-      .catch(() => {});
     // Load estados de asistencia
     api
       .getEstados()
@@ -131,7 +127,7 @@ export default function TeacherPage({ user, onLogout }) {
         ([resC, resA]) => {
           setEstudiantesCurso(resC.estudiantes);
           setTodosEstudiantes(
-            resA.estudiantes.filter((e) => Number(e.rol) === ROL.ESTUDIANTE),
+            resA.estudiantes.filter((e) => Number(e.rol) === ROL.ALUMNO || Number(e.rol) === ROL.ESTUDIANTE),
           );
         },
       );
@@ -250,11 +246,12 @@ export default function TeacherPage({ user, onLogout }) {
       await api.crearCursoSesion(cursoActivo.id, {
         nombre_clase: newClaseName.trim(),
         fecha_programada: new Date(newClaseDate).toISOString(),
-        // Always send limits to snapshot them into the session, making it independent
         limite_puntual: limPuntual || undefined,
         limite_presente: limPresente || undefined,
         limite_tarde: limTarde || undefined,
         permitir_falto: permitirFalto,
+        tipo: newClaseTipo,
+        visible_alumnos: newClaseVisible,
       });
       const res = await api.getCursoSesiones(cursoActivo.id);
       setSesionesProgr(res.sesiones);
@@ -262,6 +259,8 @@ export default function TeacherPage({ user, onLogout }) {
       setNewClaseDate("");
       setShowLimits(false);
       setShowAddSesion(false);
+      setNewClaseTipo('clase');
+      setNewClaseVisible(true);
       toast.success("Clase programada");
     } catch (err) {
       toast.error(err.message);
@@ -292,10 +291,11 @@ export default function TeacherPage({ user, onLogout }) {
     setEditSesionData({
       nombre_clase: sesion.nombre_clase || "",
       fecha_programada: formattedDate,
-      limite_puntual: sesion.limite_puntual || config?.limite_puntual || "",
-      limite_presente: sesion.limite_presente || config?.limite_presente || "",
-      limite_tarde: sesion.limite_tarde || config?.limite_tarde || "",
-      permitir_falto: sesion.permitir_falto ?? config?.permitir_falto ?? true,
+      limite_puntual: sesion.limite_puntual || "",
+      limite_presente: sesion.limite_presente || "",
+      limite_tarde: sesion.limite_tarde || "",
+      permitir_falto: sesion.permitir_falto ?? true,
+      tipo: sesion.tipo || "clase",
     });
   };
 
@@ -323,12 +323,12 @@ export default function TeacherPage({ user, onLogout }) {
     }
   };
 
-  const activarSesion = async (sesionId) => {
+  const activarSesion = async (sesionId, tipo) => {
     try {
       const { sesion: s } = await api.activarSesion(sesionId);
       setSesion(s);
-      setActiveTab("vivo");
-      toast.success("¡Sesión iniciada! QR activo.");
+      if (tipo !== 'puntos') setActiveTab("vivo");
+      toast.success(tipo === 'puntos' ? "¡Puntos activados!" : "¡Sesión iniciada! QR activo.");
     } catch (err) {
       toast.error(err.message);
     }
@@ -371,6 +371,8 @@ export default function TeacherPage({ user, onLogout }) {
       const { sesion: s } = await api.crearSesion(
         nombreClase.trim(),
         cursoActivo.id,
+        'clase',
+        true
       );
       setSesion(s);
       setAsistencias([]);
@@ -407,17 +409,63 @@ export default function TeacherPage({ user, onLogout }) {
     }
   };
 
-  const updateConfig = async (e) => {
-    e.preventDefault();
-    setLoading(true);
+  // ── Nuevo Alumno functions ───────────────────────────────
+  const buscarAlumnoPorCodigo = async (codigo) => {
+    setNuevoAlumnoCodigo(codigo);
+    if (!codigo.trim() || codigo.trim().length < 2) { setNuevoAlumnoEncontrado(null); return; }
+    setBuscandoAlumno(true);
     try {
-      await api.updateConfiguracion(config);
-      toast.success("Ajustes de horario actualizados");
-    } catch {
-      toast.error("Error actualizando configuraciones");
-    } finally {
-      setLoading(false);
-    }
+      const res = await api.buscarUsuario(codigo.trim());
+      setNuevoAlumnoEncontrado(res.usuario || null);
+      if (res.usuario) setNuevoAlumnoNombre(res.usuario.nombre_completo);
+    } catch { setNuevoAlumnoEncontrado(null); }
+    finally { setBuscandoAlumno(false); }
+  };
+
+  const crearYAgregarAlumno = async (e) => {
+    e.preventDefault();
+    if (!nuevoAlumnoCodigo.trim()) return;
+    try {
+      let estudianteId;
+      if (nuevoAlumnoEncontrado) {
+        estudianteId = nuevoAlumnoEncontrado.id;
+      } else {
+        const { usuario } = await api.crearUsuario({ codigo: nuevoAlumnoCodigo.trim(), nombre_completo: nuevoAlumnoNombre.trim(), rol: 3 });
+        estudianteId = usuario.id;
+      }
+      await api.addEstudianteCurso(cursoActivo.id, estudianteId);
+      const res = await api.getCursoEstudiantes(cursoActivo.id);
+      setEstudiantesCurso(res.estudiantes);
+      setShowNuevoAlumno(false); setNuevoAlumnoCodigo(''); setNuevoAlumnoNombre(''); setNuevoAlumnoEncontrado(null);
+      toast.success('Alumno añadido al curso');
+    } catch (err) { toast.error(err.message); }
+  };
+
+  const handleCsvImport = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setCsvImportando(true);
+    try {
+      const text = await file.text();
+      const lines = text.split('\n').filter(l => l.trim());
+      const header = lines[0].toLowerCase();
+      const isAdese = header.includes('user') || header.includes('codigo');
+      const alumnos = [];
+      const start = isAdese ? 1 : 0;
+      for (let i = start; i < lines.length; i++) {
+        const cols = lines[i].split(',');
+        if (cols.length < 2) continue;
+        const codigo = cols[0].trim();
+        const nombre = cols[1].trim();
+        if (codigo && nombre) alumnos.push({ codigo, nombre_completo: nombre });
+      }
+      if (alumnos.length === 0) { toast.error('No se encontraron alumnos en el CSV'); return; }
+      const res = await api.importarAlumnos(cursoActivo.id, alumnos);
+      const resE = await api.getCursoEstudiantes(cursoActivo.id);
+      setEstudiantesCurso(resE.estudiantes);
+      toast.success(`Importados: ${res.creados} nuevos, ${res.existentes} ya existían, ${res.vinculados} vinculados`);
+    } catch (err) { toast.error(err.message); }
+    finally { setCsvImportando(false); e.target.value = ''; }
   };
 
   const updateEstudiante = async (id, field, value) => {
@@ -443,11 +491,9 @@ export default function TeacherPage({ user, onLogout }) {
       clsMap.set(a.sesion_id, {
         id: a.sesion_id,
         name: a.nombre_clase,
+        tipo: a.tipo || 'clase',
         dt: dt.getTime(),
-        label: dt.toLocaleDateString("es-MX", {
-          day: "2-digit",
-          month: "2-digit",
-        }),
+        label: dt.toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit' }),
       });
     });
     return Array.from(clsMap.values()).sort((a, b) => a.dt - b.dt);
@@ -654,7 +700,7 @@ export default function TeacherPage({ user, onLogout }) {
           <UserMenu
             user={user}
             roleLabel={
-              user.rol === ROL.ADMINISTRADOR ? "Administrador" : "Admin"
+              user.rol === 1 ? 'Administrador' : user.rol === 2 ? 'Profesor' : 'Alumno'
             }
             onLogout={onLogout}
             extraOptions={
@@ -1264,50 +1310,78 @@ export default function TeacherPage({ user, onLogout }) {
                   de este curso.
                 </div>
 
-                {/* Add student dropdown */}
-                {alumnosNoInscritos.length > 0 && (
-                  <div
-                    style={{
-                      display: "flex",
-                      gap: "0.5rem",
-                      alignItems: "center",
-                      margin: "1rem 0",
-                      padding: "0.75rem",
-                      background: "#f0fdf4",
-                      borderRadius: "8px",
-                      border: "1px solid #bbf7d0",
-                    }}
-                  >
-                    <UserPlus
-                      size={16}
-                      style={{ color: "#16a34a", flexShrink: 0 }}
-                    />
-                    <select
-                      id="add-student-select"
-                      style={{
-                        flex: 1,
-                        padding: "6px 10px",
-                        borderRadius: "6px",
-                        border: "1px solid var(--gray-300)",
-                        fontSize: "0.85rem",
-                      }}
-                    >
-                      {alumnosNoInscritos.map((e) => (
-                        <option key={e.id} value={e.id}>
-                          {e.nombre_completo} ({e.codigo})
-                        </option>
-                      ))}
-                    </select>
-                    <button
-                      className="btn btn-sm btn-primary"
-                      onClick={() => {
-                        const sel =
-                          document.getElementById("add-student-select");
-                        if (sel) addAlumno(Number(sel.value));
-                      }}
-                    >
-                      Añadir
-                    </button>
+                {/* Toolbar: Nuevo Alumno + Importar CSV */}
+                <div style={{ display: 'flex', gap: '0.5rem', margin: '1rem 0', flexWrap: 'wrap' }}>
+                  <button className="btn btn-sm btn-primary" onClick={() => setShowNuevoAlumno(true)} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <UserPlus size={14} /> Nuevo Alumno
+                  </button>
+                  <label style={{
+                    display: 'flex', alignItems: 'center', gap: '6px', cursor: csvImportando ? 'wait' : 'pointer',
+                    padding: '6px 12px', borderRadius: '8px', border: '1px solid var(--gray-300)',
+                    background: 'white', fontSize: '0.82rem', fontWeight: 600, color: 'var(--gray-700)'
+                  }}>
+                    <FileSpreadsheet size={14} />
+                    {csvImportando ? 'Importando...' : 'Importar CSV'}
+                    <input type="file" accept=".csv" style={{ display: 'none' }} onChange={handleCsvImport} disabled={csvImportando} />
+                  </label>
+                </div>
+
+                {/* Modal Nuevo Alumno */}
+                {showNuevoAlumno && (
+                  <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}
+                    onClick={() => setShowNuevoAlumno(false)}>
+                    <div style={{ background: 'white', borderRadius: '16px', width: '100%', maxWidth: '440px', boxShadow: '0 20px 60px rgba(0,0,0,0.25)', overflow: 'hidden' }}
+                      onClick={e => e.stopPropagation()}>
+                      <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--gray-100)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--gray-50)' }}>
+                        <h3 style={{ margin: 0, fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <UserPlus size={18} style={{ color: 'var(--primary)' }} /> Nuevo Usuario
+                        </h3>
+                        <button onClick={() => setShowNuevoAlumno(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--gray-400)' }}><X size={20} /></button>
+                      </div>
+                      <form onSubmit={crearYAgregarAlumno}>
+                        <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                          <div className="form-group" style={{ marginTop: 0, position: 'relative' }}>
+                            <label className="form-label" style={{ fontSize: '0.82rem', color: 'var(--gray-500)' }}>CUI / Código</label>
+                            <input
+                              className="form-input"
+                              autoFocus
+                              value={nuevoAlumnoCodigo}
+                              onChange={e => buscarAlumnoPorCodigo(e.target.value)}
+                              placeholder="Código del alumno"
+                              style={{ borderColor: nuevoAlumnoEncontrado ? '#22c55e' : undefined }}
+                            />
+                            {buscandoAlumno && <div style={{ position: 'absolute', right: '10px', top: '62%', transform: 'translateY(-50%)' }}><div className="spinner" style={{ width: 14, height: 14 }} /></div>}
+                            {nuevoAlumnoEncontrado && (
+                              <div style={{ marginTop: '6px', padding: '8px 12px', background: '#f0fdf4', borderRadius: '8px', border: '1px solid #bbf7d0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <Check size={14} style={{ color: '#16a34a' }} />
+                                <div>
+                                  <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#15803d' }}>Alumno encontrado</div>
+                                  <div style={{ fontSize: '0.75rem', color: '#166534' }}>{nuevoAlumnoEncontrado.nombre_completo}</div>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                          {!nuevoAlumnoEncontrado && (
+                            <div className="form-group" style={{ marginTop: 0 }}>
+                              <label className="form-label" style={{ fontSize: '0.82rem', color: 'var(--gray-500)' }}>Nombre Completo</label>
+                              <input
+                                className="form-input"
+                                value={nuevoAlumnoNombre}
+                                onChange={e => setNuevoAlumnoNombre(e.target.value)}
+                                placeholder="Nombre Completo"
+                                required={!nuevoAlumnoEncontrado}
+                              />
+                            </div>
+                          )}
+                        </div>
+                        <div style={{ padding: '14px 20px', borderTop: '1px solid var(--gray-100)', display: 'flex', gap: '0.5rem', background: 'var(--gray-50)' }}>
+                          <button type="button" className="btn btn-ghost" onClick={() => setShowNuevoAlumno(false)} style={{ flex: 1 }}>Cancelar</button>
+                          <button type="submit" className="btn btn-primary" style={{ flex: 1 }} disabled={!nuevoAlumnoCodigo.trim() || (!nuevoAlumnoEncontrado && !nuevoAlumnoNombre.trim())}>
+                            {nuevoAlumnoEncontrado ? 'Añadir al Curso' : 'Crear Usuario'}
+                          </button>
+                        </div>
+                      </form>
+                    </div>
                   </div>
                 )}
 
@@ -1500,6 +1574,33 @@ export default function TeacherPage({ user, onLogout }) {
                             </div>
                           </div>
 
+                          {/* Tipo de sesión */}
+                          <div className="form-group" style={{ marginTop: 0 }}>
+                            <label className="form-label" style={{ fontSize: '0.8rem', color: 'var(--gray-500)', marginBottom: '4px' }}>
+                              Tipo de Sesión
+                            </label>
+                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                              {[{v:'clase',l:'📚 Clase'},{v:'evento',l:'🎯 Evento'},{v:'puntos',l:'⭐ Puntos'}].map(({v,l}) => (
+                                <button key={v} type="button"
+                                  onClick={() => setNewClaseTipo(v)}
+                                  style={{
+                                    flex: 1, padding: '6px 8px', borderRadius: '8px', border: '2px solid',
+                                    borderColor: newClaseTipo === v ? 'var(--primary)' : 'var(--gray-200)',
+                                    background: newClaseTipo === v ? 'var(--primary-bg)' : 'white',
+                                    color: newClaseTipo === v ? 'var(--primary)' : 'var(--gray-500)',
+                                    fontWeight: newClaseTipo === v ? 700 : 500, fontSize: '0.78rem', cursor: 'pointer'
+                                  }}
+                                >{l}</button>
+                              ))}
+                            </div>
+                          </div>
+                          {/* Visible para alumnos */}
+                          <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', color: 'var(--gray-600)', cursor: 'pointer' }}>
+                            <input type="checkbox" checked={newClaseVisible} onChange={e => setNewClaseVisible(e.target.checked)} />
+                            Visible para alumnos en su historial
+                          </label>
+
+{newClaseTipo === 'clase' && (
                           <div
                             style={{
                               padding: "12px",
@@ -1632,6 +1733,7 @@ export default function TeacherPage({ user, onLogout }) {
                               móvil
                             </label>
                           </div>
+)}
                         </div>
                       </form>
 
@@ -1805,6 +1907,7 @@ export default function TeacherPage({ user, onLogout }) {
                             </div>
                           </div>
 
+{editSesionData.tipo === 'clase' && (
                           <div
                             style={{
                               padding: "12px",
@@ -1951,6 +2054,7 @@ export default function TeacherPage({ user, onLogout }) {
                               móvil
                             </label>
                           </div>
+)}
                         </div>
                       </form>
 
@@ -2073,7 +2177,7 @@ export default function TeacherPage({ user, onLogout }) {
                             ) : (
                               <button
                                 className="btn btn-sm btn-primary"
-                                onClick={() => activarSesion(s.id)}
+                                onClick={() => activarSesion(s.id, s.tipo)}
                                 style={{ borderRadius: "8px" }}
                               >
                                 <Play size={12} fill="currentColor" /> Iniciar
@@ -2246,20 +2350,21 @@ export default function TeacherPage({ user, onLogout }) {
                             <th
                               key={c.id}
                               style={{
-                                padding: "8px 4px",
-                                borderBottom: "2px solid var(--gray-200)",
-                                minWidth: "50px",
+                                padding: '8px 4px',
+                                borderBottom: '2px solid var(--gray-200)',
+                                minWidth: c.tipo === 'puntos' ? '80px' : '50px',
                               }}
                             >
-                              <div
-                                style={{
-                                  fontSize: "0.72rem",
-                                  color: "var(--primary)",
-                                  lineHeight: 1.2,
-                                }}
-                              >
-                                {c.label}
-                              </div>
+                              {c.tipo === 'clase' ? (
+                                <div style={{ lineHeight: 1.2 }}>
+                                  <div style={{ fontSize: '0.72rem', color: 'var(--primary)', fontWeight: 700 }}>{c.label}</div>
+                                  <div style={{ fontSize: '0.62rem', color: 'var(--gray-400)', fontStyle: 'italic', maxWidth: 60, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.name}</div>
+                                </div>
+                              ) : (
+                                <div style={{ fontSize: '0.68rem', color: c.tipo === 'puntos' ? '#d97706' : '#7c3aed', fontWeight: 700, lineHeight: 1.2, maxWidth: 70, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                  {c.tipo === 'puntos' ? '⭐' : '🎯'} {c.name}
+                                </div>
+                              )}
                             </th>
                           ))}
                           <th
@@ -2331,89 +2436,85 @@ export default function TeacherPage({ user, onLogout }) {
                                   </div>
                                 </td>
                                 {clasesColumns.map((c) => {
-                                  const r = recs.find(
-                                    (h) => h.sesion_id === c.id,
-                                  );
-                                  const status = r ? r.estado : "";
+                                  const r = recs.find((h) => h.sesion_id === c.id);
+
+                                  // ── Puntos: mostrar contador +1/-1 ──
+                                  if (c.tipo === 'puntos') {
+                                    const valor = r ? (r.valor ?? 0) : 0;
+                                    return (
+                                      <td key={c.id} style={{ padding: '4px', borderLeft: '1px solid var(--gray-100)', verticalAlign: 'middle' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                                          {isAdmin ? (
+                                            <>
+                                              <button
+                                                onClick={async () => {
+                                                  try {
+                                                    let aid = r?.id;
+                                                    if (!aid) {
+                                                      const res = await api.crearAsistenciaManual({ estudiante_id: est.id, sesion_id: c.id, estado: 'Participó' });
+                                                      aid = res.asistencia.id;
+                                                    }
+                                                    const res2 = await api.ajustarPunto(aid, -1);
+                                                    setHistorialGen(prev => prev.map(h => h.id === aid ? { ...h, valor: res2.asistencia.valor } : h));
+                                                  } catch(err) { toast.error(err.message); }
+                                                }}
+                                                style={{ width: 22, height: 22, borderRadius: '50%', border: 'none', background: '#fee2e2', color: '#dc2626', cursor: 'pointer', fontWeight: 700, fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}
+                                              >-</button>
+                                              <span style={{ fontSize: '0.85rem', fontWeight: 700, minWidth: 20, textAlign: 'center', color: valor > 0 ? '#16a34a' : valor < 0 ? '#dc2626' : 'var(--gray-500)' }}>{valor}</span>
+                                              <button
+                                                onClick={async () => {
+                                                  try {
+                                                    let aid = r?.id;
+                                                    if (!aid) {
+                                                      const res = await api.crearAsistenciaManual({ estudiante_id: est.id, sesion_id: c.id, estado: 'Participó' });
+                                                      aid = res.asistencia.id;
+                                                      const [resH2, resE2] = await Promise.all([api.getCursoHistorial(cursoActivo.id), api.getCursoEstudiantes(cursoActivo.id)]);
+                                                      setHistorialGen(resH2.historial); setEstudiantesCurso(resE2.estudiantes); return;
+                                                    }
+                                                    const res2 = await api.ajustarPunto(aid, 1);
+                                                    setHistorialGen(prev => prev.map(h => h.id === aid ? { ...h, valor: res2.asistencia.valor } : h));
+                                                  } catch(err) { toast.error(err.message); }
+                                                }}
+                                                style={{ width: 22, height: 22, borderRadius: '50%', border: 'none', background: '#dcfce7', color: '#16a34a', cursor: 'pointer', fontWeight: 700, fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}
+                                              >+</button>
+                                            </>
+                                          ) : (
+                                            <span style={{ fontSize: '0.85rem', fontWeight: 700, minWidth: 20, textAlign: 'center', color: valor > 0 ? '#16a34a' : valor < 0 ? '#dc2626' : 'var(--gray-500)' }}>{valor}</span>
+                                          )}
+                                        </div>
+                                      </td>
+                                    );
+                                  }
+
+                                  // ── Clase / Evento: selector de estado normal (o texto si no es admin) ──
+                                  const status = r ? r.estado : '';
                                   const ui = status ? ESTADOS_UI[status] : null;
-                                  const bgColor = ui ? ui.bg : "transparent";
-                                  const textColor = ui
-                                    ? ui.color
-                                    : "var(--gray-300)";
+                                  const bgColor = ui ? ui.bg : 'transparent';
 
                                   return (
-                                    <td
-                                      key={c.id}
-                                      style={{
-                                        padding: "6px",
-                                        borderLeft: "1px solid var(--gray-100)",
-                                        background: "transparent",
-                                        verticalAlign: "middle",
-                                      }}
-                                    >
-                                      <div
-                                        style={{
-                                          background: bgColor,
-                                          borderRadius: "16px",
-                                          padding: status ? "2px 6px" : "2px",
-                                          display: "flex",
-                                          justifyContent: "center",
-                                          minWidth: "85px",
-                                          margin: "0 auto",
-                                        }}
-                                      >
-                                        <select
-                                          value={status}
-                                          onChange={(e) => {
-                                            if (!e.target.value) return;
-                                            if (r)
-                                              updateAsistenciaEstado(
-                                                r.id,
-                                                e.target.value,
-                                              );
-                                            else
-                                              createAsistenciaManual(
-                                                est.id,
-                                                c.id,
-                                                e.target.value,
-                                              );
-                                          }}
-                                          className={`badge-status ${status.toLowerCase()}`}
-                                          style={{
-                                            width: "100%",
-                                            height: "28px",
-                                            appearance: "none",
-                                            border: "none",
-                                            background: "transparent",
-                                            textAlign: "center",
-                                            cursor: "pointer",
-                                            outline: "none",
-                                            fontWeight: "700",
-                                            fontSize: "0.75rem",
-                                            color: "inherit",
-                                          }}
-                                        >
-                                          <option
-                                            value=""
-                                            disabled
-                                            style={{ color: "#000" }}
+                                    <td key={c.id} style={{ padding: '6px', borderLeft: '1px solid var(--gray-100)', background: 'transparent', verticalAlign: 'middle' }}>
+                                      <div style={{ background: bgColor, borderRadius: '16px', padding: status ? '2px 6px' : '2px', display: 'flex', justifyContent: 'center', minWidth: '85px', margin: '0 auto' }}>
+                                        {isAdmin ? (
+                                          <select
+                                            value={status}
+                                            onChange={(e) => {
+                                              if (!e.target.value) return;
+                                              if (r) updateAsistenciaEstado(r.id, e.target.value);
+                                              else createAsistenciaManual(est.id, c.id, e.target.value);
+                                            }}
+                                            className={`badge-status ${status.toLowerCase()}`}
+                                            style={{ width: '100%', height: '28px', appearance: 'none', border: 'none', background: 'transparent', textAlign: 'center', cursor: 'pointer', outline: 'none', fontWeight: '700', fontSize: '0.75rem', color: 'inherit' }}
                                           >
-                                            —
-                                          </option>
-                                          {Object.keys(ESTADOS_UI).map((k) => (
-                                            <option
-                                              key={k}
-                                              value={k}
-                                              style={{
-                                                color: "#000",
-                                                fontWeight: "bold",
-                                                background: "white",
-                                              }}
-                                            >
-                                              {k}
-                                            </option>
-                                          ))}
-                                        </select>
+                                            <option value="" disabled style={{ color: '#000' }}>—</option>
+                                            {estadosDB.map(e => (
+                                              <option key={e.id} value={e.nombre} style={{ background: e.color, color: 'white' }}>{e.nombre}</option>
+                                            ))}
+                                          </select>
+                                        ) : (
+                                          <span style={{ fontWeight: '700', fontSize: '0.75rem', padding: '4px 0', textAlign: 'center', color: ui ? '#fff' : 'var(--gray-400)' }}>
+                                            {status || '—'}
+                                          </span>
+                                        )}
                                       </div>
                                     </td>
                                   );
