@@ -285,21 +285,25 @@ app.post('/api/asistencias', async (req, res) => {
       return res.status(403).json({ error: 'Solo los estudiantes pueden registrar asistencia' });
     }
 
-    // Resolve estado name to estado_id
-    const estadoRes = await pool.query('SELECT id FROM estados_asistencia WHERE nombre = $1', [estado]);
-    if (estadoRes.rows.length === 0) return res.status(400).json({ error: 'Estado no válido' });
-    const estadoId = estadoRes.rows[0].id;
-
-    // Buscamos sesión activa con ese token
+    // Buscamos sesión activa con ese token y su profesor_id asociado al curso
     const sesion = await pool.query(`
-      SELECT * FROM sesiones 
-      WHERE token_qr = $1 
-      AND (activa = true OR fecha_programada::date = CURRENT_DATE)
+      SELECT s.*, c.profesor_id 
+      FROM sesiones s
+      JOIN cursos c ON s.curso_id = c.id
+      WHERE s.token_qr = $1 
+      AND (s.activa = true OR s.fecha_programada::date = CURRENT_DATE)
     `, [token_qr]);
 
     if (sesion.rows.length === 0) return res.status(400).json({ error: 'Código inválido o clase no disponible' });
 
-    const sesionId = sesion.rows[0].id;
+    const sesionInfo = sesion.rows[0];
+    const sesionId = sesionInfo.id;
+    const profesorId = sesionInfo.profesor_id;
+
+    // Resolve estado name to estado_id using the correct profesor_id
+    const estadoRes = await pool.query('SELECT id FROM estados_asistencia WHERE nombre = $1 AND profesor_id = $2', [estado, profesorId]);
+    if (estadoRes.rows.length === 0) return res.status(400).json({ error: 'Estado no válido para este profesor' });
+    const estadoId = estadoRes.rows[0].id;
 
     const existe = await pool.query('SELECT id FROM asistencias WHERE estudiante_id = $1 AND sesion_id = $2', [estudiante_id, sesionId]);
     if (existe.rows.length > 0) return res.status(409).json({ error: 'Asistencia ya registrada' });
@@ -368,7 +372,22 @@ app.post('/api/usuarios', async (req, res) => {
       'INSERT INTO usuarios (codigo, nombre_completo, rol, pass) VALUES ($1, $2, $3, $4) RETURNING *',
       [codigo, nombre_completo, rol || ROL_ESTUDIANTE, pass || codigo]
     );
-    res.json({ usuario: { ...r.rows[0], cursos: [] } });
+    const newUser = r.rows[0];
+    
+    // Si es un profesor, le asignamos sus estados base de asistencia
+    if (newUser.rol === 2) {
+      await pool.query(`
+        INSERT INTO estados_asistencia (profesor_id, nombre, color, puntuacion) VALUES
+          ($1, 'Puntual',     '#22C55E', 2),
+          ($1, 'Presente',    '#3B82F6', 1),
+          ($1, 'Tarde',       '#EAB308', 0),
+          ($1, 'Falto',       '#EF4444', 0),
+          ($1, 'Justificado', '#A855F7', 2),
+          ($1, 'Participó',   '#0EA5E9', 1)
+      `, [newUser.id]);
+    }
+    
+    res.json({ usuario: { ...newUser, cursos: [] } });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
@@ -382,18 +401,22 @@ app.delete('/api/usuarios/:id', async (req, res) => {
 
 // PUT /api/estudiantes/:id (usuarios)
 app.put('/api/estudiantes/:id', async (req, res) => {
-  const { codigo, nombre_completo, pass } = req.body;
+  const { codigo, nombre_completo, pass, rol } = req.body;
   try {
     let r;
-    if (pass !== undefined) {
+    // Extraemos el rol actual si no se proporciona
+    const currentUser = await pool.query('SELECT rol FROM usuarios WHERE id = $1', [req.params.id]);
+    const finalRol = rol || (currentUser.rows[0]?.rol ?? 3);
+
+    if (pass !== undefined && pass !== '') {
       r = await pool.query(
-        'UPDATE usuarios SET codigo = $1, nombre_completo = $2, pass = $3 WHERE id = $4 RETURNING *',
-        [codigo, nombre_completo, pass, req.params.id]
+        'UPDATE usuarios SET codigo = $1, nombre_completo = $2, pass = $3, rol = $4 WHERE id = $5 RETURNING *',
+        [codigo, nombre_completo, pass, finalRol, req.params.id]
       );
     } else {
       r = await pool.query(
-        'UPDATE usuarios SET codigo = $1, nombre_completo = $2 WHERE id = $3 RETURNING *',
-        [codigo, nombre_completo, req.params.id]
+        'UPDATE usuarios SET codigo = $1, nombre_completo = $2, rol = $3 WHERE id = $4 RETURNING *',
+        [codigo, nombre_completo, finalRol, req.params.id]
       );
     }
     res.json({ estudiante: r.rows[0] });
@@ -404,9 +427,20 @@ app.put('/api/estudiantes/:id', async (req, res) => {
 
 // PUT /api/usuarios/:id/perfil
 app.put('/api/usuarios/:id/perfil', async (req, res) => {
-  const { nombre_completo, pass } = req.body;
+  const { nombre_completo, pass, passActual } = req.body;
   try {
     if (pass !== undefined) {
+      // Validar contraseña actual
+      const userRes = await pool.query('SELECT pass FROM usuarios WHERE id = $1', [req.params.id]);
+      if (userRes.rows.length === 0) {
+        return res.status(404).json({ error: 'Usuario no encontrado' });
+      }
+      
+      const existingPass = userRes.rows[0].pass;
+      if (existingPass !== passActual) {
+        return res.status(400).json({ error: 'La contraseña actual es incorrecta' });
+      }
+
       const r = await pool.query(
         'UPDATE usuarios SET nombre_completo = $1, pass = $2 WHERE id = $3 RETURNING *',
         [nombre_completo, pass, req.params.id]
@@ -542,9 +576,17 @@ app.get('/api/asistencias/:sesion_id', async (req, res) => {
 app.post('/api/asistencias/manual', async (req, res) => {
   const { estudiante_id, sesion_id, estado, valor } = req.body;
   try {
-    // Verificar si la sesión es tipo 'puntos'
-    const sesionRes = await pool.query('SELECT tipo FROM sesiones WHERE id = $1', [sesion_id]);
-    const esPuntos = sesionRes.rows[0]?.tipo === 'puntos';
+    // Verificar si la sesión es tipo 'puntos' y obtener profesor_id
+    const sesionRes = await pool.query(`
+      SELECT s.tipo, c.profesor_id 
+      FROM sesiones s
+      JOIN cursos c ON s.curso_id = c.id
+      WHERE s.id = $1
+    `, [sesion_id]);
+    
+    if (sesionRes.rows.length === 0) return res.status(404).json({ error: 'Sesión no encontrada' });
+    const esPuntos = sesionRes.rows[0].tipo === 'puntos';
+    const profesorId = sesionRes.rows[0].profesor_id;
 
     if (esPuntos) {
       // Tipo puntos: sin estado_id, con valor inicial
@@ -555,8 +597,8 @@ app.post('/api/asistencias/manual', async (req, res) => {
       res.json({ asistencia: { ...r.rows[0] } });
     } else {
       // Tipo clase/evento: resolver estado_id
-      const eRes = await pool.query('SELECT id FROM estados_asistencia WHERE nombre = $1', [estado]);
-      if (eRes.rows.length === 0) return res.status(400).json({ error: 'Estado no válido' });
+      const eRes = await pool.query('SELECT id FROM estados_asistencia WHERE nombre = $1 AND profesor_id = $2', [estado, profesorId]);
+      if (eRes.rows.length === 0) return res.status(400).json({ error: 'Estado no válido para este profesor' });
       const estadoId = eRes.rows[0].id;
       const r = await pool.query(
         'INSERT INTO asistencias (estudiante_id, sesion_id, estado_id) VALUES ($1, $2, $3) RETURNING *',
@@ -775,18 +817,18 @@ app.post('/api/cursos/:id/importar', async (req, res) => {
 
 // ── ESTADOS DE ASISTENCIA (CRUD) ────────────────────────────
 
-// GET /api/estados?profesor_id=X — devuelve globales + los del profesor
+// GET /api/estados?profesor_id=X — devuelve solo los del profesor
 app.get('/api/estados', async (req, res) => {
   const { profesor_id } = req.query;
   try {
     let r;
     if (profesor_id) {
       r = await pool.query(
-        'SELECT * FROM estados_asistencia WHERE profesor_id IS NULL OR profesor_id = $1 ORDER BY profesor_id NULLS FIRST, id',
+        'SELECT * FROM estados_asistencia WHERE profesor_id = $1 ORDER BY id',
         [profesor_id]
       );
     } else {
-      r = await pool.query('SELECT * FROM estados_asistencia WHERE profesor_id IS NULL ORDER BY id');
+      r = await pool.query('SELECT * FROM estados_asistencia ORDER BY id');
     }
     res.json({ estados: r.rows });
   } catch (err) { res.status(500).json({ error: err.message }); }
@@ -819,12 +861,8 @@ app.put('/api/estados/:id', async (req, res) => {
 // DELETE /api/estados/:id
 app.delete('/api/estados/:id', async (req, res) => {
   try {
-    // No se puede eliminar estados globales
     const check = await pool.query('SELECT profesor_id FROM estados_asistencia WHERE id = $1', [req.params.id]);
     if (check.rows.length === 0) return res.status(404).json({ error: 'Estado no encontrado' });
-    if (check.rows[0].profesor_id === null) {
-      return res.status(403).json({ error: 'No se pueden eliminar estados globales del sistema' });
-    }
     const inUse = await pool.query('SELECT COUNT(*) FROM asistencias WHERE estado_id = $1', [req.params.id]);
     if (parseInt(inUse.rows[0].count) > 0) {
       return res.status(409).json({ error: 'No se puede eliminar: este estado está siendo usado en registros de asistencia' });

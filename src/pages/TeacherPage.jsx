@@ -35,6 +35,7 @@ import QrGenerator from "../components/QrGenerator";
 import AttendanceTable from "../components/AttendanceTable";
 import ProfileView from "../components/ProfileView";
 import ExcelIcon from "../assets/excel.svg";
+import "../styles/table-modelo.css";
 
 export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateUser }) {
   // ── Course-level state ──────────────────────────────────
@@ -62,6 +63,55 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
   const [historialGen, setHistorialGen] = useState([]);
 
   const [estadosDB, setEstadosDB] = useState([]);
+  
+  // ── Modal Estados ───────────────────────────────────────
+  const [showEstadoModal, setShowEstadoModal] = useState(false);
+  const [editEstado, setEditEstado] = useState(null);
+  const [estadoData, setEstadoData] = useState({ nombre: "", color: "#3B82F6", puntuacion: 0 });
+
+  const handleEditEstado = (est) => {
+    setEditEstado(est);
+    setEstadoData({ nombre: est.nombre, color: est.color, puntuacion: est.puntuacion });
+    setShowEstadoModal(true);
+  };
+
+  const handleNewEstado = () => {
+    setEditEstado(null);
+    setEstadoData({ nombre: "Nuevo Estado", color: "#6B7280", puntuacion: 0 });
+    setShowEstadoModal(true);
+  };
+
+  const saveEstado = async (e) => {
+    e.preventDefault();
+    try {
+      if (editEstado) {
+        await api.updateEstado(editEstado.id, {
+          nombre: estadoData.nombre,
+          color: estadoData.color,
+          puntuacion: parseFloat(estadoData.puntuacion),
+        });
+        setEstadosDB((prev) =>
+          prev.map((s) =>
+            s.id === editEstado.id
+              ? { ...s, ...estadoData, puntuacion: parseFloat(estadoData.puntuacion) }
+              : s
+          )
+        );
+        toast.success(`"${estadoData.nombre}" actualizado`);
+      } else {
+        const { estado } = await api.crearEstado({
+          nombre: estadoData.nombre,
+          color: estadoData.color,
+          puntuacion: parseFloat(estadoData.puntuacion),
+        });
+        setEstadosDB((prev) => [...prev, estado]);
+        toast.success("Estado creado exitosamente");
+      }
+      setShowEstadoModal(false);
+    } catch (err) {
+      toast.error(err.message);
+    }
+  };
 
   // ── New class scheduling ────────────────────────────────
   const [newClaseName, setNewClaseName] = useState("");
@@ -182,7 +232,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
     e.preventDefault();
     if (!newCursoName.trim()) return;
     try {
-      const { curso } = await api.crearCurso({ nombre: newCursoName.trim() });
+      const { curso } = await api.crearCurso({ nombre: newCursoName.trim(), profesor_id: user.id });
       setCursos((prev) => [curso, ...prev]);
       setCursoActivo(curso);
       setNewCursoName("");
@@ -590,8 +640,9 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
     const map = {};
     estadosDB.forEach((e) => {
       map[e.nombre] = {
-        bg: e.color,
-        color: "#fff",
+        bg: `color-mix(in srgb, ${e.color} 15%, transparent)`,
+        color: e.color,
+        border: e.color,
         puntuacion: parseFloat(e.puntuacion),
       };
     });
@@ -838,7 +889,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
       </div>
 
       {/* PROFILE: Edit user data */}
-      {viewMode === "perfil" && (
+      {viewMode === "perfil" ? (
         <div className="page-body">
           <div style={{ padding: "0 1rem", marginBottom: "1rem" }}>
             <button
@@ -868,10 +919,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
             onCancel={() => setViewMode("dashboard")} 
           />
         </div>
-      )}
-
-      {/* DASHBOARD: Grid of Courses */}
-      {viewMode === "dashboard" ? (
+      ) : viewMode === "dashboard" ? (
         <div style={{ padding: "1rem" }}>
           <div
             style={{
@@ -1044,27 +1092,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
             </div>
           )}
 
-          {cursos.length === 0 && !checking ? (
-            <div
-              style={{
-                textAlign: "center",
-                padding: "3rem 1rem",
-                color: "var(--gray-500)",
-                background: "white",
-                borderRadius: "8px",
-                border: "1px dashed var(--gray-300)",
-              }}
-            >
-              <BookOpen
-                size={48}
-                style={{ margin: "0 auto 1rem", opacity: 0.3 }}
-              />
-              <p>
-                No tienes cursos. Crea tu primer curso para comenzar a gestionar
-                asistencias.
-              </p>
-            </div>
-          ) : (
+          {!checking && (
             <div
               style={{
                 display: "grid",
@@ -1443,29 +1471,33 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
 
             {/* ─── ALUMNOS DEL CURSO ──────────────────── */}
             {activeTab === "alumnos" && (
-              <div className="card">
-                <div className="card-title">
-                  Alumnos de {cursoActivo.nombre}
-                </div>
-                <div className="card-subtitle">
-                  {estudiantesCurso.length} matriculados. Añade o remueve alumnos
-                  de este curso.
-                </div>
-
-                {/* Toolbar: Nuevo Alumno + Importar CSV */}
-                <div style={{ display: 'flex', gap: '0.5rem', margin: '1rem 0', flexWrap: 'wrap' }}>
-                  <button className="btn btn-sm btn-primary" onClick={() => { setShowNuevoAlumno(true); setNuevoAlumnoCodigo(''); setNuevoAlumnoNombre(''); setNuevoAlumnoEncontrado(null); }} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <UserPlus size={14} /> Nuevo Alumno
+              <div
+                className="card"
+                style={{ maxWidth: 1000, margin: "1.5rem auto", padding: "20px" }}
+              >
+                <div style={{ marginBottom: "1.5rem" }}>
+                  <div className="card-title" style={{ margin: 0 }}>
+                    Alumnos de {cursoActivo.nombre}
+                  </div>
+                  <div className="card-subtitle" style={{ marginTop: "4px", marginBottom: "1rem" }}>
+                    {estudiantesCurso.length} matriculados. Añade o remueve alumnos de este curso.
+                  </div>
+                  <button
+                    className="btn btn-primary"
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "6px",
+                      fontSize: "0.85rem",
+                      padding: "10px",
+                      borderRadius: "8px",
+                      width: "100%"
+                    }}
+                    onClick={() => { setShowNuevoAlumno(true); setNuevoAlumnoCodigo(''); setNuevoAlumnoNombre(''); setNuevoAlumnoEncontrado(null); }}
+                  >
+                    <UserPlus size={16} /> Nuevo Alumno
                   </button>
-                  <label style={{
-                    display: 'flex', alignItems: 'center', gap: '6px', cursor: csvImportando ? 'wait' : 'pointer',
-                    padding: '6px 12px', borderRadius: '8px', border: '1px solid var(--gray-300)',
-                    background: 'white', fontSize: '0.82rem', fontWeight: 600, color: 'var(--gray-700)'
-                  }}>
-                    <FileSpreadsheet size={14} />
-                    {csvImportando ? 'Importando...' : 'Importar CSV'}
-                    <input type="file" accept=".csv" style={{ display: 'none' }} onChange={handleCsvImport} disabled={csvImportando} />
-                  </label>
                 </div>
 
                 {/* Modal Nuevo Alumno (Matricular) */}
@@ -1474,11 +1506,10 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                     onClick={() => setShowNuevoAlumno(false)}>
                     <div style={{ background: 'white', borderRadius: '16px', width: '100%', maxWidth: '440px', boxShadow: '0 20px 60px rgba(0,0,0,0.25)', overflow: 'hidden' }}
                       onClick={e => e.stopPropagation()}>
-                      <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--gray-100)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--gray-50)' }}>
+                      <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--gray-100)', background: 'var(--gray-50)' }}>
                         <h3 style={{ margin: 0, fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <UserPlus size={18} style={{ color: 'var(--primary)' }} /> Matricular Alumno
                         </h3>
-                        <button onClick={() => setShowNuevoAlumno(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--gray-400)' }}><X size={20} /></button>
                       </div>
                       <form onSubmit={crearYAgregarAlumno}>
                         <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -1557,11 +1588,10 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                     onClick={() => setEditingAlumnoData(null)}>
                     <div style={{ background: 'white', borderRadius: '16px', width: '100%', maxWidth: '440px', boxShadow: '0 20px 60px rgba(0,0,0,0.25)', overflow: 'hidden' }}
                       onClick={e => e.stopPropagation()}>
-                      <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--gray-100)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--gray-50)' }}>
+                      <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--gray-100)', background: 'var(--gray-50)' }}>
                         <h3 style={{ margin: 0, fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <Pencil size={18} style={{ color: 'var(--primary)' }} /> Editar Alumno
                         </h3>
-                        <button onClick={() => setEditingAlumnoData(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--gray-400)' }}><X size={20} /></button>
                       </div>
                       <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                         <div className="form-group" style={{ marginTop: 0 }}>
@@ -1634,24 +1664,22 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                           <td style={{ padding: '10px 12px', fontWeight: 600, color: 'var(--gray-800)' }}>{est.nombre_completo}</td>
                           <td style={{ padding: '10px 12px', color: 'var(--gray-500)', fontFamily: 'monospace', fontWeight: 500 }}>{est.codigo}</td>
                           <td style={{ padding: '10px 12px', textAlign: 'center' }}>
-                            <div style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>
+                            <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
                               <button
+                                className="btn btn-ghost"
                                 onClick={() => setEditingAlumnoData({ ...est, newPass: '' })}
-                                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--gray-400)', padding: '4px', borderRadius: '6px', display: 'flex', alignItems: 'center' }}
-                                onMouseEnter={e => e.currentTarget.style.color = 'var(--primary)'}
-                                onMouseLeave={e => e.currentTarget.style.color = 'var(--gray-400)'}
+                                style={{ padding: "6px", color: "var(--primary)", border: "1px solid var(--primary-bg)", background: "var(--primary-bg)" }}
                                 title="Editar alumno"
                               >
-                                <Pencil size={15} />
+                                <Edit size={16} />
                               </button>
                               <button
+                                className="btn btn-ghost"
                                 onClick={() => { if (confirm(`¿Desmatricular a "${est.nombre_completo}" de este curso?`)) removeAlumno(est.id); }}
-                                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--gray-400)', padding: '4px', borderRadius: '6px', display: 'flex', alignItems: 'center' }}
-                                onMouseEnter={e => e.currentTarget.style.color = '#ef4444'}
-                                onMouseLeave={e => e.currentTarget.style.color = 'var(--gray-400)'}
+                                style={{ padding: "6px", color: "var(--error)", border: "1px solid #fee2e2", background: "#fef2f2" }}
                                 title="Desmatricular del curso"
                               >
-                                <X size={15} />
+                                <Trash2 size={16} />
                               </button>
                             </div>
                           </td>
@@ -2622,49 +2650,85 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                   </p>
                 ) : (
                   <div
-                    className="table-responsive"
+                    className="table-modelo-wrapper"
                     style={{ marginTop: "1rem" }}
                   >
-                    <table className="table-premium">
+                    <table className="table-modelo" style={{ minWidth: "100%" }}>
                       <thead>
                         <tr>
                           <th
-                            className="sticky-column"
-                            style={{ textAlign: "left" }}
+                            className="sticky-col"
                           >
                             Estudiante
                           </th>
-                          {clasesColumns.map((c) => (
-                            <th
-                              key={c.id}
-                              style={{
-                                padding: '8px 4px',
-                                borderBottom: '2px solid var(--gray-200)',
-                                minWidth: c.tipo === 'puntos' ? '80px' : '50px',
-                              }}
-                            >
-                              {c.tipo === 'clase' ? (
-                                <div style={{ lineHeight: 1.2 }}>
-                                  <div style={{ fontSize: '0.72rem', color: 'var(--primary)', fontWeight: 700 }}>{c.label}</div>
-                                  <div style={{ fontSize: '0.62rem', color: 'var(--gray-400)', fontStyle: 'italic', maxWidth: 60, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.name}</div>
+                          {clasesColumns.map((c) => {
+                            let typeStyles = { bg: '#eff6ff', border: '#bfdbfe', textPrimary: '#1e40af', textSecondary: '#60a5fa' }; // clase by default
+                            if (c.tipo === 'puntos') typeStyles = { bg: '#fffbeb', border: '#fde68a', textPrimary: '#92400e', textSecondary: '#d97706' };
+                            if (c.tipo === 'evento') typeStyles = { bg: '#f0fdf4', border: '#bbf7d0', textPrimary: '#166534', textSecondary: '#4ade80' };
+
+                            return (
+                              <th
+                                key={c.id}
+                                style={{
+                                  padding: '8px',
+                                  borderBottom: '2px solid var(--gray-200)',
+                                  minWidth: c.tipo === 'puntos' ? '80px' : '70px',
+                                  textAlign: 'center',
+                                  verticalAlign: 'bottom'
+                                }}
+                              >
+                                <div style={{ 
+                                  display: 'flex', 
+                                  flexDirection: 'column',  
+                                  alignItems: 'center',
+                                  margin: '0 auto',
+                                  gap: '2px'
+                                }}>
+                                  <div style={{ fontSize: '0.75rem', color: 'var(--gray-800)', fontWeight: 700, textAlign: 'center', whiteSpace: 'nowrap' }}>
+                                    {c.tipo === 'clase' ? c.label : c.name}
+                                  </div>
+                                  {c.tipo === 'clase' ? (
+                                    <div style={{ fontSize: '0.65rem', color: 'var(--gray-500)', fontStyle: 'italic', textAlign: 'center', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'center', marginTop: '2px' }}>
+                                      <div style={{ 
+                                        fontSize: '0.55rem', 
+                                        fontWeight: 700, 
+                                        background: typeStyles.bg, 
+                                        color: typeStyles.textPrimary, 
+                                        padding: '2px 6px', 
+                                        borderRadius: '8px', 
+                                        textTransform: 'uppercase',
+                                        fontStyle: 'normal'
+                                      }}>
+                                        {c.tipo}
+                                      </div>
+                                      <span>{c.name}</span>
+                                    </div>
+                                  ) : (
+                                    <div style={{ 
+                                      marginTop: '2px',
+                                      fontSize: '0.55rem', 
+                                      fontWeight: 700, 
+                                      background: typeStyles.bg, 
+                                      color: typeStyles.textPrimary, 
+                                      padding: '2px 6px', 
+                                      borderRadius: '8px', 
+                                      textTransform: 'uppercase' 
+                                    }}>
+                                      {c.tipo}
+                                    </div>
+                                  )}
                                 </div>
-                              ) : (
-                                <div style={{ fontSize: '0.68rem', color: c.tipo === 'puntos' ? '#d97706' : '#7c3aed', fontWeight: 700, lineHeight: 1.2, maxWidth: 70, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                  {c.tipo === 'puntos' ? '⭐' : '🎯'} {c.name}
-                                </div>
-                              )}
-                            </th>
-                          ))}
+                              </th>
+                            );
+                          })}
                           <th
+                            className="sticky-col-right"
                             style={{
-                              padding: "10px 8px",
+                              padding: "12px",
                               borderBottom: "2px solid var(--gray-200)",
-                              background: "var(--primary-bg)",
                               color: "var(--primary-dark)",
-                              position: "sticky",
-                              right: 0,
-                              zIndex: 2,
-                              minWidth: "50px",
+                              minWidth: "60px",
+                              textAlign: "center"
                             }}
                           >
                             Punt.
@@ -2698,7 +2762,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                                   background: i % 2 === 0 ? "#fff" : "#fafafa",
                                 }}
                               >
-                                <td className="sticky-column">
+                                <td className="sticky-col">
                                   <div
                                     style={{
                                       display: "flex",
@@ -2709,15 +2773,16 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                                       style={{
                                         fontWeight: "600",
                                         color: "var(--gray-800)",
-                                        fontSize: "0.78rem",
+                                        fontSize: "0.85rem",
                                       }}
                                     >
                                       {est.nombre_completo}
                                     </span>
                                     <span
                                       style={{
-                                        fontSize: "0.68rem",
+                                        fontSize: "0.72rem",
                                         color: "var(--gray-400)",
+                                        fontFamily: "monospace"
                                       }}
                                     >
                                       {est.codigo}
@@ -2732,45 +2797,47 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                                     // r.valor es el campo INTEGER de asistencias para sesiones tipo 'puntos'
                                     const valor = r ? (r.valor ?? 0) : 0;
                                     return (
-                                      <td key={c.id} style={{ padding: '4px', borderLeft: '1px solid var(--gray-100)', verticalAlign: 'middle' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
-                                          {true ? (
-                                            <>
-                                              <button
-                                                onClick={async () => {
-                                                  try {
-                                                    if (!r?.id) {
-                                                      // Crear asistencia con valor=-1
-                                                      const res = await api.crearAsistenciaManual({ estudiante_id: est.id, sesion_id: c.id, valor: -1 });
-                                                      const [resH2] = await Promise.all([api.getCursoHistorial(cursoActivo.id)]);
-                                                      setHistorialGen(resH2.historial); return;
-                                                    }
-                                                    const res2 = await api.ajustarPunto(r.id, -1);
-                                                    setHistorialGen(prev => prev.map(h => h.id === r.id ? { ...h, valor: res2.asistencia.valor } : h));
-                                                  } catch(err) { toast.error(err.message); }
-                                                }}
-                                                style={{ width: 22, height: 22, borderRadius: '50%', border: 'none', background: '#fee2e2', color: '#dc2626', cursor: 'pointer', fontWeight: 700, fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}
-                                              >-</button>
-                                              <span style={{ fontSize: '0.85rem', fontWeight: 700, minWidth: 20, textAlign: 'center', color: valor > 0 ? '#16a34a' : valor < 0 ? '#dc2626' : 'var(--gray-500)' }}>{valor}</span>
-                                              <button
-                                                onClick={async () => {
-                                                  try {
-                                                    if (!r?.id) {
-                                                      // Crear asistencia con valor=1
-                                                      const res = await api.crearAsistenciaManual({ estudiante_id: est.id, sesion_id: c.id, valor: 1 });
-                                                      const [resH2] = await Promise.all([api.getCursoHistorial(cursoActivo.id)]);
-                                                      setHistorialGen(resH2.historial); return;
-                                                    }
-                                                    const res2 = await api.ajustarPunto(r.id, 1);
-                                                    setHistorialGen(prev => prev.map(h => h.id === r.id ? { ...h, valor: res2.asistencia.valor } : h));
-                                                  } catch(err) { toast.error(err.message); }
-                                                }}
-                                                style={{ width: 22, height: 22, borderRadius: '50%', border: 'none', background: '#dcfce7', color: '#16a34a', cursor: 'pointer', fontWeight: 700, fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}
-                                              >+</button>
-                                            </>
-                                          ) : (
-                                            <span style={{ fontSize: '0.85rem', fontWeight: 700, minWidth: 20, textAlign: 'center', color: valor > 0 ? '#16a34a' : valor < 0 ? '#dc2626' : 'var(--gray-500)' }}>{valor}</span>
-                                          )}
+                                      <td key={c.id} style={{ borderLeft: '1px solid var(--gray-100)', verticalAlign: 'middle', textAlign: 'center' }}>
+                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                                            {true ? (
+                                              <>
+                                                <button
+                                                  onClick={async () => {
+                                                    try {
+                                                      if (!r?.id) {
+                                                        const res = await api.crearAsistenciaManual({ estudiante_id: est.id, sesion_id: c.id, valor: -1 });
+                                                        const [resH2] = await Promise.all([api.getCursoHistorial(cursoActivo.id)]);
+                                                        setHistorialGen(resH2.historial); return;
+                                                      }
+                                                      const res2 = await api.ajustarPunto(r.id, -1);
+                                                      setHistorialGen(prev => prev.map(h => h.id === r.id ? { ...h, valor: res2.asistencia.valor } : h));
+                                                    } catch(err) { toast.error(err.message); }
+                                                  }}
+                                                  className="btn-puntos btn-puntos-minus"
+                                                  style={{ border: 'none', background: '#fee2e2', color: '#dc2626', cursor: 'pointer', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}
+                                                >-</button>
+                                                <span style={{ fontSize: '1rem', fontWeight: 700, minWidth: 24, textAlign: 'center', color: valor > 0 ? '#16a34a' : valor < 0 ? '#dc2626' : 'var(--gray-500)' }}>{valor}</span>
+                                                <button
+                                                  onClick={async () => {
+                                                    try {
+                                                      if (!r?.id) {
+                                                        const res = await api.crearAsistenciaManual({ estudiante_id: est.id, sesion_id: c.id, valor: 1 });
+                                                        const [resH2] = await Promise.all([api.getCursoHistorial(cursoActivo.id)]);
+                                                        setHistorialGen(resH2.historial); return;
+                                                      }
+                                                      const res2 = await api.ajustarPunto(r.id, 1);
+                                                      setHistorialGen(prev => prev.map(h => h.id === r.id ? { ...h, valor: res2.asistencia.valor } : h));
+                                                    } catch(err) { toast.error(err.message); }
+                                                  }}
+                                                  className="btn-puntos btn-puntos-plus"
+                                                  style={{ border: 'none', background: '#dcfce7', color: '#16a34a', cursor: 'pointer', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}
+                                                >+</button>
+                                              </>
+                                            ) : (
+                                              <span style={{ fontSize: '1rem', fontWeight: 700, minWidth: 24, textAlign: 'center', color: valor > 0 ? '#16a34a' : valor < 0 ? '#dc2626' : 'var(--gray-500)' }}>{valor}</span>
+                                            )}
+                                          </div>
                                         </div>
                                       </td>
                                     );
@@ -2780,40 +2847,48 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                                   const status = r ? r.estado : '';
                                   const ui = status ? ESTADOS_UI[status] : null;
                                   const bgColor = ui ? ui.bg : 'transparent';
+                                  const borderColor = ui ? ui.border : 'transparent';
+                                  const textColor = ui ? ui.color : 'inherit';
 
                                   return (
-                                    <td key={c.id} style={{ padding: '6px', borderLeft: '1px solid var(--gray-100)', background: 'transparent', verticalAlign: 'middle' }}>
-                                      <div style={{ background: bgColor, borderRadius: '16px', padding: status ? '2px 6px' : '2px', display: 'flex', justifyContent: 'center', minWidth: '85px', margin: '0 auto' }}>
-                                        {true ? (
-                                          <select
-                                            value={status}
-                                            onChange={(e) => {
-                                              if (!e.target.value) return;
-                                              if (r) updateAsistenciaEstado(r.id, e.target.value);
-                                              else createAsistenciaManual(est.id, c.id, e.target.value);
-                                            }}
-                                            className={`badge-status ${status.toLowerCase()}`}
-                                            style={{ width: '100%', height: '28px', appearance: 'none', border: 'none', background: 'transparent', textAlign: 'center', cursor: 'pointer', outline: 'none', fontWeight: '700', fontSize: '0.75rem', color: 'inherit' }}
-                                          >
-                                            <option value="" disabled style={{ color: '#000' }}>—</option>
-                                            {estadosDB.map(e => (
-                                              <option key={e.id} value={e.nombre} style={{ background: e.color, color: 'white' }}>{e.nombre}</option>
-                                            ))}
-                                          </select>
-                                        ) : (
-                                          <span style={{ fontWeight: '700', fontSize: '0.75rem', padding: '4px 0', textAlign: 'center', color: ui ? '#fff' : 'var(--gray-400)' }}>
-                                            {status || '—'}
-                                          </span>
+                                    <td key={c.id} style={{ borderLeft: '1px solid var(--gray-100)', background: 'transparent', verticalAlign: 'middle', textAlign: 'center' }}>
+                                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '38px' }}>
+                                        <div style={{ background: bgColor, border: ui ? `1px solid ${borderColor}` : 'none', borderRadius: '20px', padding: status ? '0px 10px' : '0px', display: 'flex', justifyContent: 'center', minWidth: '95px', color: textColor }}>
+                                          {true ? (
+                                            <select
+                                              value={status}
+                                              onChange={(e) => {
+                                                if (!e.target.value) return;
+                                                if (r) updateAsistenciaEstado(r.id, e.target.value);
+                                                else createAsistenciaManual(est.id, c.id, e.target.value);
+                                              }}
+                                              className={`badge-status ${status.toLowerCase()}`}
+                                              style={{ width: '100%', minHeight: '20px', appearance: 'none', border: 'none', background: 'transparent', textAlign: 'center', cursor: 'pointer', outline: 'none', fontWeight: '800', fontSize: '0.7rem', color: 'inherit' }}
+                                            >
+                                              <option value="" disabled style={{ color: '#000' }}>—</option>
+                                              {estadosDB.map(e => (
+                                                <option key={e.id} value={e.nombre} style={{ background: e.color, color: 'white' }}>{e.nombre}</option>
+                                              ))}
+                                            </select>
+                                          ) : (
+                                            <span style={{ fontWeight: '800', fontSize: '0.7rem', padding: '1px 0', textAlign: 'center', color: ui ? textColor : 'var(--gray-400)' }}>
+                                              {status || '—'}
+                                            </span>
+                                          )}
+                                        </div>
+                                        {r && r.fecha_hora && (
+                                          <div className="historial-time">
+                                            {new Date(r.fecha_hora).toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })}
+                                          </div>
                                         )}
                                       </div>
                                     </td>
                                   );
                                 })}
                                 <td
+                                  className="sticky-col-right"
                                   style={{
                                     fontWeight: "bold",
-                                    borderLeft: "2px solid var(--gray-200)",
-                                    background: "var(--primary-bg)",
                                     color: "var(--primary-dark)",
                                     fontSize: "0.9rem",
                                     textAlign: "center",
@@ -2849,10 +2924,11 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                           <span
                             style={{
                               display: "inline-block",
-                              width: "12px",
-                              height: "12px",
-                              borderRadius: "50%",
+                              width: "14px",
+                              height: "14px",
+                              borderRadius: "4px",
                               background: ESTADOS_UI[k].bg,
+                              border: `1px solid ${ESTADOS_UI[k].border}`
                             }}
                           ></span>
                           <span
@@ -2872,319 +2948,228 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
             )}
 
             {/* ─── CONFIGURACIÓN ──────────────────────── */}
-            {activeTab === "config" && config && (
+            {activeTab === "config" && (
               <>
-                <div className="card" style={{ maxWidth: 520 }}>
-                  <div className="card-title">Ajustes de Horario Dinámico</div>
-                  <div className="card-subtitle">
-                    Define las horas límite para la marcación automática
-                    (formato 24H).
-                  </div>
-                  <form
-                    onSubmit={updateConfig}
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "1rem",
-                      marginTop: "1rem",
-                    }}
-                  >
-                    <div className="form-group">
-                      <label
-                        className="form-label"
-                        style={{ color: "var(--success)" }}
-                      >
-                        Hora límite — PUNTUAL
-                      </label>
-                      <input
-                        className="form-input"
-                        type="time"
-                        required
-                        value={config.limite_puntual}
-                        onChange={(e) =>
-                          setConfig({
-                            ...config,
-                            limite_puntual: e.target.value,
-                          })
-                        }
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label
-                        className="form-label"
-                        style={{ color: "var(--info)" }}
-                      >
-                        Hora límite — PRESENTE
-                      </label>
-                      <input
-                        className="form-input"
-                        type="time"
-                        required
-                        value={config.limite_presente}
-                        onChange={(e) =>
-                          setConfig({
-                            ...config,
-                            limite_presente: e.target.value,
-                          })
-                        }
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label
-                        className="form-label"
-                        style={{ color: "var(--warning)" }}
-                      >
-                        Hora límite — TARDE
-                      </label>
-                      <input
-                        className="form-input"
-                        type="time"
-                        required
-                        value={config.limite_tarde}
-                        onChange={(e) =>
-                          setConfig({ ...config, limite_tarde: e.target.value })
-                        }
-                      />
-                    </div>
-                    <div
-                      className="form-group"
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "8px",
-                        cursor: "pointer",
-                        padding: "0.5rem",
-                        background: "#f8fafc",
-                        borderRadius: "4px",
-                      }}
-                      onClick={() =>
-                        setConfig({
-                          ...config,
-                          permitir_falto: !config.permitir_falto,
-                        })
-                      }
-                    >
-                      <input
-                        type="checkbox"
-                        checked={config.permitir_falto}
-                        readOnly
-                        style={{ cursor: "pointer" }}
-                      />
-                      <span>
-                        Permitir marcar INASISTENCIA (Falto) desde el móvil
-                        después del límite.
-                      </span>
-                    </div>
-                    <button
-                      className="btn btn-primary"
-                      type="submit"
-                      disabled={loading}
-                    >
-                      {loading ? (
-                        <div className="spinner" />
-                      ) : (
-                        "Guardar Ajustes"
-                      )}
-                    </button>
-                  </form>
-                </div>
-
                 {/* ── Estados de Asistencia CRUD ──────────── */}
                 <div
                   className="card"
-                  style={{ maxWidth: 620, marginTop: "1.5rem" }}
+                  style={{ maxWidth: 700, margin: "1.5rem auto", padding: "20px" }}
                 >
-                  <div className="card-title">Estados de Asistencia</div>
-                  <div className="card-subtitle">
-                    Administra los tipos de asistencia, sus colores y
-                    puntuación.
-                  </div>
-                  <div
-                    style={{
-                      marginTop: "1rem",
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "0.75rem",
-                    }}
-                  >
-                    {estadosDB.map((est) => (
-                      <div
-                        key={est.id}
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "0.5rem",
-                          padding: "8px 12px",
-                          background: "#f8fafc",
-                          borderRadius: "8px",
-                          border: "1px solid var(--gray-100)",
-                          flexWrap: "wrap",
-                        }}
-                      >
-                        <input
-                          type="color"
-                          value={est.color}
-                          onChange={(e) =>
-                            setEstadosDB((prev) =>
-                              prev.map((s) =>
-                                s.id === est.id
-                                  ? { ...s, color: e.target.value }
-                                  : s,
-                              ),
-                            )
-                          }
-                          style={{
-                            width: "36px",
-                            height: "36px",
-                            border: "none",
-                            borderRadius: "6px",
-                            cursor: "pointer",
-                            padding: 0,
-                          }}
-                        />
-                        <input
-                          className="form-input"
-                          value={est.nombre}
-                          onChange={(e) =>
-                            setEstadosDB((prev) =>
-                              prev.map((s) =>
-                                s.id === est.id
-                                  ? { ...s, nombre: e.target.value }
-                                  : s,
-                              ),
-                            )
-                          }
-                          style={{
-                            flex: 1,
-                            minWidth: "120px",
-                            height: "36px",
-                            fontSize: "0.85rem",
-                          }}
-                        />
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "4px",
-                          }}
-                        >
-                          <label
-                            style={{
-                              fontSize: "0.75rem",
-                              color: "var(--gray-500)",
-                            }}
-                          >
-                            Pts:
-                          </label>
-                          <input
-                            className="form-input"
-                            type="number"
-                            step="0.01"
-                            min="0"
-                            max="9.99"
-                            value={est.puntuacion}
-                            onChange={(e) =>
-                              setEstadosDB((prev) =>
-                                prev.map((s) =>
-                                  s.id === est.id
-                                    ? { ...s, puntuacion: e.target.value }
-                                    : s,
-                                ),
-                              )
-                            }
-                            style={{
-                              width: "70px",
-                              height: "36px",
-                              fontSize: "0.85rem",
-                              textAlign: "center",
-                            }}
-                          />
-                        </div>
-                        <button
-                          className="btn btn-primary"
-                          style={{
-                            height: "36px",
-                            fontSize: "0.78rem",
-                            padding: "0 12px",
-                          }}
-                          onClick={async () => {
-                            try {
-                              await api.updateEstado(est.id, {
-                                nombre: est.nombre,
-                                color: est.color,
-                                puntuacion: parseFloat(est.puntuacion),
-                              });
-                              toast.success(`"${est.nombre}" actualizado`);
-                            } catch (err) {
-                              toast.error(err.message);
-                            }
-                          }}
-                        >
-                          Guardar
-                        </button>
-                        <button
-                          className="btn btn-ghost"
-                          style={{
-                            height: "36px",
-                            fontSize: "0.78rem",
-                            padding: "0 10px",
-                            color: "var(--error)",
-                            border: "1px solid var(--error)",
-                          }}
-                          onClick={async () => {
-                            if (
-                              !confirm(`¿Eliminar el estado "${est.nombre}"?`)
-                            )
-                              return;
-                            try {
-                              await api.deleteEstado(est.id);
-                              setEstadosDB((prev) =>
-                                prev.filter((s) => s.id !== est.id),
-                              );
-                              toast.info(`"${est.nombre}" eliminado`);
-                            } catch (err) {
-                              toast.error(err.message);
-                            }
-                          }}
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
-                    ))}
-
-                    {/* Add new estado */}
+                  <div style={{ marginBottom: "1.5rem" }}>
+                    <div className="card-title" style={{ margin: 0 }}>Estados de Asistencia</div>
+                    <div className="card-subtitle" style={{ marginTop: "4px", marginBottom: "1rem" }}>
+                      Administra los tipos de asistencia, sus colores y puntuación.
+                    </div>
                     <button
-                      className="btn btn-ghost"
+                      className="btn btn-primary"
                       style={{
-                        border: "1px dashed var(--gray-300)",
-                        width: "100%",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
                         gap: "6px",
                         fontSize: "0.85rem",
-                        color: "var(--gray-500)",
                         padding: "10px",
+                        borderRadius: "8px",
+                        width: "100%"
                       }}
-                      onClick={async () => {
-                        try {
-                          const { estado } = await api.crearEstado({
-                            nombre: "Nuevo Estado",
-                            color: "#6B7280",
-                            puntuacion: 0,
-                          });
-                          setEstadosDB((prev) => [...prev, estado]);
-                          toast.success("Estado creado. Edítalo y guarda.");
-                        } catch (err) {
-                          toast.error(err.message);
-                        }
-                      }}
+                      onClick={handleNewEstado}
                     >
-                      <Plus size={16} /> Agregar Estado
+                      <Plus size={16} /> Nuevo
                     </button>
+                  </div>
+                  
+                  <div style={{ overflowX: "auto" }}>
+                    <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", fontSize: "0.9rem" }}>
+                      <thead>
+                        <tr style={{ borderBottom: "2px solid var(--gray-200)", color: "var(--gray-500)" }}>
+                          <th style={{ padding: "12px", fontWeight: "600", width: "60px" }}>Color</th>
+                          <th style={{ padding: "12px", fontWeight: "600" }}>Nombre del Estado</th>
+                          <th style={{ padding: "12px", fontWeight: "600", textAlign: "center" }}>Puntos</th>
+                          <th style={{ padding: "12px", fontWeight: "600", textAlign: "center", width: "120px" }}>Acciones</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {estadosDB.map((est) => (
+                          <tr key={est.id} style={{ borderBottom: "1px solid var(--gray-100)", transition: "background 0.2s" }} onMouseEnter={(e) => e.currentTarget.style.background = "var(--gray-50)"} onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}>
+                            <td style={{ padding: "12px" }}>
+                              <div style={{
+                                width: "24px", height: "24px", borderRadius: "6px", background: `color-mix(in srgb, ${est.color} 15%, transparent)`, border: `1px solid ${est.color}`
+                              }}></div>
+                            </td>
+                            <td style={{ padding: "12px", fontWeight: "500", color: "var(--gray-800)" }}>{est.nombre}</td>
+                            <td style={{ padding: "12px", textAlign: "center" }}>
+                              <span style={{
+                                background: "var(--gray-100)", color: "var(--gray-700)", padding: "4px 10px", borderRadius: "12px", fontWeight: "600", fontSize: "0.85rem"
+                              }}>
+                                {est.puntuacion}
+                              </span>
+                            </td>
+                            <td style={{ padding: "12px", textAlign: "center" }}>
+                              <div style={{ display: "flex", gap: "8px", justifyContent: "center" }}>
+                                <button
+                                  className="btn btn-ghost"
+                                  style={{ padding: "6px", color: "var(--primary)", border: "1px solid var(--primary-bg)", background: "var(--primary-bg)" }}
+                                  onClick={() => handleEditEstado(est)}
+                                  title="Editar"
+                                >
+                                  <Edit size={16} />
+                                </button>
+                                <button
+                                  className="btn btn-ghost"
+                                  style={{ padding: "6px", color: "var(--error)", border: "1px solid #fee2e2", background: "#fef2f2" }}
+                                  onClick={async () => {
+                                    if (!confirm(`¿Eliminar el estado "${est.nombre}"?`)) return;
+                                    try {
+                                      await api.deleteEstado(est.id);
+                                      setEstadosDB((prev) => prev.filter((s) => s.id !== est.id));
+                                      toast.info(`"${est.nombre}" eliminado`);
+                                    } catch (err) {
+                                      toast.error(err.message);
+                                    }
+                                  }}
+                                  title="Eliminar"
+                                >
+                                  <Trash2 size={16} />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                        {estadosDB.length === 0 && (
+                          <tr>
+                            <td colSpan="4" style={{ padding: "24px", textAlign: "center", color: "var(--gray-400)", fontStyle: "italic" }}>
+                              No hay estados de asistencia configurados.
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
               </>
+            )}
+
+            {/* Modal para Crear / Editar Estado */}
+            {showEstadoModal && (
+              <div
+                style={{
+                  position: "fixed",
+                  inset: 0,
+                  zIndex: 9999,
+                  background: "rgba(0,0,0,0.45)",
+                  backdropFilter: "blur(4px)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: "1rem",
+                }}
+                onClick={() => setShowEstadoModal(false)}
+              >
+                <div
+                  style={{
+                    background: "white",
+                    borderRadius: "16px",
+                    width: "100%",
+                    maxWidth: "420px",
+                    boxShadow: "0 20px 60px rgba(0,0,0,0.25)",
+                    overflow: "hidden",
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div
+                    style={{
+                      padding: "16px 20px",
+                      borderBottom: "1px solid var(--gray-100)",
+                      background: "var(--gray-50)",
+                    }}
+                  >
+                    <h3
+                      style={{
+                        margin: 0,
+                        fontSize: "1rem",
+                        color: "var(--gray-800)",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px",
+                      }}
+                    >
+                      {editEstado ? <Edit size={18} style={{ color: "var(--primary)" }} /> : <Plus size={18} style={{ color: "var(--primary)" }} />}
+                      {editEstado ? "Editar Estado" : "Nuevo Estado"}
+                    </h3>
+                  </div>
+                  <form onSubmit={saveEstado}>
+                    <div style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "1rem" }}>
+                      <div className="form-group">
+                        <label className="form-label" style={{ fontSize: "0.85rem", color: "var(--gray-600)", marginBottom: "6px" }}>Nombre del Estado</label>
+                        <input
+                          className="form-input"
+                          value={estadoData.nombre}
+                          onChange={(e) => setEstadoData({ ...estadoData, nombre: e.target.value })}
+                          required
+                          style={{ height: "42px" }}
+                        />
+                      </div>
+                      <div style={{ display: "flex", gap: "1rem" }}>
+                        <div className="form-group" style={{ flex: 1 }}>
+                          <label className="form-label" style={{ fontSize: "0.85rem", color: "var(--gray-600)", marginBottom: "6px" }}>Color de Etiqueta</label>
+                          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                            <input
+                              type="color"
+                              value={estadoData.color}
+                              onChange={(e) => setEstadoData({ ...estadoData, color: e.target.value })}
+                              style={{
+                                width: "42px",
+                                height: "42px",
+                                border: "1px solid var(--gray-200)",
+                                borderRadius: "8px",
+                                cursor: "pointer",
+                                padding: "2px",
+                                background: "white"
+                              }}
+                            />
+                            <span style={{ fontSize: "0.9rem", color: "var(--gray-500)", fontFamily: "monospace" }}>{estadoData.color.toUpperCase()}</span>
+                          </div>
+                        </div>
+                        <div className="form-group" style={{ width: "100px" }}>
+                          <label className="form-label" style={{ fontSize: "0.85rem", color: "var(--gray-600)", marginBottom: "6px" }}>Puntos</label>
+                          <input
+                            className="form-input"
+                            type="number"
+                            step="0.01"
+                            min="-9.99"
+                            max="9.99"
+                            value={estadoData.puntuacion}
+                            onChange={(e) => setEstadoData({ ...estadoData, puntuacion: e.target.value })}
+                            required
+                            style={{ height: "42px", textAlign: "center" }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    <div
+                      style={{
+                        padding: "14px 20px",
+                        borderTop: "1px solid var(--gray-100)",
+                        display: "flex",
+                        justifyContent: "flex-end",
+                        gap: "0.5rem",
+                        background: "var(--gray-50)",
+                      }}
+                    >
+                      <button
+                        type="button"
+                        className="btn btn-ghost"
+                        onClick={() => setShowEstadoModal(false)}
+                      >
+                        Cancelar
+                      </button>
+                      <button type="submit" className="btn btn-primary">
+                        Guardar Cambios
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
             )}
           </div>
         </>
@@ -3201,9 +3186,9 @@ function UsersView({ onBack, cursos }) {
   const [usuarios, setUsuarios] = useState([]);
   const [search, setSearch] = useState("");
   const [editUser, setEditUser] = useState(null);
-  const [editData, setEditData] = useState({ codigo: "", nombre_completo: "" });
+  const [editData, setEditData] = useState({ codigo: "", nombre_completo: "", rol: 3, pass: "" });
   const [showAdd, setShowAdd] = useState(false);
-  const [newUser, setNewUser] = useState({ codigo: "", nombre_completo: "" });
+  const [newUser, setNewUser] = useState({ codigo: "", nombre_completo: "", rol: 3, pass: "" });
   const [loadingU, setLoadingU] = useState(true);
 
   useEffect(() => {
@@ -3222,7 +3207,7 @@ function UsersView({ onBack, cursos }) {
 
   const openEdit = (u) => {
     setEditUser(u);
-    setEditData({ codigo: u.codigo, nombre_completo: u.nombre_completo });
+    setEditData({ codigo: u.codigo, nombre_completo: u.nombre_completo, rol: u.rol || 3, pass: "" });
   };
 
   const saveEdit = async () => {
@@ -3230,7 +3215,7 @@ function UsersView({ onBack, cursos }) {
     try {
       await api.updateEstudiante(editUser.id, editData);
       setUsuarios((prev) =>
-        prev.map((u) => (u.id === editUser.id ? { ...u, ...editData } : u)),
+        prev.map((u) => (u.id === editUser.id ? { ...u, codigo: editData.codigo, nombre_completo: editData.nombre_completo, rol: editData.rol } : u)),
       );
       setEditUser(null);
       toast.success("Usuario actualizado");
@@ -3262,13 +3247,15 @@ function UsersView({ onBack, cursos }) {
       const { usuario } = await api.crearUsuario({
         codigo: newUser.codigo.trim().toUpperCase(),
         nombre_completo: newUser.nombre_completo.trim(),
+        rol: Number(newUser.rol),
+        pass: newUser.pass.trim()
       });
       setUsuarios((prev) =>
         [...prev, usuario].sort((a, b) =>
           a.nombre_completo.localeCompare(b.nombre_completo),
         ),
       );
-      setNewUser({ codigo: "", nombre_completo: "" });
+      setNewUser({ codigo: "", nombre_completo: "", rol: 3, pass: "" });
       setShowAdd(false);
       toast.success("Usuario creado");
     } catch (err) {
@@ -3429,6 +3416,33 @@ function UsersView({ onBack, cursos }) {
                   }
                   style={{ fontSize: "0.9rem" }}
                 />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div className="form-group">
+                  <label className="form-label" style={{ fontSize: "0.8rem", color: "var(--gray-500)", marginBottom: "4px" }}>Rol</label>
+                  <select
+                    className="form-input"
+                    value={editData.rol}
+                    onChange={(e) => setEditData({ ...editData, rol: Number(e.target.value) })}
+                    style={{ fontSize: "0.9rem" }}
+                  >
+                    <option value={1}>Administrador</option>
+                    <option value={2}>Profesor</option>
+                    <option value={3}>Estudiante</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label className="form-label" style={{ fontSize: "0.8rem", color: "var(--gray-500)", marginBottom: "4px" }}>Nueva Contraseña</label>
+                  <input
+                    className="form-input"
+                    type="text"
+                    placeholder="Dejar en blanco para no cambiar"
+                    value={editData.pass}
+                    onChange={(e) => setEditData({ ...editData, pass: e.target.value })}
+                    style={{ fontSize: "0.9rem" }}
+                  />
+                </div>
               </div>
 
               {/* Course enrollment checkboxes */}
@@ -3799,6 +3813,32 @@ function UsersView({ onBack, cursos }) {
                     required
                   />
                 </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <div className="form-group">
+                    <label className="form-label" style={{ fontSize: "0.8rem", color: "var(--gray-500)", marginBottom: "4px" }}>Rol</label>
+                    <select
+                      className="form-input"
+                      value={newUser.rol}
+                      onChange={(e) => setNewUser({ ...newUser, rol: Number(e.target.value) })}
+                      style={{ fontSize: "0.9rem" }}
+                    >
+                      <option value={1}>Administrador</option>
+                      <option value={2}>Profesor</option>
+                      <option value={3}>Estudiante</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label" style={{ fontSize: "0.8rem", color: "var(--gray-500)", marginBottom: "4px" }}>Contraseña (Opcional)</label>
+                    <input
+                      className="form-input"
+                      type="text"
+                      placeholder="Por defecto: El Código"
+                      value={newUser.pass}
+                      onChange={(e) => setNewUser({ ...newUser, pass: e.target.value })}
+                      style={{ fontSize: "0.9rem" }}
+                    />
+                  </div>
+                </div>
               </div>
               <div
                 style={{
@@ -3840,139 +3880,111 @@ function UsersView({ onBack, cursos }) {
           />
         </div>
       ) : (
-        <div
-          style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}
-        >
-          {filteredUsers.map((u) => (
-            <div
-              key={u.id}
-              className="card"
-              style={{ margin: 0, padding: "12px 16px" }}
-            >
+        <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
+              <thead>
+                <tr style={{ borderBottom: '2px solid var(--gray-200)', textAlign: 'left', background: 'var(--gray-50)' }}>
+                  <th style={{ padding: '12px 16px', color: 'var(--gray-500)', fontWeight: 600, fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.5px', width: '40px' }}>#</th>
+                  <th style={{ padding: '12px 16px', color: 'var(--gray-500)', fontWeight: 600, fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Nombre</th>
+                  <th style={{ padding: '12px 16px', color: 'var(--gray-500)', fontWeight: 600, fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>CUI</th>
+                  <th style={{ padding: '12px 16px', color: 'var(--gray-500)', fontWeight: 600, fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Cursos Matriculados</th>
+                  <th style={{ padding: '12px 16px', color: 'var(--gray-500)', fontWeight: 600, fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'center', width: '100px' }}>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredUsers.map((u, idx) => (
+                  <tr key={u.id} style={{ borderBottom: '1px solid var(--gray-100)', transition: 'background 0.15s' }}
+                    onMouseEnter={e => e.currentTarget.style.background = 'var(--gray-50)'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                  >
+                    <td style={{ padding: '12px 16px', color: 'var(--gray-400)', fontWeight: 500 }}>{idx + 1}</td>
+                    <td style={{ padding: '12px 16px' }}>
+                      <div style={{ fontWeight: 600, color: 'var(--gray-800)' }}>
+                        {u.nombre_completo}
+                        {Number(u.rol) === 1 && (
+                          <span style={{ marginLeft: "6px", background: "var(--primary)", color: "white", borderRadius: "4px", padding: "1px 6px", fontSize: "0.65rem", fontWeight: "600" }}>
+                            ADMIN
+                          </span>
+                        )}
+                        {Number(u.rol) === 2 && (
+                          <span style={{ marginLeft: "6px", background: "var(--gray-200)", color: "var(--gray-700)", borderRadius: "4px", padding: "1px 6px", fontSize: "0.65rem", fontWeight: "600" }}>
+                            PROFESOR
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td style={{ padding: '12px 16px', color: 'var(--gray-500)', fontFamily: 'monospace', fontWeight: 500 }}>
+                      {u.codigo}
+                    </td>
+                    <td style={{ padding: '12px 16px' }}>
+                      <div style={{ display: "flex", gap: "4px", flexWrap: "wrap" }}>
+                        {(u.cursos || []).map((c) => (
+                          <span
+                            key={c.id}
+                            style={{
+                              display: "inline-block",
+                              background: "var(--primary-bg)",
+                              color: "var(--primary-dark)",
+                              border: "1px solid var(--primary-light, #c7d2fe)",
+                              borderRadius: "12px",
+                              padding: "2px 8px",
+                              fontSize: "0.68rem",
+                              fontWeight: "600",
+                            }}
+                          >
+                            {c.nombre}
+                          </span>
+                        ))}
+                        {(!u.cursos || u.cursos.length === 0) && (
+                          <span
+                            style={{
+                              fontSize: "0.68rem",
+                              color: "var(--gray-400)",
+                              fontStyle: "italic",
+                            }}
+                          >
+                            Sin curso
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td style={{ padding: '12px 16px', textAlign: 'center' }}>
+                      <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                        <button
+                          className="btn btn-ghost"
+                          onClick={() => openEdit(u)}
+                          style={{ padding: "6px", color: "var(--primary)", border: "1px solid var(--primary-bg)", background: "var(--primary-bg)" }}
+                          title="Editar"
+                        >
+                          <Edit size={16} />
+                        </button>
+                        <button
+                          className="btn btn-ghost"
+                          onClick={() => deleteUser(u)}
+                          style={{ padding: "6px", color: "var(--error)", border: "1px solid #fee2e2", background: "#fef2f2" }}
+                          title="Eliminar"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {filteredUsers.length === 0 && (
               <div
                 style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "flex-start",
-                  gap: "0.75rem",
-                  flexWrap: "wrap",
+                  textAlign: "center",
+                  padding: "3rem",
+                  color: "var(--gray-400)",
                 }}
               >
-                <div style={{ flex: 1, minWidth: "200px" }}>
-                  <div
-                    style={{
-                      fontWeight: "700",
-                      fontSize: "0.9rem",
-                      color: "var(--gray-800)",
-                    }}
-                  >
-                    {u.nombre_completo}
-                    {Number(u.rol) === 1 && (
-                      <span
-                        style={{
-                          marginLeft: "6px",
-                          background: "var(--primary)",
-                          color: "white",
-                          borderRadius: "4px",
-                          padding: "1px 6px",
-                          fontSize: "0.65rem",
-                          fontWeight: "600",
-                        }}
-                      >
-                        ADMIN
-                      </span>
-                    )}
-                  </div>
-                  <div
-                    style={{
-                      fontSize: "0.75rem",
-                      color: "var(--gray-400)",
-                      marginTop: "2px",
-                    }}
-                  >
-                    {u.codigo}
-                  </div>
-                  <div
-                    style={{
-                      display: "flex",
-                      gap: "4px",
-                      flexWrap: "wrap",
-                      marginTop: "6px",
-                    }}
-                  >
-                    {(u.cursos || []).map((c) => (
-                      <span
-                        key={c.id}
-                        style={{
-                          display: "inline-block",
-                          background: "var(--primary-bg)",
-                          color: "var(--primary-dark)",
-                          border: "1px solid var(--primary-light, #c7d2fe)",
-                          borderRadius: "12px",
-                          padding: "2px 8px",
-                          fontSize: "0.68rem",
-                          fontWeight: "600",
-                        }}
-                      >
-                        {c.nombre}
-                      </span>
-                    ))}
-                    {(!u.cursos || u.cursos.length === 0) && (
-                      <span
-                        style={{
-                          fontSize: "0.68rem",
-                          color: "var(--gray-400)",
-                          fontStyle: "italic",
-                        }}
-                      >
-                        Sin curso
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <div
-                  style={{
-                    display: "flex",
-                    gap: "4px",
-                    alignItems: "center",
-                    flexShrink: 0,
-                  }}
-                >
-                  <button
-                    className="btn btn-ghost btn-sm"
-                    onClick={() => openEdit(u)}
-                    style={{ height: "32px", padding: "0 8px" }}
-                    title="Editar"
-                  >
-                    <Edit size={14} />
-                  </button>
-                  <button
-                    className="btn btn-ghost btn-sm"
-                    onClick={() => deleteUser(u)}
-                    style={{
-                      height: "32px",
-                      padding: "0 8px",
-                      color: "var(--error)",
-                    }}
-                    title="Eliminar"
-                  >
-                    <Trash2 size={14} />
-                  </button>
-                </div>
+                No se encontraron usuarios.
               </div>
-            </div>
-          ))}
-          {filteredUsers.length === 0 && (
-            <div
-              style={{
-                textAlign: "center",
-                padding: "2rem",
-                color: "var(--gray-400)",
-              }}
-            >
-              No se encontraron usuarios.
-            </div>
-          )}
+            )}
+          </div>
         </div>
       )}
     </div>

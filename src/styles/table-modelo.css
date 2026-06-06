@@ -1,0 +1,130 @@
+.table-modelo-wrapper {
+  overflow-x: auto;
+  width: 100%;
+  background: white;
+  border-radius: 12px;
+  border: 1px solid var(--gray-200);
+  padding: 8px;
+}
+
+@media (max-width: 640px) {
+  .table-modelo-wrapper {
+    padding: 0;
+    border-radius: 0;
+    margin-left: -1rem;
+    margin-right: -1rem;
+    width: calc(100% + 2rem);
+    border-left: none;
+    border-right: none;
+  }
+}
+
+.table-modelo {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.85rem;
+}
+
+.table-modelo thead tr {
+  border-bottom: 2px solid var(--gray-200);
+}
+
+.table-modelo th {
+  padding: 12px;
+  font-weight: 600;
+  color: var(--gray-500);
+  white-space: nowrap;
+}
+
+.table-modelo tbody tr {
+  border-bottom: 1px solid var(--gray-100);
+  transition: background 0.2s ease;
+  background: transparent;
+}
+
+.table-modelo tbody tr:hover {
+  background: var(--gray-50);
+}
+
+.table-modelo td {
+  padding: 6px 12px;
+  vertical-align: middle;
+  color: var(--gray-800);
+}
+
+/* Sticky column support for Historial (Left) */
+.table-modelo th.sticky-col,
+.table-modelo td.sticky-col {
+  position: sticky;
+  left: 0;
+  background: white;
+  z-index: 10;
+  border-right: 1px solid var(--gray-100);
+}
+
+.table-modelo th.sticky-col {
+  z-index: 20;
+  background: white !important;
+}
+
+.table-modelo tbody tr:hover td.sticky-col {
+  background: var(--gray-50);
+}
+
+/* Sticky column support for Historial (Right) */
+.table-modelo th.sticky-col-right,
+.table-modelo td.sticky-col-right {
+  position: sticky;
+  right: 0;
+  background: white;
+  z-index: 10;
+  border-left: 2px solid var(--gray-200);
+}
+
+.table-modelo th.sticky-col-right {
+  z-index: 20;
+  background: white !important;
+}
+
+.table-modelo tbody tr:hover td.sticky-col-right {
+  background: var(--gray-50);
+}
+
+@media (max-width: 640px) {
+  .table-modelo th.sticky-col-right,
+  .table-modelo td.sticky-col-right {
+    position: static;
+    border-left: none;
+  }
+}
+
+/* Specific styling for Historial table points and statuses */
+.historial-time {
+  font-size: 0.6rem;
+  color: #6b7280;
+  margin-top: 2px;
+  font-weight: 500;
+  opacity: 0.85;
+}
+
+/* Points Buttons UI */
+.btn-puntos {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  font-size: 1.1rem;
+  transition: transform 0.1s ease;
+}
+
+.btn-puntos:active {
+  transform: scale(0.9);
+}
+
+@media (max-width: 640px) {
+  .btn-puntos {
+    width: 32px;
+    height: 32px;
+    font-size: 1.4rem;
+  }
+}

@@ -22,6 +22,10 @@ export default function ProfileView({ user, roleLabel, onUpdateUser, onCancel })
       return;
     }
     if (passNueva || passRepetir) {
+      if (!passActual) {
+        toast.error("Debes ingresar tu contraseña actual");
+        return;
+      }
       if (passNueva !== passRepetir) {
         toast.error("Las contraseñas nuevas no coinciden");
         return;
@@ -30,8 +34,6 @@ export default function ProfileView({ user, roleLabel, onUpdateUser, onCancel })
         toast.error("La nueva contraseña debe tener mínimo 4 caracteres");
         return;
       }
-      // Note: We are not verifying passActual on the frontend for simplicity, 
-      // but ideally the backend would require it.
     }
     
     setSaving(true);
@@ -39,6 +41,7 @@ export default function ProfileView({ user, roleLabel, onUpdateUser, onCancel })
       const payload = { nombre_completo: nombre.trim() };
       if (passNueva) {
         payload.pass = passNueva;
+        payload.passActual = passActual;
       }
       
       const res = await api.updatePerfil(user.id, payload);
@@ -83,9 +86,16 @@ export default function ProfileView({ user, roleLabel, onUpdateUser, onCancel })
           </div>
           <div>
             <h2 style={{ margin: 0, fontSize: '1.25rem', color: 'var(--gray-800)' }}>Datos Generales</h2>
-            <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--gray-500)' }}>
-              Modifica tu nombre de perfil o actualiza tu contraseña de acceso
-            </p>
+            <div style={{ display: 'flex', gap: '1rem', marginTop: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', color: 'var(--gray-500)' }}>
+                <span style={{ fontWeight: 600 }}>Código:</span>
+                <span style={{ fontFamily: 'monospace', background: 'var(--gray-100)', padding: '2px 6px', borderRadius: '4px', color: 'var(--gray-700)' }}>{user.codigo || 'N/A'}</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', color: 'var(--gray-500)' }}>
+                <span style={{ fontWeight: 600 }}>Rol:</span>
+                <span style={{ textTransform: 'capitalize', background: 'var(--primary-bg)', color: 'var(--primary)', padding: '2px 8px', borderRadius: '4px', fontWeight: 600 }}>{roleLabel || 'Usuario'}</span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -100,6 +110,8 @@ export default function ProfileView({ user, roleLabel, onUpdateUser, onCancel })
               required
             />
           </div>
+
+
 
           <div style={{ margin: '2rem 0', borderTop: '1px solid var(--gray-100)' }} />
 

@@ -332,7 +332,7 @@ export default function StudentPage({ user, onLogout, onUpdateUser }) {
                       setCursoActivo(c);
                       setViewMode("curso");
                     }}
-                    style={{ cursor: "pointer" }}
+                    style={{ cursor: "pointer", marginTop: 0, height: '100%' }}
                   >
                     <div
                       style={{
@@ -450,12 +450,22 @@ export default function StudentPage({ user, onLogout, onUpdateUser }) {
                   historial
                     .filter((h) => h.curso_id === cursoActivo.id)
                     .map((h) => (
-                      <div key={h.id} className="attendance-item">
+                      <div 
+                        key={h.id} 
+                        className="attendance-item"
+                        style={{ maxWidth: '400px', margin: '0 auto', alignItems: 'center', width: '100%' }}
+                      >
                         <span
                           className={`badge-status`}
                           style={{
-                            background: h.color || "#ccc",
-                            color: "#fff",
+                            background: h.color ? `color-mix(in srgb, ${h.color} 15%, transparent)` : "#f1f5f9",
+                            border: `1px solid ${h.color || '#cbd5e1'}`,
+                            color: h.color || "#64748b",
+                            padding: '4px 16px',
+                            borderRadius: '20px',
+                            fontWeight: '800',
+                            textAlign: 'center',
+                            width: '100%'
                           }}
                         >
                           {h.tipo === 'puntos' ? `${h.valor >= 0 ? '+' : ''}${h.valor ?? 0}` : h.estado}
@@ -466,6 +476,9 @@ export default function StudentPage({ user, onLogout, onUpdateUser }) {
                             flexDirection: "row",
                             justifyContent: "space-between",
                             width: "100%",
+                            marginTop: "8px",
+                            paddingTop: "8px",
+                            borderTop: "1px solid var(--gray-100)"
                           }}
                         >
                           {h.tipo === 'clase' ? (
