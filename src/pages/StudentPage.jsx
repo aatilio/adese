@@ -444,10 +444,10 @@ export default function StudentPage({ user, onLogout, onUpdateUser }) {
                         style={{ margin: "1rem auto" }}
                       />
                       <div className="fw-700">
-                        Asistencia Registrada
+                        Registrado como {registered.estado}
                       </div>
                       <div className="sp-registered-time">
-                        {registered.hora} - {registered.estado}
+                        Hora: <strong>{registered.hora}</strong>
                       </div>
                     </div>
                   ) : (
