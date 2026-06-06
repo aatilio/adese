@@ -31,6 +31,11 @@ import { ROL } from "../constants/roles";
 import { toast } from "../components/Toast";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import CourseCard from "../components/ui/CourseCard";
+import Tabs from "../components/ui/Tabs";
+import Modal from "../components/ui/Modal";
+import SessionRow from "../components/teacher/SessionRow";
+import DataTable from "../components/teacher/DataTable";
 import QrGenerator from "../components/QrGenerator";
 import AttendanceTable from "../components/AttendanceTable";
 import ProfileView from "../components/ProfileView";
@@ -1021,32 +1026,18 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
           {!checking && (
             <div className="tp-courses-grid">
               {filteredCursos.map((c) => (
-                <div
+                <CourseCard
                   key={c.id}
-                  className="card tp-course-card"
+                  title={c.nombre}
+                  tagLabel="Curso"
+                  tagIcon={BookOpen}
+                  docente={isAdmin && c.profesor_codigo ? { nombre: c.profesor_nombre, codigo: c.profesor_codigo } : null}
                   onClick={() => {
                     setCursoActivo(c);
                     setViewMode("curso");
                   }}
-                >
-                  <div className="tp-course-card__header">
-                    <div>
-                      <div className="tp-course-card__tag">
-                        <BookOpen size={18} />
-                        <span className="tp-course-card__label">Curso</span>
-                      </div>
-                      <h3 className="tp-course-card__name">{c.nombre}</h3>
-                      {isAdmin && c.profesor_codigo && (
-                        <div
-                          className="tp-course-card__docente"
-                          title={`Propietario: ${c.profesor_nombre}`}
-                        >
-                          <span className="tp-course-card__docente-label">Docente:</span>
-                          {c.profesor_codigo}
-                        </div>
-                      )}
-                    </div>
-                    <div className="tp-course-card__actions">
+                  actions={
+                    <>
                       <button
                         className="btn btn-sm btn-ghost tp-icon-btn"
                         onClick={(e) => {
@@ -1069,17 +1060,19 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                       >
                         <Trash2 size={16} />
                       </button>
-                    </div>
-                  </div>
-                  <div className="tp-course-card__stats">
-                    <span className="tp-course-card__stat">
-                      <Users size={14} /> {c.total_alumnos} Alumnos
-                    </span>
-                    <span className="tp-course-card__stat">
-                      <Calendar size={14} /> {c.total_clases} Clases
-                    </span>
-                  </div>
-                </div>
+                    </>
+                  }
+                  stats={
+                    <>
+                      <span className="tp-course-card__stat">
+                        <Users size={14} /> {c.total_alumnos} Alumnos
+                      </span>
+                      <span className="tp-course-card__stat">
+                        <Calendar size={14} /> {c.total_clases} Clases
+                      </span>
+                    </>
+                  }
+                />
               ))}
 
               {/* ── Sketch Card: Crear Curso ────────────────── */}
@@ -1134,41 +1127,18 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
               « Volver a Cursos
             </button>
 
-            <div
+            <Tabs
               className="tabs tp-tabs-inline"
-            >
-              <button
-                className={`tab tp-tab--compact ${activeTab === "vivo" ? "active" : ""}`}
-                onClick={() => setActiveTab("vivo")}
-              >
-                <Radio size={16} /> Monitor
-              </button>
-              <button
-                className={`tab tp-tab--compact ${activeTab === "clases" ? "active" : ""}`}
-                onClick={() => setActiveTab("clases")}
-              >
-                <Calendar size={16} /> Clases
-              </button>
-              <button
-                className={`tab tp-tab--compact ${activeTab === "alumnos" ? "active" : ""}`}
-                onClick={() => setActiveTab("alumnos")}
-              >
-                <Users size={16} /> Alumnos
-              </button>
-              <button
-                className={`tab tp-tab--compact ${activeTab === "historial" ? "active" : ""}`}
-                onClick={() => setActiveTab("historial")}
-              >
-                <History size={16} /> Historial
-              </button>
-              {/* <button
-                className={`tab ${activeTab === "config" ? "active" : ""}`}
-                onClick={() => setActiveTab("config")}
-                style={{ padding: "12px 0" }}
-              >
-                <Settings size={16} /> Ajustes
-              </button> */}
-            </div>
+              tabClass="tab tp-tab--compact"
+              activeTab={activeTab}
+              onChange={setActiveTab}
+              tabs={[
+                { id: "vivo", label: "Monitor", icon: Radio },
+                { id: "clases", label: "Clases", icon: Calendar },
+                { id: "alumnos", label: "Alumnos", icon: Users },
+                { id: "historial", label: "Historial", icon: History },
+              ]}
+            />
           </div>
 
           <div className="page-body tp-page-body-full">

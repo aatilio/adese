@@ -13,6 +13,9 @@ import {
   BarChart3,
 } from "lucide-react";
 import { Html5Qrcode } from "html5-qrcode";
+import Tabs from "../components/ui/Tabs";
+import CourseCard from "../components/ui/CourseCard";
+import Scanner from "../components/student/Scanner";
 import { api } from "../api/client";
 import { toast } from "../components/Toast";
 import Header from "../components/Header";
@@ -152,39 +155,7 @@ export default function StudentPage({ user, onLogout, onUpdateUser }) {
     }
   }, [validStatuses, estado]);
 
-  const startScanner = () => {
-    if (!estado) {
-      toast.error("Selecciona un estado de asistencia");
-      return;
-    }
-    setStep(STEPS.SCANNING);
-    setTimeout(() => initScanner(), 300);
-  };
-
-  const initScanner = () => {
-    const scanner = new Html5Qrcode("qr-reader");
-    scannerRef.current = scanner;
-    scanner
-      .start(
-        { facingMode: "environment" },
-        { fps: 10, qrbox: { width: 220, height: 220 } },
-        handleQrScan,
-        () => {},
-      )
-      .catch(() => {
-        toast.error("No se pudo acceder a la cámara");
-        setStep(STEPS.SELECT);
-      });
-  };
-
-  const stopScanner = () => {
-    scannerRef.current?.stop().catch(() => {});
-    scannerRef.current = null;
-    setStep(STEPS.SELECT);
-  };
-
   const handleQrScan = async (decodedText) => {
-    await stopScanner();
     setLoading(true);
     try {
       await api.registrarAsistencia({
@@ -286,24 +257,17 @@ export default function StudentPage({ user, onLogout, onUpdateUser }) {
             ) : (
               <div className="sp-courses-grid">
                 {cursos.map((c) => (
-                  <div
+                  <CourseCard
                     key={c.id}
-                    className="card sp-course-card"
+                    title={c.nombre}
+                    tagLabel="Curso"
+                    tagIcon={ClipboardList}
+                    baseClass="sp-course-card"
                     onClick={() => {
                       setCursoActivo(c);
                       setViewMode("curso");
                     }}
-                  >
-                    <div className="sp-course-card__tag">
-                      <ClipboardList size={18} />{" "}
-                      <span className="sp-course-card__label">
-                        Curso
-                      </span>
-                    </div>
-                    <h3 className="sp-course-card__name">
-                      {c.nombre}
-                    </h3>
-                  </div>
+                  />
                 ))}
               </div>
             )}
@@ -329,28 +293,17 @@ export default function StudentPage({ user, onLogout, onUpdateUser }) {
                   {cursoActivo?.nombre}
                 </h2>
               </div>
-              <div className="tabs tabs--inline">
-                <button
-                  className={`tab ${activeTab === "marcar" ? "active" : ""}`}
-                  onClick={() => setActiveTab("marcar")}
-                >
-                  <CheckCircle size={16} /> Marcar
-                </button>
-                <button
-                  className={`tab ${activeTab === "historial" ? "active" : ""}`}
-                  onClick={() => setActiveTab("historial")}
-                >
-                  <History size={16} /> Historial
-                </button>
-                {cursoActivo?.nombre?.toLowerCase().includes('econometría') && (
-                  <button
-                    className={`tab ${activeTab === "econometria" ? "active" : ""}`}
-                    onClick={() => setActiveTab("econometria")}
-                  >
-                    <BarChart3 size={16} /> Estimador
-                  </button>
-                )}
-              </div>
+              <Tabs
+                activeTab={activeTab}
+                onChange={setActiveTab}
+                tabs={[
+                  { id: "marcar", label: "Marcar", icon: CheckCircle },
+                  { id: "historial", label: "Historial", icon: History },
+                  ...(cursoActivo?.nombre?.toLowerCase().includes('econometría')
+                    ? [{ id: "econometria", label: "Estimador", icon: BarChart3 }]
+                    : [])
+                ]}
+              />
             </div>
 
             {activeTab === "econometria" ? (
@@ -503,65 +456,18 @@ export default function StudentPage({ user, onLogout, onUpdateUser }) {
 
                       {validStatuses.length > 0 && (
                         <div className="card">
-                          <div className="card-title">Validación</div>
-                          {step === STEPS.SCANNING ? (
-                            <div>
-                              <div
-                                id="qr-reader"
-                                className="sp-qr-reader"
-                              />
-                              <button
-                                className="btn btn-ghost mt-2 btn-sm w-full"
-                                onClick={stopScanner}
-                              >
-                                Cancelar Escaneo
-                              </button>
-                            </div>
-                          ) : (
-                            <div className="sp-scan-actions">
-                              <button
-                                className="btn btn-black w-full"
-                                onClick={startScanner}
-                                disabled={loading || !estado}
-                              >
-                                <QrCode
-                                  size={16}
-                                  style={{ marginRight: "6px" }}
-                                />{" "}
-                                Escanear QR
-                              </button>
-
-                              <div className="sp-or-divider">
-                                O USA EL CÓDIGO
-                              </div>
-
-                              <input
-                                placeholder="16 DIGITOS"
-                                className="form-input sp-code-input"
-                                value={inputCode}
-                                onChange={(e) =>
-                                  setInputCode(e.target.value.toUpperCase())
-                                }
-                                maxLength={16}
-                              />
-                              <button
-                                className={`btn btn-sm w-full ${inputCode.length === 16 ? 'btn-success' : 'btn-ghost'}`}
-                                onClick={() => handleQrScan(inputCode)}
-                                disabled={
-                                  loading || !estado || inputCode.length !== 16
-                                }
-                                style={{
-                                  border: inputCode.length === 16 ? "none" : "1px solid var(--gray-200)",
-                                }}
-                              >
-                                {loading ? (
-                                  <div className="spinner" />
-                                ) : (
-                                  "Confirmar Código"
-                                )}
-                              </button>
-                            </div>
-                          )}
+                            <Scanner
+                              onScan={handleQrScan}
+                              onCancel={() => setStep(STEPS.SELECT)}
+                              loading={loading}
+                              estado={estado}
+                              inputCode={inputCode}
+                              setInputCode={setInputCode}
+                              STEPS={STEPS}
+                              step={step}
+                              setStep={setStep}
+                              toast={toast}
+                            />
                         </div>
                       )}
                     </>

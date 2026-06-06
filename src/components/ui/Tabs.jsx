@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function Tabs({ tabs, activeTab, onChange, className = "tabs tabs--inline" }) {
+export default function Tabs({ tabs, activeTab, onChange, className = "tabs tabs--inline", tabClass = "tab" }) {
   return (
     <div className={className}>
       {tabs.map((tab) => {
@@ -9,7 +9,7 @@ export default function Tabs({ tabs, activeTab, onChange, className = "tabs tabs
           <button
             key={tab.id}
             type="button"
-            className={`tab ${activeTab === tab.id ? "active" : ""}`}
+            className={`${tabClass} ${activeTab === tab.id ? "active" : ""}`}
             onClick={() => onChange(tab.id)}
           >
             {Icon && <Icon size={16} />} {tab.label}
