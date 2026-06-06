@@ -3321,7 +3321,7 @@ function UsersView({ onBack, cursos }) {
               background: "white",
               borderRadius: "16px",
               width: "100%",
-              maxWidth: "480px",
+              maxWidth: "600px",
               boxShadow: "0 20px 60px rgba(0,0,0,0.25)",
               overflow: "hidden",
             }}
@@ -3418,8 +3418,8 @@ function UsersView({ onBack, cursos }) {
                 />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                <div className="form-group">
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem', alignItems: 'end' }}>
+                <div className="form-group" style={{ margin: 0 }}>
                   <label className="form-label" style={{ fontSize: "0.8rem", color: "var(--gray-500)", marginBottom: "4px" }}>Rol</label>
                   <select
                     className="form-input"
@@ -3432,7 +3432,7 @@ function UsersView({ onBack, cursos }) {
                     <option value={3}>Estudiante</option>
                   </select>
                 </div>
-                <div className="form-group">
+                <div className="form-group" style={{ margin: 0 }}>
                   <label className="form-label" style={{ fontSize: "0.8rem", color: "var(--gray-500)", marginBottom: "4px" }}>Nueva Contraseña</label>
                   <input
                     className="form-input"
@@ -3717,7 +3717,7 @@ function UsersView({ onBack, cursos }) {
               background: "white",
               borderRadius: "16px",
               width: "100%",
-              maxWidth: "420px",
+              maxWidth: "600px",
               boxShadow: "0 20px 60px rgba(0,0,0,0.25)",
               overflow: "hidden",
             }}
@@ -3813,8 +3813,8 @@ function UsersView({ onBack, cursos }) {
                     required
                   />
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                  <div className="form-group">
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem', alignItems: 'end' }}>
+                  <div className="form-group" style={{ margin: 0 }}>
                     <label className="form-label" style={{ fontSize: "0.8rem", color: "var(--gray-500)", marginBottom: "4px" }}>Rol</label>
                     <select
                       className="form-input"
@@ -3827,7 +3827,7 @@ function UsersView({ onBack, cursos }) {
                       <option value={3}>Estudiante</option>
                     </select>
                   </div>
-                  <div className="form-group">
+                  <div className="form-group" style={{ margin: 0 }}>
                     <label className="form-label" style={{ fontSize: "0.8rem", color: "var(--gray-500)", marginBottom: "4px" }}>Contraseña (Opcional)</label>
                     <input
                       className="form-input"
