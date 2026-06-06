@@ -1834,6 +1834,12 @@
   gap: 1.5rem;
 }
 
+@media (min-width: 768px) {
+  .tp-tabs-inline {
+    margin-left: auto;
+  }
+}
+
 /* ── Page body full width ────────────────────────────────── */
 .tp-page-body-full { width: 100%; }
 

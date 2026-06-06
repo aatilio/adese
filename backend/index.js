@@ -81,12 +81,13 @@ const autoFillAbsences = async (pool, sesionId, force = false) => {
       // estado_id = 4 corresponds to 'Falto'
       await pool.query(`
         INSERT INTO asistencias (estudiante_id, sesion_id, estado_id, fecha_hora)
-        SELECT ce.estudiante_id, $1, 4, NOW()
-        FROM curso_estudiantes ce
-        WHERE ce.curso_id = $2
+        SELECT cu.usuario_id, $1, 4, NOW()
+        FROM curso_usuarios cu
+        JOIN usuarios u ON u.id = cu.usuario_id
+        WHERE cu.curso_id = $2 AND u.rol = 3
           AND NOT EXISTS (
             SELECT 1 FROM asistencias a 
-            WHERE a.estudiante_id = ce.estudiante_id AND a.sesion_id = $1
+            WHERE a.estudiante_id = cu.usuario_id AND a.sesion_id = $1
           )
       `, [sesionId, s.curso_id]);
 
@@ -176,9 +177,9 @@ app.get('/api/sesiones/activa', async (req, res) => {
   }
 });
 
-// POST /api/sesiones — crea y activa una sesión. Acepta tipo y visible_alumnos.
+// POST /api/sesiones — crea y activa una sesión. Acepta tipo, visible_alumnos, profesor_id.
 app.post('/api/sesiones', async (req, res) => {
-  const { nombre_clase, curso_id, tipo, visible_alumnos } = req.body;
+  const { nombre_clase, curso_id, tipo, visible_alumnos, profesor_id } = req.body;
   const tipoFinal           = tipo           ?? 'clase';
   const visibleAlumnosFinal = visible_alumnos ?? true;
   try {
@@ -186,9 +187,9 @@ app.post('/api/sesiones', async (req, res) => {
     await pool.query('UPDATE sesiones SET activa = false WHERE activa = true AND curso_id = $1', [curso_id]);
     const token = generateRandomCode();
     const r = await pool.query(
-      `INSERT INTO sesiones (nombre_clase, token_qr, activa, curso_id, fecha_inicio, tipo, visible_alumnos)
-       VALUES ($1, $2, true, $3, NOW(), $4, $5) RETURNING *`,
-      [nombre_clase, token, curso_id, tipoFinal, visibleAlumnosFinal]
+      `INSERT INTO sesiones (nombre_clase, token_qr, activa, curso_id, profesor_id, fecha_inicio, tipo, visible_alumnos)
+       VALUES ($1, $2, true, $3, $4, NOW(), $5, $6) RETURNING *`,
+      [nombre_clase, token, curso_id, profesor_id || null, tipoFinal, visibleAlumnosFinal]
     );
     res.json({ sesion: r.rows[0] });
   } catch (err) {
@@ -298,11 +299,10 @@ app.post('/api/asistencias', async (req, res) => {
       return res.status(403).json({ error: 'Solo los estudiantes pueden registrar asistencia' });
     }
 
-    // Buscamos sesión activa con ese token y su profesor_id asociado al curso
+    // Buscamos sesión activa con ese token
     const sesion = await pool.query(`
-      SELECT s.*, c.profesor_id 
+      SELECT s.* 
       FROM sesiones s
-      JOIN cursos c ON s.curso_id = c.id
       WHERE s.token_qr = $1 
       AND (s.activa = true OR s.fecha_programada::date = CURRENT_DATE)
     `, [token_qr]);
@@ -311,7 +311,12 @@ app.post('/api/asistencias', async (req, res) => {
 
     const sesionInfo = sesion.rows[0];
     const sesionId = sesionInfo.id;
-    const profesorId = sesionInfo.profesor_id;
+    let profesorId = sesionInfo.profesor_id;
+
+    if (!profesorId) {
+      const pRes = await pool.query('SELECT usuario_id FROM curso_usuarios WHERE curso_id = $1 LIMIT 1', [sesionInfo.curso_id]);
+      if (pRes.rows.length > 0) profesorId = pRes.rows[0].usuario_id;
+    }
 
     // Resolve estado name to estado_id using the correct profesor_id
     const estadoRes = await pool.query('SELECT id FROM estados_asistencia WHERE nombre = $1 AND profesor_id = $2', [estado, profesorId]);
@@ -351,15 +356,16 @@ app.get('/api/usuarios', async (req, res) => {
       SELECT u.*, 
         COALESCE(
           (SELECT json_agg(json_build_object('id', c.id, 'nombre', c.nombre))
-           FROM curso_estudiantes ce
-           JOIN cursos c ON c.id = ce.curso_id
-           WHERE ce.estudiante_id = u.id),
+           FROM curso_usuarios cu
+           JOIN cursos c ON c.id = cu.curso_id
+           WHERE cu.usuario_id = u.id AND u.rol = 3),
           '[]'
         ) AS cursos,
         COALESCE(
           (SELECT json_agg(json_build_object('id', c.id, 'nombre', c.nombre))
-           FROM cursos c
-           WHERE c.profesor_id = u.id),
+           FROM curso_usuarios cu
+           JOIN cursos c ON c.id = cu.curso_id
+           WHERE cu.usuario_id = u.id AND u.rol = 2),
           '[]'
         ) AS cursos_dictados
       FROM usuarios u
@@ -481,10 +487,12 @@ app.put('/api/usuarios/:id/perfil', async (req, res) => {
 app.get('/api/estudiantes/:id/cursos', async (req, res) => {
   try {
     const r = await pool.query(`
-      SELECT c.* FROM cursos c
-      JOIN curso_estudiantes ce ON ce.curso_id = c.id
-      WHERE ce.estudiante_id = $1 ORDER BY c.created_at DESC
-    `, [req.params.id]);
+      SELECT c.* 
+      FROM cursos c
+      JOIN curso_usuarios cu ON cu.curso_id = c.id
+      WHERE cu.usuario_id = $1`,
+      [req.params.id]
+    );
     res.json({ cursos: r.rows });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -595,17 +603,22 @@ app.get('/api/asistencias/:sesion_id', async (req, res) => {
 app.post('/api/asistencias/manual', async (req, res) => {
   const { estudiante_id, sesion_id, estado, valor } = req.body;
   try {
-    // Verificar si la sesión es tipo 'puntos' y obtener profesor_id
-    const sesionRes = await pool.query(`
-      SELECT s.tipo, c.profesor_id 
-      FROM sesiones s
-      JOIN cursos c ON s.curso_id = c.id
-      WHERE s.id = $1
-    `, [sesion_id]);
+    // Verificar si la sesión es tipo 'puntos' y obtener profesor_id de la sesion
+    const sesionRes = await pool.query(
+      `SELECT s.tipo, s.profesor_id 
+       FROM sesiones s 
+       WHERE s.id = $1`,
+      [sesion_id]
+    );
     
     if (sesionRes.rows.length === 0) return res.status(404).json({ error: 'Sesión no encontrada' });
     const esPuntos = sesionRes.rows[0].tipo === 'puntos';
-    const profesorId = sesionRes.rows[0].profesor_id;
+    let profesorId = sesionRes.rows[0].profesor_id;
+
+    if (!profesorId) {
+      const pRes = await pool.query('SELECT usuario_id FROM curso_usuarios cu JOIN sesiones s ON s.curso_id = cu.curso_id WHERE s.id = $1 LIMIT 1', [sesion_id]);
+      if (pRes.rows.length > 0) profesorId = pRes.rows[0].usuario_id;
+    }
 
     if (esPuntos) {
       // Tipo puntos: sin estado_id, con valor inicial
@@ -638,18 +651,18 @@ app.get('/api/cursos', async (req, res) => {
   const { profesor_id } = req.query;
   try {
     let query = `
-      SELECT c.*,
-        u.nombre_completo AS profesor_nombre,
-        u.codigo AS profesor_codigo,
-        (SELECT COUNT(*) FROM curso_estudiantes ce WHERE ce.curso_id = c.id)::int AS total_alumnos,
+      SELECT c.*, 
+        (SELECT string_agg(u.nombre_completo, ', ') FROM curso_usuarios cu JOIN usuarios u ON u.id = cu.usuario_id WHERE cu.curso_id = c.id AND u.rol = 2) AS profesor_nombre,
+        (SELECT string_agg(u.codigo, ', ') FROM curso_usuarios cu JOIN usuarios u ON u.id = cu.usuario_id WHERE cu.curso_id = c.id AND u.rol = 2) AS profesor_codigo,
+        (SELECT COUNT(*) FROM curso_usuarios cu JOIN usuarios u ON u.id = cu.usuario_id WHERE cu.curso_id = c.id AND u.rol = 3)::int AS total_alumnos,
         (SELECT COUNT(*) FROM sesiones sc WHERE sc.curso_id = c.id)::int AS total_clases
       FROM cursos c
-      LEFT JOIN usuarios u ON u.id = c.profesor_id
     `;
     const params = [];
+    
     if (profesor_id) {
       params.push(profesor_id);
-      query += ` WHERE c.profesor_id = $1`;
+      query += ` JOIN curso_usuarios cu2 ON cu2.curso_id = c.id WHERE cu2.usuario_id = $1`;
     }
     query += ` ORDER BY c.created_at DESC`;
     const r = await pool.query(query, params);
@@ -657,26 +670,54 @@ app.get('/api/cursos', async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// POST /api/cursos — acepta nombre, descripcion, profesor_id
+// POST /api/cursos — acepta nombre, descripcion, profesores_ids
 app.post('/api/cursos', async (req, res) => {
-  const { nombre, descripcion, profesor_id } = req.body;
+  const { nombre, descripcion, profesores_ids } = req.body;
   try {
     const r = await pool.query(
-      'INSERT INTO cursos (nombre, descripcion, profesor_id) VALUES ($1, $2, $3) RETURNING *',
-      [nombre, descripcion || '', profesor_id || null]
+      'INSERT INTO cursos (nombre, descripcion) VALUES ($1, $2) RETURNING *',
+      [nombre, descripcion || '']
     );
-    res.json({ curso: r.rows[0] });
+    const nuevoCurso = r.rows[0];
+
+    if (profesores_ids && Array.isArray(profesores_ids)) {
+      for (const pId of profesores_ids) {
+        await pool.query(
+          'INSERT INTO curso_usuarios (curso_id, usuario_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+          [nuevoCurso.id, pId]
+        );
+      }
+    }
+    
+    res.json({ curso: nuevoCurso });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 // PUT /api/cursos/:id
 app.put('/api/cursos/:id', async (req, res) => {
-  const { nombre, descripcion, profesor_id } = req.body;
+  const { nombre, descripcion, profesores_ids } = req.body;
   try {
     const r = await pool.query(
-      'UPDATE cursos SET nombre=COALESCE($1, nombre), descripcion=COALESCE($2, descripcion), profesor_id=COALESCE($3, profesor_id) WHERE id=$4 RETURNING *',
-      [nombre, descripcion, profesor_id, req.params.id]
+      'UPDATE cursos SET nombre=COALESCE($1, nombre), descripcion=COALESCE($2, descripcion) WHERE id=$3 RETURNING *',
+      [nombre, descripcion, req.params.id]
     );
+    
+    if (profesores_ids && Array.isArray(profesores_ids)) {
+      // Remover docentes previos
+      await pool.query(`
+        DELETE FROM curso_usuarios 
+        WHERE curso_id = $1 AND usuario_id IN (SELECT id FROM usuarios WHERE rol = 2)
+      `, [req.params.id]);
+
+      // Insertar los nuevos
+      for (const pId of profesores_ids) {
+        await pool.query(
+          'INSERT INTO curso_usuarios (curso_id, usuario_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+          [req.params.id, pId]
+        );
+      }
+    }
+    
     res.json({ curso: r.rows[0] });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
@@ -694,8 +735,8 @@ app.get('/api/cursos/:id/estudiantes', async (req, res) => {
   try {
     const r = await pool.query(`
       SELECT u.* FROM usuarios u
-      JOIN curso_estudiantes ce ON ce.estudiante_id = u.id
-      WHERE ce.curso_id = $1 ORDER BY u.nombre_completo
+      JOIN curso_usuarios cu ON cu.usuario_id = u.id
+      WHERE cu.curso_id = $1 AND u.rol = 3 ORDER BY u.nombre_completo
     `, [req.params.id]);
     res.json({ estudiantes: r.rows });
   } catch (err) { res.status(500).json({ error: err.message }); }
@@ -706,19 +747,19 @@ app.post('/api/cursos/:id/estudiantes', async (req, res) => {
   const { estudiante_id } = req.body;
   try {
     await pool.query(
-      'INSERT INTO curso_estudiantes (curso_id, estudiante_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+      'INSERT INTO curso_usuarios (curso_id, usuario_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
       [req.params.id, estudiante_id]
     );
     res.json({ ok: true });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// DELETE /api/cursos/:cursoId/estudiantes/:estudianteId
-app.delete('/api/cursos/:cursoId/estudiantes/:estudianteId', async (req, res) => {
+// DELETE /api/cursos/:id/estudiantes/:estudiante_id
+app.delete('/api/cursos/:id/estudiantes/:estudiante_id', async (req, res) => {
   try {
     await pool.query(
-      'DELETE FROM curso_estudiantes WHERE curso_id=$1 AND estudiante_id=$2',
-      [req.params.cursoId, req.params.estudianteId]
+      'DELETE FROM curso_usuarios WHERE curso_id=$1 AND usuario_id=$2',
+      [req.params.id, req.params.estudiante_id]
     );
     res.json({ ok: true });
   } catch (err) { res.status(500).json({ error: err.message }); }
@@ -739,7 +780,7 @@ app.get('/api/cursos/:id/sesiones', async (req, res) => {
 
 // POST /api/cursos/:id/sesiones  (schedule a class — incluye tipo y visible_alumnos)
 app.post('/api/cursos/:id/sesiones', async (req, res) => {
-  const { nombre_clase, fecha_programada, limite_puntual, limite_presente, limite_tarde, permitir_falto, tipo, visible_alumnos } = req.body;
+  const { nombre_clase, fecha_programada, limite_puntual, limite_presente, limite_tarde, permitir_falto, tipo, visible_alumnos, profesor_id } = req.body;
   const tipoFinal           = tipo           ?? 'clase';
   const visibleAlumnosFinal = visible_alumnos ?? true;
   try {
@@ -748,12 +789,12 @@ app.post('/api/cursos/:id/sesiones', async (req, res) => {
       `INSERT INTO sesiones 
         (nombre_clase, token_qr, activa, curso_id, fecha_programada,
          limite_puntual, limite_presente, limite_tarde, permitir_falto,
-         tipo, visible_alumnos) 
-       VALUES ($1, $2, false, $3, $4, $5, $6, $7, $8, $9, $10) 
+         tipo, visible_alumnos, profesor_id) 
+       VALUES ($1, $2, false, $3, $4, $5, $6, $7, $8, $9, $10, $11) 
        RETURNING *`,
       [nombre_clase, token, req.params.id, fecha_programada,
        limite_puntual, limite_presente, limite_tarde, permitir_falto,
-       tipoFinal, visibleAlumnosFinal]
+       tipoFinal, visibleAlumnosFinal, profesor_id || null]
     );
     res.json({ sesion: r.rows[0] });
   } catch (err) { res.status(500).json({ error: err.message }); }
@@ -826,9 +867,8 @@ app.post('/api/cursos/:id/importar', async (req, res) => {
 
       // Vincular al curso (ignorar si ya está inscrito)
       const linkRes = await pool.query(
-        `INSERT INTO curso_estudiantes (curso_id, estudiante_id)
-         VALUES ($1, $2)
-         ON CONFLICT DO NOTHING`,
+        `INSERT INTO curso_usuarios (curso_id, usuario_id)
+         VALUES ($1, $2) ON CONFLICT DO NOTHING`,
         [cursoId, userId]
       );
       if ((linkRes.rowCount ?? 0) > 0) vinculados++;

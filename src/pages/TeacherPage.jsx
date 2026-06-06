@@ -62,7 +62,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
   const [editingCurso, setEditingCurso] = useState(null);
   const [newCursoName, setNewCursoName] = useState("");
   const [profesores, setProfesores] = useState([]);
-  const [selectedProfesorId, setSelectedProfesorId] = useState("");
+  const [selectedProfesoresIds, setSelectedProfesoresIds] = useState([]);
 
   // ── Tab state ───────────────────────────────────────────
   const [activeTab, setActiveTab] = useState("vivo"); // vivo | alumnos | clases | historial | config
@@ -281,27 +281,27 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
   const crearCurso = async (e) => {
     e.preventDefault();
     if (!newCursoName.trim()) return;
-    if (isAdmin && !selectedProfesorId) {
-      toast.error("Por favor, selecciona un profesor para el curso");
+    if (isAdmin && selectedProfesoresIds.length === 0) {
+      toast.error("Por favor, selecciona al menos un profesor para el curso");
       return;
     }
     try {
-      const pId = isAdmin ? Number(selectedProfesorId) : user.id;
-      const { curso } = await api.crearCurso({ nombre: newCursoName.trim(), profesor_id: pId });
+      const pIds = isAdmin ? selectedProfesoresIds : [user.id];
+      const { curso } = await api.crearCurso({ nombre: newCursoName.trim(), profesores_ids: pIds });
       
-      const prof = profesores.find(p => p.id === Number(pId));
+      const selectedProfs = profesores.filter(p => pIds.includes(p.id));
       const newCursoFormatted = { 
         ...curso, 
         total_alumnos: 0, 
         total_clases: 0,
-        profesor_nombre: prof ? prof.nombre_completo : "",
-        profesor_codigo: prof ? prof.codigo : ""
+        profesor_nombre: selectedProfs.map(p => p.nombre_completo).join(', '),
+        profesor_codigo: selectedProfs.map(p => p.codigo).join(', ')
       };
 
       setCursos((prev) => [newCursoFormatted, ...prev]);
       setCursoActivo(newCursoFormatted);
       setNewCursoName("");
-      setSelectedProfesorId("");
+      setSelectedProfesoresIds([]);
       setShowNewCurso(false);
       setViewMode("curso");
       toast.success(`Curso "${curso.nombre}" creado`);
@@ -313,30 +313,30 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
   const updateCurso = async (e) => {
     e.preventDefault();
     if (!editingCurso || !newCursoName.trim()) return;
-    if (isAdmin && !selectedProfesorId) {
-      toast.error("Por favor, selecciona un profesor para el curso");
+    if (isAdmin && selectedProfesoresIds.length === 0) {
+      toast.error("Por favor, selecciona al menos un profesor para el curso");
       return;
     }
     try {
-      const pId = isAdmin ? Number(selectedProfesorId) : editingCurso.profesor_id;
+      const pIds = isAdmin ? selectedProfesoresIds : []; // If not admin, do not change teachers
       const { curso } = await api.updateCurso(editingCurso.id, {
         nombre: newCursoName.trim(),
-        profesor_id: pId
+        profesores_ids: pIds
       });
       
-      const prof = profesores.find(p => p.id === Number(pId));
+      const selectedProfs = profesores.filter(p => pIds.includes(p.id));
       const updatedFormatted = { 
         ...curso, 
         total_alumnos: editingCurso.total_alumnos, 
         total_clases: editingCurso.total_clases,
-        profesor_nombre: prof ? prof.nombre_completo : "",
-        profesor_codigo: prof ? prof.codigo : ""
+        profesor_nombre: selectedProfs.length > 0 ? selectedProfs.map(p => p.nombre_completo).join(', ') : editingCurso.profesor_nombre,
+        profesor_codigo: selectedProfs.length > 0 ? selectedProfs.map(p => p.codigo).join(', ') : editingCurso.profesor_codigo
       };
 
       setCursos((prev) => prev.map((c) => (c.id === curso.id ? updatedFormatted : c)));
       if (cursoActivo?.id === curso.id) setCursoActivo(updatedFormatted);
       setNewCursoName("");
-      setSelectedProfesorId("");
+      setSelectedProfesoresIds([]);
       setEditingCurso(null);
       toast.success("Curso actualizado");
     } catch (err) {
@@ -388,6 +388,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
         fecha_programada: new Date(newClaseDate).toISOString(),
         tipo: newClaseTipo,
         visible_alumnos: newClaseVisible,
+        profesor_id: user.id
       };
       
       // Solo agregar límites si es tipo 'clase'
@@ -415,16 +416,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
         }
       }
       
-      // Si es EVENTO: activar automáticamente
-      if (newClaseTipo === 'evento') {
-        try {
-          const { sesion: sSesion } = await api.activarSesion(sesion.id);
-          setSesion(sSesion);
-          setActiveTab('vivo');
-        } catch (err) {
-          console.error('Error activando evento:', err.message);
-        }
-      }
+      // El evento ahora se activa manualmente, no de forma automática
       
       const res = await api.getCursoSesiones(cursoActivo.id);
       setSesionesProgr(res.sesiones);
@@ -573,6 +565,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
       const { sesion: s } = await api.crearSesion(
         nombreClase.trim(),
         cursoActivo.id,
+        user.id,
         'clase',
         true
       );
@@ -956,7 +949,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
 
           {/* ── Add/Edit Course Modal ──────────────────────── */}
           {(showNewCurso || editingCurso) && (
-            <div className="tp-modal-overlay--high" onClick={() => { setShowNewCurso(false); setEditingCurso(null); setSelectedProfesorId(''); }}>
+            <div className="tp-modal-overlay--high" onClick={() => { setShowNewCurso(false); setEditingCurso(null); setSelectedProfesoresIds([]); }}>
               <div className="tp-modal-box--md" onClick={e => e.stopPropagation()}>
                 <div className="tp-modal-header">
                   <h3 className="tp-modal-title-row">
@@ -971,7 +964,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                     onClick={() => {
                       setShowNewCurso(false);
                       setEditingCurso(null);
-                      setSelectedProfesorId("");
+                      setSelectedProfesoresIds([]);
                     }}
                     className="tp-modal-close"
                   >
@@ -1002,20 +995,66 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                         >
                           Asignar Profesor
                         </label>
-                        <select
-                          className="form-input"
-                          value={selectedProfesorId}
-                          onChange={(e) => setSelectedProfesorId(e.target.value)}
-                          style={{ fontSize: "0.9rem" }}
-                          required
+                        <div 
+                          style={{
+                            display: "grid",
+                            gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
+                            gap: "8px",
+                            maxHeight: "200px",
+                            overflowY: "auto",
+                            padding: "4px",
+                            border: "1px solid var(--gray-200)",
+                            borderRadius: "8px"
+                          }}
                         >
-                          <option value="">-- Seleccionar Profesor --</option>
-                          {profesores.map((p) => (
-                            <option key={p.id} value={p.id}>
-                              {p.nombre_completo} ({p.codigo})
-                            </option>
-                          ))}
-                        </select>
+                          {profesores.map((p) => {
+                            const isSelected = selectedProfesoresIds.includes(p.id);
+                            return (
+                              <div
+                                key={p.id}
+                                onClick={() => {
+                                  if (isSelected) {
+                                    setSelectedProfesoresIds(prev => prev.filter(id => id !== p.id));
+                                  } else {
+                                    setSelectedProfesoresIds(prev => [...prev, p.id]);
+                                  }
+                                }}
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "space-between",
+                                  padding: "6px 10px",
+                                  borderRadius: "6px",
+                                  cursor: "pointer",
+                                  border: isSelected ? "1.5px solid #22c55e" : "1px solid transparent",
+                                  background: isSelected ? "#f0fdf4" : "#f9fafb",
+                                  transition: "all 0.1s"
+                                }}
+                              >
+                                <span style={{ fontSize: "0.85rem", color: "var(--gray-800)" }}>
+                                  {p.nombre_completo}
+                                </span>
+                                <div
+                                  style={{
+                                    width: "16px",
+                                    height: "16px",
+                                    borderRadius: "4px",
+                                    border: isSelected ? "2px solid #22c55e" : "2px solid var(--gray-300)",
+                                    background: isSelected ? "#22c55e" : "transparent",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center"
+                                  }}
+                                >
+                                  {isSelected && <Check size={10} color="white" />}
+                                </div>
+                              </div>
+                            );
+                          })}
+                          {profesores.length === 0 && (
+                            <div style={{ fontSize: "0.85rem", color: "var(--gray-400)", padding: "8px" }}>No hay docentes disponibles.</div>
+                          )}
+                        </div>
                       </div>
                     )}
                   </div>
@@ -1026,7 +1065,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                       onClick={() => {
                         setShowNewCurso(false);
                         setEditingCurso(null);
-                        setSelectedProfesorId("");
+                        setSelectedProfesoresIds([]);
                       }}
                     >
                       Cancelar
@@ -1060,7 +1099,17 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                         onClick={(e) => {
                           e.stopPropagation();
                           setNewCursoName(c.nombre);
-                          setSelectedProfesorId(c.profesor_id || "");
+                        const teacherIds = [];
+                        if (c.profesor_nombre && c.profesor_nombre.includes(',')) {
+                           // Try matching names since we don't return the IDs easily in GET /cursos, but let's query the teachers directly from their cursos_dictados
+                           // Actually a simpler way is to filter `profesores` that have `c.id` in their `cursos_dictados`.
+                           const enrolledTeachers = profesores.filter(p => (p.cursos_dictados || []).some(cd => cd.id === c.id));
+                           enrolledTeachers.forEach(t => teacherIds.push(t.id));
+                        } else {
+                           const enrolledTeachers = profesores.filter(p => (p.cursos_dictados || []).some(cd => cd.id === c.id));
+                           enrolledTeachers.forEach(t => teacherIds.push(t.id));
+                        }
+                        setSelectedProfesoresIds(teacherIds);
                           setEditingCurso(c);
                         }}
                         title="Editar curso"
@@ -1097,7 +1146,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                 className="card tp-add-course-card"
                 onClick={() => {
                   setNewCursoName("");
-                  setSelectedProfesorId("");
+                  setSelectedProfesoresIds([]);
                   setShowNewCurso(true);
                 }}
               >
@@ -2530,37 +2579,35 @@ function UsersView({ onBack, cursos, onCursosUpdated, onProfesoresUpdated }) {
                       }}
                     >
                       {cursos.map((c) => {
-                        const currentOwnerUser = usuarios.find((u) => u.id === c.profesor_id);
-                        const isOwner = c.profesor_id === editUser.id;
+                        const isEnrolled = (editUser.cursos_dictados || []).some((curso) => curso.id === c.id);
                         
                         return (
                           <div
                             key={c.id}
                             onClick={async () => {
-                              if (isOwner) {
-                                toast.info("Este curso ya pertenece a este profesor. Para cambiar el propietario, asígnaselo desde el perfil de otro profesor o reasígnalo en el dashboard.");
-                                return;
-                              }
-                              if (confirm(`¿Transferir la propiedad del curso "${c.nombre}" a ${editUser.nombre_completo}?`)) {
-                                try {
-                                  await api.updateCurso(c.id, { profesor_id: editUser.id });
-                                  toast.success(`Curso "${c.nombre}" asignado a ${editUser.nombre_completo}`);
-                                  
-                                  // Refresh users list
-                                  const resU = await api.getUsuarios();
-                                  setUsuarios(resU.usuarios);
-                                  
-                                  // Sync editUser state
-                                  const updatedUser = resU.usuarios.find(x => x.id === editUser.id);
-                                  if (updatedUser) {
-                                    setEditUser(updatedUser);
-                                  }
-                                  
-                                  // Refresh parent courses list
-                                  if (onCursosUpdated) onCursosUpdated();
-                                } catch (err) {
-                                  toast.error(err.message);
+                              try {
+                                if (isEnrolled) {
+                                  await api.removeEstudianteCurso(c.id, editUser.id);
+                                  toast.success(`Docente removido de ${c.nombre}`);
+                                } else {
+                                  await api.addEstudianteCurso(c.id, editUser.id);
+                                  toast.success(`Docente asignado a ${c.nombre}`);
                                 }
+                                
+                                // Refresh users list
+                                const resU = await api.getUsuarios();
+                                setUsuarios(resU.usuarios);
+                                
+                                // Sync editUser state
+                                const updatedUser = resU.usuarios.find(x => x.id === editUser.id);
+                                if (updatedUser) {
+                                  setEditUser(updatedUser);
+                                }
+                                
+                                // Refresh parent courses list
+                                if (onCursosUpdated) onCursosUpdated();
+                              } catch (err) {
+                                toast.error(err.message);
                               }
                             }}
                             style={{
@@ -2569,11 +2616,11 @@ function UsersView({ onBack, cursos, onCursosUpdated, onProfesoresUpdated }) {
                               justifyContent: "space-between",
                               padding: "8px 12px",
                               borderRadius: "8px",
-                              cursor: isOwner ? "default" : "pointer",
-                              border: isOwner
+                              cursor: "pointer",
+                              border: isEnrolled
                                 ? "1.5px solid #22c55e"
                                 : "1px solid var(--gray-200)",
-                              background: isOwner ? "#f0fdf4" : "white",
+                              background: isEnrolled ? "#f0fdf4" : "white",
                               transition: "all 0.15s ease",
                               boxShadow: "0 1px 2px rgba(0,0,0,0.02)"
                             }}
@@ -2583,22 +2630,22 @@ function UsersView({ onBack, cursos, onCursosUpdated, onProfesoresUpdated }) {
                                 {c.nombre}
                               </span>
                               <span style={{ fontSize: "0.72rem", color: "var(--gray-400)" }}>
-                                {isOwner ? "Propio" : `Propietario actual: ${currentOwnerUser?.nombre_completo || 'Desconocido'}`}
+                                {isEnrolled ? "Asignado" : "No asignado"}
                               </span>
                             </div>
                             <div
                               style={{
                                 width: "20px",
                                 height: "20px",
-                                borderRadius: "50%",
-                                border: isOwner ? "2px solid #22c55e" : "2px solid var(--gray-300)",
-                                background: isOwner ? "#22c55e" : "transparent",
+                                borderRadius: "4px", // cuadrado en vez de redondo para checkboxes
+                                border: isEnrolled ? "2px solid #22c55e" : "2px solid var(--gray-300)",
+                                background: isEnrolled ? "#22c55e" : "transparent",
                                 display: "flex",
                                 alignItems: "center",
                                 justifyContent: "center",
                               }}
                             >
-                              {isOwner && <Check size={12} color="white" />}
+                              {isEnrolled && <Check size={12} color="white" />}
                             </div>
                           </div>
                         );

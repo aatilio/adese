@@ -8,7 +8,7 @@ export default function Footer({ simple = false }) {
         <a href="./" className="app-footer__link">
           Adese
         </a>{" "}
-        v2.0
+        v3.0
       </div>
       {!simple && (
         <div className="app-footer__dev">

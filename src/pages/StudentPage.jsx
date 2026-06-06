@@ -363,51 +363,13 @@ export default function StudentPage({ user, onLogout, onUpdateUser }) {
               </div>
             ) : (
               <div className="sp-marcar-grid">
-                {/* Scheduled Sessions */}
-                <div className="sp-sessions-col">
-                  <h3 className="sp-section-label">
-                    <div className="sp-section-label__bar"></div>
-                    Clases Programadas
-                  </h3>
-                  {sesionesCurso.length === 0 ? (
-                    <div className="card">No hay clases.</div>
-                  ) : (
-                    sesionesCurso.map((s) => {
-                      const sDate = s.fecha_programada
-                        ? new Date(s.fecha_programada)
-                        : new Date(s.fecha_inicio);
-                      const isToday =
-                        sDate.toDateString() === currentTime.toDateString();
-                      return (
-                         <div
-                           key={s.id}
-                           className={`card sp-session-card${isToday ? ' sp-session-card--today' : ''}`}
-                         >
-                           <div className="sp-session-card__row">
-                             <div>
-                               <div className="sp-session-card__name">{s.nombre_clase}</div>
-                               <div className="sp-session-card__date">{fmtFecha(sDate)} • {fmtHora(sDate)}</div>
-                             </div>
-                             {isToday && (
-                               <span className="sp-badge-today">
-                                 Hoy
-                               </span>
-                             )}
-                           </div>
-                         </div>
-                       );
-                    })
-                  )}
-                </div>
-
-                {/* Mark Panel */}
                 <div className="sp-mark-col">
                   <h3 className="sp-section-label">
                     <div className="sp-section-label__bar"></div>
                     Registro
                   </h3>
 
-                  <div className="alert alert-info sp-alert-row">
+                  {/* <div className="alert alert-info sp-alert-row">
                     <div className="sp-time-display">
                       <Clock size={16} />
                       <div className="sp-time-text">
@@ -420,7 +382,7 @@ export default function StudentPage({ user, onLogout, onUpdateUser }) {
                         {estado}
                       </span>
                     )}
-                  </div>
+                  </div> */}
 
                   {sesionActiva && sesionActiva.curso_id === cursoActivo.id && sesionActiva.tipo !== 'puntos' && (
                     <div className="alert alert-success animate-pulse">
@@ -477,7 +439,41 @@ export default function StudentPage({ user, onLogout, onUpdateUser }) {
                     </>
                   )}
                 </div>
-              {/* Modal de Asistencia (Mantener fuera para que cubra toda la pantalla si se quisiera) */}
+                <div className="sp-sessions-col">
+                  <h3 className="sp-section-label">
+                    <div className="sp-section-label__bar"></div>
+                    Clases Programadas
+                  </h3>
+                  {sesionesCurso.length === 0 ? (
+                    <div className="card">No hay clases.</div>
+                  ) : (
+                    sesionesCurso.map((s) => {
+                      const sDate = s.fecha_programada
+                        ? new Date(s.fecha_programada)
+                        : new Date(s.fecha_inicio);
+                      const isToday =
+                        sDate.toDateString() === currentTime.toDateString();
+                      return (
+                         <div
+                           key={s.id}
+                           className={`card sp-session-card${isToday ? ' sp-session-card--today' : ''}`}
+                         >
+                           <div className="sp-session-card__row">
+                             <div>
+                               <div className="sp-session-card__name">{s.nombre_clase}</div>
+                               <div className="sp-session-card__date">{fmtFecha(sDate)} • {fmtHora(sDate)}</div>
+                             </div>
+                             {isToday && (
+                               <span className="sp-badge-today">
+                                 Hoy
+                               </span>
+                             )}
+                           </div>
+                         </div>
+                       );
+                    })
+                  )}
+                </div>
           </div>
         )}
       </div>
