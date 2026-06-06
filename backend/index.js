@@ -532,22 +532,35 @@ app.get('/api/asistencias/:sesion_id', async (req, res) => {
 
 // POST /api/asistencias/manual
 app.post('/api/asistencias/manual', async (req, res) => {
-  const { estudiante_id, sesion_id, estado } = req.body;
+  const { estudiante_id, sesion_id, estado, valor } = req.body;
   try {
-    // Resolve estado name to estado_id
-    const eRes = await pool.query('SELECT id FROM estados_asistencia WHERE nombre = $1', [estado]);
-    if (eRes.rows.length === 0) return res.status(400).json({ error: 'Estado no válido' });
-    const estadoId = eRes.rows[0].id;
+    // Verificar si la sesión es tipo 'puntos'
+    const sesionRes = await pool.query('SELECT tipo FROM sesiones WHERE id = $1', [sesion_id]);
+    const esPuntos = sesionRes.rows[0]?.tipo === 'puntos';
 
-    const r = await pool.query(
-      'INSERT INTO asistencias (estudiante_id, sesion_id, estado_id) VALUES ($1, $2, $3) RETURNING *',
-      [estudiante_id, sesion_id, estadoId]
-    );
-    res.json({ asistencia: { ...r.rows[0], estado } });
+    if (esPuntos) {
+      // Tipo puntos: sin estado_id, con valor inicial
+      const r = await pool.query(
+        'INSERT INTO asistencias (estudiante_id, sesion_id, estado_id, valor) VALUES ($1, $2, NULL, $3) RETURNING *',
+        [estudiante_id, sesion_id, valor ?? 0]
+      );
+      res.json({ asistencia: { ...r.rows[0] } });
+    } else {
+      // Tipo clase/evento: resolver estado_id
+      const eRes = await pool.query('SELECT id FROM estados_asistencia WHERE nombre = $1', [estado]);
+      if (eRes.rows.length === 0) return res.status(400).json({ error: 'Estado no válido' });
+      const estadoId = eRes.rows[0].id;
+      const r = await pool.query(
+        'INSERT INTO asistencias (estudiante_id, sesion_id, estado_id) VALUES ($1, $2, $3) RETURNING *',
+        [estudiante_id, sesion_id, estadoId]
+      );
+      res.json({ asistencia: { ...r.rows[0], estado } });
+    }
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
+
 
 // ── CURSOS ─────────────────────────────────────────────────
 
@@ -686,13 +699,16 @@ app.get('/api/cursos/:id/historial', async (req, res) => {
     }
 
     const r = await pool.query(`
-      SELECT a.id, ea.nombre AS estado, ea.color, ea.puntuacion, a.fecha_hora, a.sesion_id,
+      SELECT a.id,
+             ea.nombre AS estado, ea.color, ea.puntuacion,
+             a.valor,
+             a.fecha_hora, a.sesion_id,
              a.estudiante_id, u.nombre_completo, u.codigo,
              s.nombre_clase, s.tipo, s.visible_alumnos
       FROM asistencias a
       JOIN usuarios u ON u.id = a.estudiante_id
       JOIN sesiones s ON s.id = a.sesion_id
-      JOIN estados_asistencia ea ON ea.id = a.estado_id
+      LEFT JOIN estados_asistencia ea ON ea.id = a.estado_id
       WHERE s.curso_id = $1
       ORDER BY a.fecha_hora DESC
     `, [cursoId]);
@@ -751,21 +767,30 @@ app.post('/api/cursos/:id/importar', async (req, res) => {
 
 // ── ESTADOS DE ASISTENCIA (CRUD) ────────────────────────────
 
-// GET /api/estados
+// GET /api/estados?profesor_id=X — devuelve globales + los del profesor
 app.get('/api/estados', async (req, res) => {
+  const { profesor_id } = req.query;
   try {
-    const r = await pool.query('SELECT * FROM estados_asistencia ORDER BY id');
+    let r;
+    if (profesor_id) {
+      r = await pool.query(
+        'SELECT * FROM estados_asistencia WHERE profesor_id IS NULL OR profesor_id = $1 ORDER BY profesor_id NULLS FIRST, id',
+        [profesor_id]
+      );
+    } else {
+      r = await pool.query('SELECT * FROM estados_asistencia WHERE profesor_id IS NULL ORDER BY id');
+    }
     res.json({ estados: r.rows });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// POST /api/estados
+// POST /api/estados — crea estado (global si no se pasa profesor_id, propio si se pasa)
 app.post('/api/estados', async (req, res) => {
-  const { nombre, color, puntuacion } = req.body;
+  const { nombre, color, puntuacion, profesor_id } = req.body;
   try {
     const r = await pool.query(
-      'INSERT INTO estados_asistencia (nombre, color, puntuacion) VALUES ($1, $2, $3) RETURNING *',
-      [nombre, color, puntuacion]
+      'INSERT INTO estados_asistencia (nombre, color, puntuacion, profesor_id) VALUES ($1, $2, $3, $4) RETURNING *',
+      [nombre, color, Math.round(Number(puntuacion) || 0), profesor_id || null]
     );
     res.json({ estado: r.rows[0] });
   } catch (err) { res.status(500).json({ error: err.message }); }
@@ -777,7 +802,7 @@ app.put('/api/estados/:id', async (req, res) => {
   try {
     const r = await pool.query(
       'UPDATE estados_asistencia SET nombre=$1, color=$2, puntuacion=$3 WHERE id=$4 RETURNING *',
-      [nombre, color, puntuacion, req.params.id]
+      [nombre, color, Math.round(Number(puntuacion) || 0), req.params.id]
     );
     res.json({ estado: r.rows[0] });
   } catch (err) { res.status(500).json({ error: err.message }); }
@@ -786,7 +811,12 @@ app.put('/api/estados/:id', async (req, res) => {
 // DELETE /api/estados/:id
 app.delete('/api/estados/:id', async (req, res) => {
   try {
-    // Prevent deleting states that are currently in use
+    // No se puede eliminar estados globales
+    const check = await pool.query('SELECT profesor_id FROM estados_asistencia WHERE id = $1', [req.params.id]);
+    if (check.rows.length === 0) return res.status(404).json({ error: 'Estado no encontrado' });
+    if (check.rows[0].profesor_id === null) {
+      return res.status(403).json({ error: 'No se pueden eliminar estados globales del sistema' });
+    }
     const inUse = await pool.query('SELECT COUNT(*) FROM asistencias WHERE estado_id = $1', [req.params.id]);
     if (parseInt(inUse.rows[0].count) > 0) {
       return res.status(409).json({ error: 'No se puede eliminar: este estado está siendo usado en registros de asistencia' });

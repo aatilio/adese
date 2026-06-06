@@ -76,7 +76,7 @@ export const api = {
   getCursoHistorial:      (cursoId)              => request('GET', `/api/cursos/${cursoId}/historial`),
 
   // Estados de Asistencia
-  getEstados:             ()                     => request('GET', '/api/estados'),
+  getEstados:             (profesor_id)          => request('GET', '/api/estados' + (profesor_id ? `?profesor_id=${profesor_id}` : '')),
   crearEstado:            (datos)                => request('POST', '/api/estados', datos),
   updateEstado:           (id, datos)            => request('PUT', `/api/estados/${id}`, datos),
   deleteEstado:           (id)                   => request('DELETE', `/api/estados/${id}`),

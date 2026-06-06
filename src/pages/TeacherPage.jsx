@@ -105,9 +105,9 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
       })
       .catch(() => {})
       .finally(() => setChecking(false));
-    // Load estados de asistencia
+    // Load estados de asistencia (globales + del profesor)
     api
-      .getEstados()
+      .getEstados(user.id)
       .then((res) => setEstadosDB(res.estados))
       .catch(() => {});
   }, []);
@@ -147,7 +147,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
       });
     } else if (activeTab === "config") {
       api
-        .getEstados()
+        .getEstados(user.id)
         .then((res) => setEstadosDB(res.estados))
         .catch(() => {});
     }
@@ -2633,8 +2633,8 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
 
                                   // ── Puntos: mostrar contador +1/-1 ──
                                   if (c.tipo === 'puntos') {
-                                    // Usar puntuacion (valor guardado en BD) en lugar de valor (que es temporal)
-                                    const valor = r ? (r.puntuacion ?? 0) : 0;
+                                    // r.valor es el campo INTEGER de asistencias para sesiones tipo 'puntos'
+                                    const valor = r ? (r.valor ?? 0) : 0;
                                     return (
                                       <td key={c.id} style={{ padding: '4px', borderLeft: '1px solid var(--gray-100)', verticalAlign: 'middle' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
@@ -2643,13 +2643,14 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                                               <button
                                                 onClick={async () => {
                                                   try {
-                                                    let aid = r?.id;
-                                                    if (!aid) {
-                                                      const res = await api.crearAsistenciaManual({ estudiante_id: est.id, sesion_id: c.id, estado: 'Participó' });
-                                                      aid = res.asistencia.id;
+                                                    if (!r?.id) {
+                                                      // Crear asistencia con valor=-1
+                                                      const res = await api.crearAsistenciaManual({ estudiante_id: est.id, sesion_id: c.id, valor: -1 });
+                                                      const [resH2] = await Promise.all([api.getCursoHistorial(cursoActivo.id)]);
+                                                      setHistorialGen(resH2.historial); return;
                                                     }
-                                                    const res2 = await api.ajustarPunto(aid, -1);
-                                                    setHistorialGen(prev => prev.map(h => h.id === aid ? { ...h, puntuacion: res2.asistencia.puntuacion, valor: res2.asistencia.valor } : h));
+                                                    const res2 = await api.ajustarPunto(r.id, -1);
+                                                    setHistorialGen(prev => prev.map(h => h.id === r.id ? { ...h, valor: res2.asistencia.valor } : h));
                                                   } catch(err) { toast.error(err.message); }
                                                 }}
                                                 style={{ width: 22, height: 22, borderRadius: '50%', border: 'none', background: '#fee2e2', color: '#dc2626', cursor: 'pointer', fontWeight: 700, fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}
@@ -2658,15 +2659,14 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                                               <button
                                                 onClick={async () => {
                                                   try {
-                                                    let aid = r?.id;
-                                                    if (!aid) {
-                                                      const res = await api.crearAsistenciaManual({ estudiante_id: est.id, sesion_id: c.id, estado: 'Participó' });
-                                                      aid = res.asistencia.id;
-                                                      const [resH2, resE2] = await Promise.all([api.getCursoHistorial(cursoActivo.id), api.getCursoEstudiantes(cursoActivo.id)]);
-                                                      setHistorialGen(resH2.historial); setEstudiantesCurso(resE2.estudiantes); return;
+                                                    if (!r?.id) {
+                                                      // Crear asistencia con valor=1
+                                                      const res = await api.crearAsistenciaManual({ estudiante_id: est.id, sesion_id: c.id, valor: 1 });
+                                                      const [resH2] = await Promise.all([api.getCursoHistorial(cursoActivo.id)]);
+                                                      setHistorialGen(resH2.historial); return;
                                                     }
-                                                    const res2 = await api.ajustarPunto(aid, 1);
-                                                    setHistorialGen(prev => prev.map(h => h.id === aid ? { ...h, puntuacion: res2.asistencia.puntuacion, valor: res2.asistencia.valor } : h));
+                                                    const res2 = await api.ajustarPunto(r.id, 1);
+                                                    setHistorialGen(prev => prev.map(h => h.id === r.id ? { ...h, valor: res2.asistencia.valor } : h));
                                                   } catch(err) { toast.error(err.message); }
                                                 }}
                                                 style={{ width: 22, height: 22, borderRadius: '50%', border: 'none', background: '#dcfce7', color: '#16a34a', cursor: 'pointer', fontWeight: 700, fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}
