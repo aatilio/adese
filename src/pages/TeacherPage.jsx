@@ -29,14 +29,14 @@ import * as XLSX from "xlsx";
 import { api } from "../api/client";
 import { ROL } from "../constants/roles";
 import { toast } from "../components/Toast";
-import appLogo from "../assets/ac-d.svg";
-import UserMenu from "../components/UserMenu";
+import Header from "../components/Header";
 import Footer from "../components/Footer";
 import QrGenerator from "../components/QrGenerator";
 import AttendanceTable from "../components/AttendanceTable";
 import ProfileView from "../components/ProfileView";
 import ExcelIcon from "../assets/excel.svg";
 import "../styles/table-modelo.css";
+import "../styles/teacher.css";
 
 export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateUser }) {
   // ── Course-level state ──────────────────────────────────
@@ -732,14 +732,8 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
 
   if (checking) {
     return (
-      <div
-        className="app-shell"
-        style={{ alignItems: "center", justifyContent: "center" }}
-      >
-        <div
-          className="spinner"
-          style={{ borderTopColor: "var(--primary)", width: 32, height: 32 }}
-        />
+      <div className="app-shell tp-loading-shell">
+        <div className="spinner tp-spinner-lg" />
       </div>
     );
   }
@@ -818,76 +812,27 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
     <div className="app-shell">
       {/* ── Modal Confirmar Eliminar Sesión ──────────── */}
       {confirmDeleteId && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            zIndex: 9000,
-            background: "rgba(15,23,42,0.55)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: "1rem",
-          }}
-        >
-          <div
-            style={{
-              background: "white",
-              borderRadius: "16px",
-              padding: "2rem",
-              maxWidth: "420px",
-              width: "100%",
-              boxShadow: "0 25px 50px -12px rgba(0,0,0,0.35)",
-              animation: "slideIn 0.2s ease",
-            }}
-          >
-            <div
-              style={{
-                fontSize: "2.5rem",
-                textAlign: "center",
-                marginBottom: "0.75rem",
-              }}
-            >
-              🗑️
-            </div>
-            <h3
-              style={{
-                margin: "0 0 0.5rem",
-                color: "var(--gray-900)",
-                textAlign: "center",
-                fontSize: "1.1rem",
-                fontWeight: 700,
-              }}
-            >
-              ¿Eliminar esta clase?
-            </h3>
-            <p
-              style={{
-                fontSize: "0.85rem",
-                color: "var(--gray-500)",
-                textAlign: "center",
-                margin: "0 0 1.5rem",
-                lineHeight: 1.6,
-              }}
-            >
+        <div className="tp-modal-overlay">
+          <div className="tp-confirm-box">
+            <div className="tp-modal-icon">🗑️</div>
+            <h3 className="tp-modal-title">¿Eliminar esta clase?</h3>
+            <p className="tp-modal-body">
               Esta acción es{" "}
               <strong style={{ color: "var(--danger)" }}>irreversible</strong>.
               <br />
               Se eliminarán también todos los registros de asistencia asociados
               a esta clase.
             </p>
-            <div style={{ display: "flex", gap: "0.75rem" }}>
+            <div className="tp-modal-actions">
               <button
-                className="btn btn-ghost"
+                className="btn btn-ghost tp-flex-1"
                 onClick={() => setConfirmDeleteId(null)}
-                style={{ flex: 1 }}
               >
                 Cancelar
               </button>
               <button
-                className="btn btn-danger"
+                className="btn btn-danger tp-flex-1"
                 onClick={confirmarEliminar}
-                style={{ flex: 1 }}
               >
                 Sí, eliminar
               </button>
@@ -895,93 +840,57 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
           </div>
         </div>
       )}
-      {/* Header */}
-      <div className="page-header" style={{ justifyContent: "space-between" }}>
-        {/* Left Side: Logo & App Name */}
-        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-          <img
-            src={appLogo}
-            alt="Logo"
-            style={{ width: "32px", height: "auto" }}
-          />
-          <div>
-            <div style={{ padding: 0 }}>
-              <h1 style={{ margin: 0, fontSize: "1.2rem", fontWeight: 800 }}>
-                Adese
-              </h1>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Side: User Menu Dropdown */}
-        <div style={{ display: "flex", alignItems: "center" }}>
-          <UserMenu
-            user={user}
-            roleLabel={
-              user.rol === 1 ? 'Administrador' : user.rol === 2 ? 'Profesor' : 'Alumno'
-            }
-            onLogout={onLogout}
-            onOpenProfile={() => setViewMode("perfil")}
-            extraOptions={
-              viewMode === "curso"
-                ? [
-                    {
-                      label: "Monitor en Vivo",
-                      icon: Radio,
-                      onClick: () => setActiveTab("vivo"),
-                      active: activeTab === "vivo",
-                    },
-                    {
-                      label: "Gestión de Clases",
-                      icon: Calendar,
-                      onClick: () => setActiveTab("clases"),
-                      active: activeTab === "clases",
-                    },
-                    {
-                      label: "Alumnos",
-                      icon: Users,
-                      onClick: () => setActiveTab("alumnos"),
-                      active: activeTab === "alumnos",
-                    },
-                    {
-                      label: "Historial y Exportar",
-                      icon: History,
-                      onClick: () => setActiveTab("historial"),
-                      active: activeTab === "historial",
-                    },
-                    {
-                      label: "Ajustes del Curso",
-                      icon: Settings,
-                      onClick: () => setActiveTab("config"),
-                      active: activeTab === "config",
-                    },
-                  ]
-                : []
-            }
-          />
-        </div>
-      </div>
+      <Header
+        user={user}
+        roleLabel={user.rol === 1 ? 'Administrador' : user.rol === 2 ? 'Profesor' : 'Alumno'}
+        onLogout={onLogout}
+        onOpenProfile={() => setViewMode("perfil")}
+        extraOptions={
+          viewMode === "curso"
+            ? [
+                {
+                  label: "Monitor en Vivo",
+                  icon: Radio,
+                  onClick: () => setActiveTab("vivo"),
+                  active: activeTab === "vivo",
+                },
+                {
+                  label: "Gestión de Clases",
+                  icon: Calendar,
+                  onClick: () => setActiveTab("clases"),
+                  active: activeTab === "clases",
+                },
+                {
+                  label: "Alumnos",
+                  icon: Users,
+                  onClick: () => setActiveTab("alumnos"),
+                  active: activeTab === "alumnos",
+                },
+                {
+                  label: "Historial y Exportar",
+                  icon: History,
+                  onClick: () => setActiveTab("historial"),
+                  active: activeTab === "historial",
+                },
+                {
+                  label: "Ajustes del Curso",
+                  icon: Settings,
+                  onClick: () => setActiveTab("config"),
+                  active: activeTab === "config",
+                },
+              ]
+            : []
+        }
+      />
 
       {/* PROFILE: Edit user data */}
       {viewMode === "perfil" ? (
         <div className="page-body">
-          <div style={{ padding: "0 1rem", marginBottom: "1rem" }}>
+          <div className="tp-back-wrap">
             <button
               type="button"
-              className="btn btn-sm btn-ghost"
+              className="btn btn-sm btn-ghost tp-back-btn"
               onClick={() => setViewMode("dashboard")}
-              style={{
-                color: "var(--gray-600)",
-                fontSize: "0.8rem",
-                fontWeight: 600,
-                display: "flex",
-                alignItems: "center",
-                gap: "4px",
-                padding: "8px 12px",
-                border: "1px solid var(--gray-200)",
-                borderRadius: "12px",
-                background: "white"
-              }}
             >
               « Volver al Panel
             </button>
@@ -994,46 +903,16 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
           />
         </div>
       ) : viewMode === "dashboard" ? (
-        <div style={{ padding: "1rem" }}>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginBottom: "1.5rem",
-              flexWrap: "wrap",
-              gap: "1rem",
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-              <Library size={24} style={{ color: "var(--primary)" }} />
-              <h2
-                style={{
-                  fontSize: "1.2rem",
-                  margin: 0,
-                  color: "var(--gray-800)",
-                }}
-              >
-                Mis Cursos
-              </h2>
+        <div className="tp-dashboard">
+          <div className="tp-dashboard__header">
+            <div className="tp-dashboard__title-group">
+              <Library size={24} className="tp-dashboard__icon" />
+              <h2 className="tp-dashboard__title">Mis Cursos</h2>
             </div>
             {isAdmin && (
               <button
-                className="btn btn-sm btn-ghost"
+                className="btn btn-sm btn-ghost tp-btn-usuarios"
                 onClick={() => setViewMode("usuarios")}
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "6px",
-                  background: "white",
-                  color: "var(--gray-700)",
-                  border: "1px solid var(--gray-300)",
-                  fontWeight: "600",
-                  width: "auto",
-                  padding: "0.4rem 0.8rem",
-                  borderRadius: "8px",
-                  boxShadow: "0 2px 4px rgba(0,0,0,0.05)",
-                }}
               >
                 <Users size={14} /> Usuarios
               </button>
@@ -1042,97 +921,27 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
           </div>
 
           {/* Buscador de Cursos */}
-          <div style={{ marginBottom: "1.5rem", position: "relative", maxWidth: "400px" }}>
-            <Search 
-              size={18} 
-              style={{ 
-                position: "absolute", 
-                left: "12px", 
-                top: "50%", 
-                transform: "translateY(-50%)", 
-                color: "var(--gray-400)" 
-              }} 
-            />
+          <div className="tp-search-wrap">
+            <Search size={18} className="tp-search-icon" />
             <input
               type="text"
               placeholder="Buscar curso..."
               value={searchCursoQuery}
               onChange={(e) => setSearchCursoQuery(e.target.value)}
-              style={{
-                width: "100%",
-                padding: "10px 12px 10px 38px",
-                borderRadius: "10px",
-                border: "1px solid var(--gray-200)",
-                fontSize: "0.95rem",
-                outline: "none",
-                transition: "border-color 0.2s, box-shadow 0.2s",
-                boxShadow: "0 1px 3px rgba(0,0,0,0.02)"
-              }}
-              onFocus={(e) => {
-                e.target.style.borderColor = "var(--primary)";
-                e.target.style.boxShadow = "0 0 0 3px rgba(59, 130, 246, 0.1)";
-              }}
-              onBlur={(e) => {
-                e.target.style.borderColor = "var(--gray-200)";
-                e.target.style.boxShadow = "0 1px 3px rgba(0,0,0,0.02)";
-              }}
+              className="tp-search-input"
             />
           </div>
 
           {/* ── Add/Edit Course Modal ──────────────────────── */}
           {(showNewCurso || editingCurso) && (
-            <div
-              style={{
-                position: "fixed",
-                inset: 0,
-                zIndex: 9999,
-                background: "rgba(0,0,0,0.45)",
-                backdropFilter: "blur(4px)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                padding: "1rem",
-              }}
-              onClick={() => {
-                setShowNewCurso(false);
-                setEditingCurso(null);
-              }}
-            >
-              <div
-                style={{
-                  background: "white",
-                  borderRadius: "16px",
-                  width: "100%",
-                  maxWidth: "420px",
-                  boxShadow: "0 20px 60px rgba(0,0,0,0.25)",
-                  overflow: "hidden",
-                }}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div
-                  style={{
-                    padding: "16px 20px",
-                    borderBottom: "1px solid var(--gray-100)",
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    background: "var(--gray-50)",
-                  }}
-                >
-                  <h3
-                    style={{
-                      margin: 0,
-                      fontSize: "1rem",
-                      color: "var(--gray-800)",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "8px",
-                    }}
-                  >
+            <div className="tp-modal-overlay--high" onClick={() => { setShowNewCurso(false); setEditingCurso(null); setSelectedProfesorId(''); }}>
+              <div className="tp-modal-box--md" onClick={e => e.stopPropagation()}>
+                <div className="tp-modal-header">
+                  <h3 className="tp-modal-title-row">
                     {editingCurso ? (
-                      <Edit size={18} style={{ color: "var(--primary)" }} />
+                      <Edit size={18} className="tp-modal-icon-primary" />
                     ) : (
-                      <Plus size={18} style={{ color: "var(--primary)" }} />
+                      <Plus size={18} className="tp-modal-icon-primary" />
                     )}
                     {editingCurso ? "Editar Curso" : "Nuevo Curso"}
                   </h3>
@@ -1142,27 +951,16 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                       setEditingCurso(null);
                       setSelectedProfesorId("");
                     }}
-                    style={{
-                      background: "transparent",
-                      border: "none",
-                      cursor: "pointer",
-                      color: "var(--gray-400)",
-                      padding: "4px",
-                    }}
+                    className="tp-modal-close"
                   >
                     <X size={20} />
                   </button>
                 </div>
                 <form onSubmit={editingCurso ? updateCurso : crearCurso}>
-                  <div style={{ padding: "20px" }}>
+                  <div className="tp-modal-body-pad">
                     <div className="form-group">
                       <label
-                        className="form-label"
-                        style={{
-                          fontSize: "0.8rem",
-                          color: "var(--gray-500)",
-                          marginBottom: "4px",
-                        }}
+                        className="form-label tp-modal-label"
                       >
                         Nombre del Curso
                       </label>
@@ -1176,14 +974,9 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                       />
                     </div>
                     {isAdmin && (
-                      <div className="form-group" style={{ marginTop: "1rem" }}>
+                      <div className="form-group tp-form-group--mt">
                         <label
-                          className="form-label"
-                          style={{
-                            fontSize: "0.8rem",
-                            color: "var(--gray-500)",
-                            marginBottom: "4px",
-                          }}
+                          className="form-label tp-modal-label"
                         >
                           Asignar Profesor
                         </label>
@@ -1204,16 +997,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                       </div>
                     )}
                   </div>
-                  <div
-                    style={{
-                      padding: "14px 20px",
-                      borderTop: "1px solid var(--gray-100)",
-                      display: "flex",
-                      justifyContent: "flex-end",
-                      gap: "0.5rem",
-                      background: "var(--gray-50)",
-                    }}
-                  >
+                  <div className="tp-modal-footer">
                     <button
                       type="button"
                       className="btn btn-ghost"
@@ -1235,140 +1019,63 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
           )}
 
           {!checking && (
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-                gap: "1rem",
-              }}
-            >
+            <div className="tp-courses-grid">
               {filteredCursos.map((c) => (
                 <div
                   key={c.id}
-                  className="card"
-                  style={{
-                    cursor: "pointer",
-                    transition: "transform 0.2s",
-                    margin: 0,
-                  }}
+                  className="card tp-course-card"
                   onClick={() => {
                     setCursoActivo(c);
                     setViewMode("curso");
                   }}
-                  onMouseEnter={(e) =>
-                    (e.currentTarget.style.transform = "translateY(-2px)")
-                  }
-                  onMouseLeave={(e) =>
-                    (e.currentTarget.style.transform = "none")
-                  }
                 >
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "flex-start",
-                    }}
-                  >
+                  <div className="tp-course-card__header">
                     <div>
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "0.5rem",
-                          color: "var(--primary)",
-                          marginBottom: "0.5rem",
-                        }}
-                      >
+                      <div className="tp-course-card__tag">
                         <BookOpen size={18} />
-                        <span
-                          style={{ fontWeight: "500", fontSize: "0.85rem" }}
-                        >
-                          Curso
-                        </span>
+                        <span className="tp-course-card__label">Curso</span>
                       </div>
-                      <h3
-                        style={{
-                          fontSize: "1.1rem",
-                          margin: "0 0 0.5rem 0",
-                          color: "var(--gray-800)",
-                        }}
-                      >
-                        {c.nombre}
-                      </h3>
+                      <h3 className="tp-course-card__name">{c.nombre}</h3>
                       {isAdmin && c.profesor_codigo && (
                         <div
-                          style={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: "4px",
-                            background: "#f1f5f9",
-                            color: "#475569",
-                            borderRadius: "6px",
-                            padding: "2px 8px",
-                            fontSize: "0.72rem",
-                            fontWeight: "600",
-                            marginTop: "2px",
-                            marginBottom: "8px",
-                          }}
+                          className="tp-course-card__docente"
                           title={`Propietario: ${c.profesor_nombre}`}
                         >
-                          <span style={{ color: "#94a3b8", fontWeight: "500" }}>Docente:</span>
+                          <span className="tp-course-card__docente-label">Docente:</span>
                           {c.profesor_codigo}
                         </div>
                       )}
                     </div>
-                    <div style={{ display: "flex", gap: "4px" }}>
+                    <div className="tp-course-card__actions">
                       <button
-                        className="btn btn-sm btn-ghost"
+                        className="btn btn-sm btn-ghost tp-icon-btn"
                         onClick={(e) => {
                           e.stopPropagation();
                           setNewCursoName(c.nombre);
                           setSelectedProfesorId(c.profesor_id || "");
                           setEditingCurso(c);
                         }}
-                        style={{ color: "var(--gray-500)", padding: "4px" }}
                         title="Editar curso"
                       >
                         <Edit size={16} />
                       </button>
                       <button
-                        className="btn btn-sm btn-ghost"
+                        className="btn btn-sm btn-ghost tp-icon-btn--danger"
                         onClick={(e) => {
                           e.stopPropagation();
                           eliminarCurso(c.id);
                         }}
-                        style={{ color: "var(--danger)", padding: "4px" }}
                         title="Eliminar curso"
                       >
                         <Trash2 size={16} />
                       </button>
                     </div>
                   </div>
-                  <div
-                    style={{
-                      display: "flex",
-                      gap: "1rem",
-                      marginTop: "1rem",
-                      fontSize: "0.85rem",
-                      color: "var(--gray-500)",
-                    }}
-                  >
-                    <span
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "4px",
-                      }}
-                    >
+                  <div className="tp-course-card__stats">
+                    <span className="tp-course-card__stat">
                       <Users size={14} /> {c.total_alumnos} Alumnos
                     </span>
-                    <span
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "4px",
-                      }}
-                    >
+                    <span className="tp-course-card__stat">
                       <Calendar size={14} /> {c.total_clases} Clases
                     </span>
                   </div>
@@ -1377,62 +1084,17 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
 
               {/* ── Sketch Card: Crear Curso ────────────────── */}
               <div
-                className="card"
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "0.75rem",
-                  cursor: "pointer",
-                  background: "rgba(255,255,255,0.4)",
-                  border: "2px dashed var(--gray-300)",
-                  minHeight: "140px",
-                  margin: 0,
-                  transition: "all 0.2s ease",
-                  boxShadow: "none",
-                }}
+                className="card tp-add-course-card"
                 onClick={() => {
                   setNewCursoName("");
                   setSelectedProfesorId("");
                   setShowNewCurso(true);
                 }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = "var(--primary)";
-                  e.currentTarget.style.background = "var(--primary-bg)";
-                  e.currentTarget.style.transform = "translateY(-2px)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = "var(--gray-300)";
-                  e.currentTarget.style.background = "rgba(255,255,255,0.4)";
-                  e.currentTarget.style.transform = "none";
-                }}
               >
-                <div
-                  style={{
-                    width: "40px",
-                    height: "40px",
-                    borderRadius: "50%",
-                    background: "var(--gray-100)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "var(--gray-500)",
-                    transition: "all 0.2s ease",
-                  }}
-                  className="sketch-plus-icon"
-                >
+                <div className="tp-add-course-icon">
                   <Plus size={24} />
                 </div>
-                <span
-                  style={{
-                    fontSize: "0.95rem",
-                    fontWeight: "600",
-                    color: "var(--gray-500)",
-                  }}
-                >
-                  Añadir Curso
-                </span>
+                <span className="tp-add-course-text">Añadir Curso</span>
               </div>
             </div>
           )}
@@ -1449,91 +1111,53 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
         <>
           {/* COURSE VIEW: Header & Tabs */}
           <div
-            className="teacher-course-toolbar"
-            style={{ marginBottom: "0.5rem" }}
+            className="teacher-course-toolbar tp-toolbar-mb"
           >
             <h2
-              className="teacher-course-title"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "0.5rem",
-                fontSize: "1.1rem",
-              }}
+              className="teacher-course-title tp-course-view-title"
             >
-              <span style={{ color: "var(--gray-500)", fontWeight: 500 }}>
-                Asistencias del curso de:
-              </span>
+              <span className="tp-course-subtitle">Asistencias del curso de:</span>
               <span
-                className="teacher-course-title-text"
-                style={{ color: "var(--primary)", fontWeight: 800 }}
+                className="teacher-course-title-text tp-course-name"
               >
                 {cursoActivo?.nombre}
               </span>
             </h2>
           </div>
 
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              borderBottom: "1px solid var(--gray-200)",
-              background: "rgba(255,255,255,0.3)",
-              backdropFilter: "blur(10px)",
-              padding: "0 1rem",
-              gap: "1rem",
-            }}
-          >
+          <div className="tp-tabs-bar">
             <button
               type="button"
-              className="btn btn-sm btn-ghost"
+              className="btn btn-sm btn-ghost tp-back-btn--tabs"
               onClick={() => setViewMode("dashboard")}
-              style={{
-                color: "var(--gray-600)",
-                fontSize: "0.8rem",
-                fontWeight: 600,
-                display: "flex",
-                alignItems: "center",
-                gap: "4px",
-                // backgroundColor: "",
-                padding: "8px 12px",
-                borderRight: "1px solid var(--gray-200)",
-                borderRadius: "12px",
-                height: "100%",
-              }}
             >
               « Volver a Cursos
             </button>
 
             <div
-              className="tabs"
-              style={{ borderBottom: "none", padding: 0, gap: "1.5rem" }}
+              className="tabs tp-tabs-inline"
             >
               <button
-                className={`tab ${activeTab === "vivo" ? "active" : ""}`}
+                className={`tab tp-tab--compact ${activeTab === "vivo" ? "active" : ""}`}
                 onClick={() => setActiveTab("vivo")}
-                style={{ padding: "12px 0" }}
               >
                 <Radio size={16} /> Monitor
               </button>
               <button
-                className={`tab ${activeTab === "clases" ? "active" : ""}`}
+                className={`tab tp-tab--compact ${activeTab === "clases" ? "active" : ""}`}
                 onClick={() => setActiveTab("clases")}
-                style={{ padding: "12px 0" }}
               >
                 <Calendar size={16} /> Clases
               </button>
               <button
-                className={`tab ${activeTab === "alumnos" ? "active" : ""}`}
+                className={`tab tp-tab--compact ${activeTab === "alumnos" ? "active" : ""}`}
                 onClick={() => setActiveTab("alumnos")}
-                style={{ padding: "12px 0" }}
               >
                 <Users size={16} /> Alumnos
               </button>
               <button
-                className={`tab ${activeTab === "historial" ? "active" : ""}`}
+                className={`tab tp-tab--compact ${activeTab === "historial" ? "active" : ""}`}
                 onClick={() => setActiveTab("historial")}
-                style={{ padding: "12px 0" }}
               >
                 <History size={16} /> Historial
               </button>
@@ -1547,59 +1171,34 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
             </div>
           </div>
 
-          <div className="page-body" style={{ width: "100%" }}>
+          <div className="page-body tp-page-body-full">
             {/* ─── MONITOR EN VIVO ─────────────────────── */}
             {activeTab === "vivo" &&
               (!sesion || sesion.curso_id !== cursoActivo?.id ? (
                 <div
-                  className="card"
-                  style={{
-                    maxWidth: 480,
-                    margin: "0 auto",
-                    textAlign: "center",
-                    padding: "3rem 1.5rem",
-                    border: "2px dashed var(--gray-200)",
-                    background: "var(--gray-50)",
-                    borderRadius: "24px",
-                  }}
+                  className="card tp-no-session-card"
                 >
                   <Calendar
                     size={48}
-                    style={{
-                      margin: "0 auto 1.5rem",
-                      color: "var(--primary)",
-                      opacity: 0.5,
-                    }}
+                    className="tp-no-session-icon"
                   />
                   <div
-                    className="card-title"
-                    style={{ justifyContent: "center", fontSize: "1.2rem" }}
+                    className="card-title tp-no-session-title"
                   >
                     No hay una sesión activa
                   </div>
                   <p
-                    style={{
-                      fontSize: "0.95rem",
-                      color: "var(--gray-500)",
-                      marginBottom: "2rem",
-                      lineHeight: "1.6",
-                    }}
+                    className="tp-no-session-body"
                   >
                     Para generar el código QR y recibir asistencias, debes
                     iniciar una clase programada desde la pestaña de{" "}
                     <strong>Clases</strong>.
                   </p>
                   <button
-                    className="btn btn-primary"
+                    className="btn btn-primary tp-btn-go-classes"
                     onClick={() => setActiveTab("clases")}
-                    style={{
-                      margin: "0 auto",
-                      width: "auto",
-                      padding: "0.8rem 2.5rem",
-                      fontSize: "0.9rem",
-                    }}
                   >
-                    <Calendar size={16} style={{ marginRight: "8px" }} /> Ir a
+                    <Calendar size={16} className="tp-btn-icon-mr" /> Ir a
                     Mis Clases
                   </button>
                 </div>
@@ -1607,13 +1206,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                 <div className="teacher-live-grid">
                   <div className="teacher-live-col-qr">
                     <div className="session-chip session-chip--live">
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "8px",
-                        }}
-                      >
+                      <div className="tp-live-chip-row">
                         <span className="live-dot" />{" "}
                         <strong>{sesion?.nombre_clase || "Cargando..."}</strong>
                       </div>
@@ -1642,28 +1235,17 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
             {/* ─── ALUMNOS DEL CURSO ──────────────────── */}
             {activeTab === "alumnos" && (
               <div
-                className="card"
-                style={{ maxWidth: 1000, margin: "1.5rem auto", padding: "20px" }}
+                className="card tp-alumnos-card"
               >
-                <div style={{ marginBottom: "1.5rem" }}>
-                  <div className="card-title" style={{ margin: 0 }}>
+                <div className="tp-alumnos-header">
+                  <div className="card-title tp-alumnos-subtitle">
                     Alumnos de {cursoActivo.nombre}
                   </div>
-                  <div className="card-subtitle" style={{ marginTop: "4px", marginBottom: "1rem" }}>
+                  <div className="card-subtitle tp-card-subtitle-mt">
                     {estudiantesCurso.length} matriculados. Añade o remueve alumnos de este curso.
                   </div>
                   <button
-                    className="btn btn-primary"
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      gap: "6px",
-                      fontSize: "0.85rem",
-                      padding: "10px",
-                      borderRadius: "8px",
-                      width: "100%"
-                    }}
+                    className="btn btn-primary tp-add-alumno-btn"
                     onClick={() => { setShowNuevoAlumno(true); setNuevoAlumnoCodigo(''); setNuevoAlumnoNombre(''); setNuevoAlumnoEncontrado(null); }}
                   >
                     <UserPlus size={16} /> Nuevo Alumno
@@ -1672,19 +1254,19 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
 
                 {/* Modal Nuevo Alumno (Matricular) */}
                 {showNuevoAlumno && (
-                  <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}
+                  <div className="tp-modal-overlay--blurred"
                     onClick={() => setShowNuevoAlumno(false)}>
-                    <div style={{ background: 'white', borderRadius: '16px', width: '100%', maxWidth: '440px', boxShadow: '0 20px 60px rgba(0,0,0,0.25)', overflow: 'hidden' }}
+                    <div className="tp-modal-box--xl"
                       onClick={e => e.stopPropagation()}>
-                      <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--gray-100)', background: 'var(--gray-50)' }}>
-                        <h3 style={{ margin: 0, fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <UserPlus size={18} style={{ color: 'var(--primary)' }} /> Matricular Alumno
+                      <div className="tp-modal-header">
+                        <h3 className="tp-modal-header__title">
+                          <UserPlus size={18} className="tp-modal-header__icon" /> Matricular Alumno
                         </h3>
                       </div>
                       <form onSubmit={crearYAgregarAlumno}>
-                        <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                        <div className="tp-modal-body">
                           <div className="form-group" style={{ marginTop: 0, position: 'relative' }}>
-                            <label className="form-label" style={{ fontSize: '0.82rem', color: 'var(--gray-500)' }}>CUI / Código</label>
+                            <label className="form-label tp-form-label-sm">CUI / Código</label>
                             <input
                               className="form-input"
                               autoFocus
@@ -1693,30 +1275,30 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                               placeholder="Código del alumno"
                               style={{ borderColor: nuevoAlumnoEncontrado ? (estudiantesCurso.some(est => est.id === nuevoAlumnoEncontrado.id) ? '#f59e0b' : '#22c55e') : undefined }}
                             />
-                            {buscandoAlumno && <div style={{ position: 'absolute', right: '10px', top: '62%', transform: 'translateY(-50%)' }}><div className="spinner" style={{ width: 14, height: 14 }} /></div>}
+                            {buscandoAlumno && <div className="tp-spinner-sm"><div className="spinner tp-spinner-xs" /></div>}
                             {nuevoAlumnoEncontrado && (
                               estudiantesCurso.some(est => est.id === nuevoAlumnoEncontrado.id) ? (
-                                <div style={{ marginTop: '6px', padding: '8px 12px', background: '#fffbeb', borderRadius: '8px', border: '1px solid #fde68a', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <div className="tp-alumno-warn">
                                   <AlertTriangle size={14} style={{ color: '#d97706', flexShrink: 0 }} />
                                   <div>
-                                    <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#92400e' }}>Ya está matriculado</div>
-                                    <div style={{ fontSize: '0.75rem', color: '#a16207' }}>{nuevoAlumnoEncontrado.nombre_completo} ya pertenece a este curso.</div>
+                                    <div className="tp-alumno-warn__title">Ya está matriculado</div>
+                                    <div className="tp-alumno-warn__sub">{nuevoAlumnoEncontrado.nombre_completo} ya pertenece a este curso.</div>
                                   </div>
                                 </div>
                               ) : (
-                                <div style={{ marginTop: '6px', padding: '8px 12px', background: '#f0fdf4', borderRadius: '8px', border: '1px solid #bbf7d0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <div className="tp-alumno-found">
                                   <Check size={14} style={{ color: '#16a34a' }} />
                                   <div>
-                                    <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#15803d' }}>Alumno encontrado</div>
-                                    <div style={{ fontSize: '0.75rem', color: '#166534' }}>{nuevoAlumnoEncontrado.nombre_completo}</div>
+                                    <div className="tp-alumno-found__title">Alumno encontrado</div>
+                                    <div className="tp-alumno-found__sub">{nuevoAlumnoEncontrado.nombre_completo}</div>
                                   </div>
                                 </div>
                               )
                             )}
                           </div>
                           {!nuevoAlumnoEncontrado && nuevoAlumnoCodigo.trim().length >= 2 && !buscandoAlumno && (
-                            <div className="form-group" style={{ marginTop: 0 }}>
-                              <label className="form-label" style={{ fontSize: '0.82rem', color: 'var(--gray-500)' }}>Nombre Completo</label>
+                            <div className="form-group tp-form-group-0">
+                              <label className="form-label tp-form-label-sm">Nombre Completo</label>
                               <input
                                 className="form-input"
                                 value={nuevoAlumnoNombre}
@@ -1724,18 +1306,17 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                                 placeholder="Nombre Completo"
                                 required={!nuevoAlumnoEncontrado}
                               />
-                              <div style={{ fontSize: '0.72rem', color: 'var(--gray-400)', marginTop: '4px' }}>
+                              <div className="tp-alumno-hint">
                                 Se creará un nuevo usuario. La contraseña será igual al código.
                               </div>
                             </div>
                           )}
                         </div>
-                        <div style={{ padding: '14px 20px', borderTop: '1px solid var(--gray-100)', display: 'flex', gap: '0.5rem', background: 'var(--gray-50)' }}>
-                          <button type="button" className="btn btn-ghost" onClick={() => setShowNuevoAlumno(false)} style={{ flex: 1 }}>Cancelar</button>
+                        <div className="tp-modal-footer--btn-row">
+                          <button type="button" className="btn btn-ghost tp-flex-1" onClick={() => setShowNuevoAlumno(false)}>Cancelar</button>
                           <button
                             type="submit"
-                            className="btn btn-primary"
-                            style={{ flex: 1 }}
+                            className="btn btn-primary tp-flex-1"
                             disabled={
                               !nuevoAlumnoCodigo.trim() ||
                               (!nuevoAlumnoEncontrado && !nuevoAlumnoNombre.trim()) ||
@@ -1754,34 +1335,34 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
 
                 {/* Modal Editar Alumno */}
                 {editingAlumnoData && (
-                  <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}
+                  <div className="tp-modal-overlay--blurred"
                     onClick={() => setEditingAlumnoData(null)}>
-                    <div style={{ background: 'white', borderRadius: '16px', width: '100%', maxWidth: '440px', boxShadow: '0 20px 60px rgba(0,0,0,0.25)', overflow: 'hidden' }}
+                    <div className="tp-modal-box--xl"
                       onClick={e => e.stopPropagation()}>
-                      <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--gray-100)', background: 'var(--gray-50)' }}>
-                        <h3 style={{ margin: 0, fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <Pencil size={18} style={{ color: 'var(--primary)' }} /> Editar Alumno
+                      <div className="tp-modal-header">
+                        <h3 className="tp-modal-header__title">
+                          <Pencil size={18} className="tp-modal-header__icon" /> Editar Alumno
                         </h3>
                       </div>
-                      <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                        <div className="form-group" style={{ marginTop: 0 }}>
-                          <label className="form-label" style={{ fontSize: '0.82rem', color: 'var(--gray-500)' }}>CUI / Código</label>
+                      <div className="tp-modal-body">
+                        <div className="form-group tp-form-group-0">
+                          <label className="form-label tp-form-label-sm">CUI / Código</label>
                           <input
                             className="form-input"
                             value={editingAlumnoData.codigo}
                             onChange={e => setEditingAlumnoData({ ...editingAlumnoData, codigo: e.target.value })}
                           />
                         </div>
-                        <div className="form-group" style={{ marginTop: 0 }}>
-                          <label className="form-label" style={{ fontSize: '0.82rem', color: 'var(--gray-500)' }}>Nombre Completo</label>
+                        <div className="form-group tp-form-group-0">
+                          <label className="form-label tp-form-label-sm">Nombre Completo</label>
                           <input
                             className="form-input"
                             value={editingAlumnoData.nombre_completo}
                             onChange={e => setEditingAlumnoData({ ...editingAlumnoData, nombre_completo: e.target.value })}
                           />
                         </div>
-                        <div className="form-group" style={{ marginTop: 0 }}>
-                          <label className="form-label" style={{ fontSize: '0.82rem', color: 'var(--gray-500)' }}>Nueva Contraseña (dejar vacío para no cambiar)</label>
+                        <div className="form-group tp-form-group-0">
+                          <label className="form-label tp-form-label-sm">Nueva Contraseña (dejar vacío para no cambiar)</label>
                           <input
                             className="form-input"
                             type="text"
@@ -1791,12 +1372,11 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                           />
                         </div>
                       </div>
-                      <div style={{ padding: '14px 20px', borderTop: '1px solid var(--gray-100)', display: 'flex', gap: '0.5rem', background: 'var(--gray-50)' }}>
-                        <button type="button" className="btn btn-ghost" onClick={() => setEditingAlumnoData(null)} style={{ flex: 1 }}>Cancelar</button>
+                      <div className="tp-modal-footer--btn-row">
+                        <button type="button" className="btn btn-ghost tp-flex-1" onClick={() => setEditingAlumnoData(null)}>Cancelar</button>
                         <button
                           type="button"
-                          className="btn btn-primary"
-                          style={{ flex: 1 }}
+                          className="btn btn-primary tp-flex-1"
                           onClick={async () => {
                             try {
                               const payload = { codigo: editingAlumnoData.codigo, nombre_completo: editingAlumnoData.nombre_completo };
@@ -1814,39 +1394,37 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                 )}
 
                 {/* Tabla de Alumnos */}
-                <div style={{ overflowX: 'auto' }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
+                <div className="tp-table-wrap">
+                  <table className="tp-table">
                     <thead>
-                      <tr style={{ borderBottom: '2px solid var(--gray-200)', textAlign: 'left' }}>
-                        <th style={{ padding: '10px 12px', color: 'var(--gray-500)', fontWeight: 600, fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>#</th>
-                        <th style={{ padding: '10px 12px', color: 'var(--gray-500)', fontWeight: 600, fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Nombre</th>
-                        <th style={{ padding: '10px 12px', color: 'var(--gray-500)', fontWeight: 600, fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>CUI</th>
-                        <th style={{ padding: '10px 12px', color: 'var(--gray-500)', fontWeight: 600, fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'center', width: '100px' }}>Acciones</th>
+                      <tr>
+                        <th>#</th>
+                        <th>Nombre</th>
+                        <th>CUI</th>
+                        <th className="th--center">Acciones</th>
                       </tr>
                     </thead>
                     <tbody>
                       {estudiantesCurso.map((est, idx) => (
-                        <tr key={est.id} style={{ borderBottom: '1px solid var(--gray-100)', transition: 'background 0.15s' }}
+                        <tr key={est.id}
                           onMouseEnter={e => e.currentTarget.style.background = 'var(--gray-50)'}
                           onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                         >
-                          <td style={{ padding: '10px 12px', color: 'var(--gray-400)', fontWeight: 500, width: '40px' }}>{idx + 1}</td>
-                          <td style={{ padding: '10px 12px', fontWeight: 600, color: 'var(--gray-800)' }}>{est.nombre_completo}</td>
-                          <td style={{ padding: '10px 12px', color: 'var(--gray-500)', fontFamily: 'monospace', fontWeight: 500 }}>{est.codigo}</td>
-                          <td style={{ padding: '10px 12px', textAlign: 'center' }}>
-                            <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                          <td className="tp-table__td--num">{idx + 1}</td>
+                          <td className="tp-table__td--name">{est.nombre_completo}</td>
+                          <td className="tp-table__td--code">{est.codigo}</td>
+                          <td className="tp-table__td--center">
+                            <div className="tp-table-cell-actions">
                               <button
-                                className="btn btn-ghost"
+                                className="btn btn-ghost tp-btn-edit"
                                 onClick={() => setEditingAlumnoData({ ...est, newPass: '' })}
-                                style={{ padding: "6px", color: "var(--primary)", border: "1px solid var(--primary-bg)", background: "var(--primary-bg)" }}
                                 title="Editar alumno"
                               >
                                 <Edit size={16} />
                               </button>
                               <button
-                                className="btn btn-ghost"
+                                className="btn btn-ghost tp-btn-delete"
                                 onClick={() => { if (confirm(`¿Desmatricular a "${est.nombre_completo}" de este curso?`)) removeAlumno(est.id); }}
-                                style={{ padding: "6px", color: "var(--error)", border: "1px solid #fee2e2", background: "#fef2f2" }}
                                 title="Desmatricular del curso"
                               >
                                 <Trash2 size={16} />
@@ -1857,7 +1435,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                       ))}
                       {estudiantesCurso.length === 0 && (
                         <tr>
-                          <td colSpan={4} style={{ padding: '2rem', textAlign: 'center', color: 'var(--gray-400)' }}>No hay alumnos matriculados en este curso.</td>
+                          <td colSpan={4} className="tp-table-empty">No hay alumnos matriculados en este curso.</td>
                         </tr>
                       )}
                     </tbody>
@@ -1869,354 +1447,97 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
             {/* ─── CLASES PROGRAMADAS ─────────────────── */}
             {activeTab === "clases" && (
               <div className="card">
-                <div className="card-title">
-                  <Calendar size={18} /> Sesiones Programadas
-                </div>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    marginBottom: "1rem",
-                  }}
-                >
-                  <div className="card-subtitle" style={{ margin: 0 }}>
-                    Gestiona sesiones de clase, eventos y registros de puntos.
+                <div className="tp-clases-header">
+                  <div>
+                    <div className="card-title tp-clases-title">
+                      <Calendar size={18} /> Sesiones Programadas
+                    </div>
+                    <div className="card-subtitle tp-alumnos-subtitle">
+                      Gestiona sesiones de clase, eventos y registros de puntos.
+                    </div>
                   </div>
                   <button
                     className="btn btn-primary btn-sm"
                     onClick={() => setShowAddSesion(true)}
-                    style={{ whiteSpace: 'nowrap' }}
                   >
                     <Plus size={14} /> Nueva Sesión
                   </button>
                 </div>
 
-                {/* ── Add Clase Modal ──────────────────────── */}
+                {/* ── Add Clase Modal ──────────────────── */}
                 {showAddSesion && (
-                  <div
-                    style={{
-                      position: "fixed",
-                      inset: 0,
-                      zIndex: 9999,
-                      background: "rgba(0,0,0,0.45)",
-                      backdropFilter: "blur(4px)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      padding: "1rem",
-                    }}
-                    onClick={() => setShowAddSesion(false)}
-                  >
-                    <div
-                      style={{
-                        background: "white",
-                        borderRadius: "16px",
-                        width: "100%",
-                        maxWidth: "480px",
-                        boxShadow: "0 20px 60px rgba(0,0,0,0.25)",
-                        overflow: "hidden",
-                      }}
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <div
-                        style={{
-                          padding: "16px 20px",
-                          borderBottom: "1px solid var(--gray-100)",
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          background: "var(--gray-50)",
-                        }}
-                      >
-                        <h3
-                          style={{
-                            margin: 0,
-                            fontSize: "1rem",
-                            color: "var(--gray-800)",
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "8px",
-                          }}
-                        >
-                          <Plus size={18} style={{ color: "var(--primary)" }} />
-                          Nueva Sesión
+                  <div className="tp-modal-overlay--blurred" onClick={() => setShowAddSesion(false)}>
+                    <div className="tp-modal-box--xl" onClick={(e) => e.stopPropagation()}>
+                      <div className="tp-modal-header">
+                        <h3 className="tp-modal-header__title">
+                          <Plus size={18} className="tp-modal-header__icon" /> Nueva Sesión
                         </h3>
-                        <button
-                          onClick={() => setShowAddSesion(false)}
-                          style={{
-                            background: "transparent",
-                            border: "none",
-                            cursor: "pointer",
-                            color: "var(--gray-400)",
-                            padding: "4px",
-                          }}
-                        >
+                        <button onClick={() => setShowAddSesion(false)} className="tp-modal-close-btn">
                           <X size={20} />
                         </button>
                       </div>
 
                       <form onSubmit={programarClase} id="add-clase-form">
-                        <div
-                          style={{
-                            padding: "20px",
-                            display: "flex",
-                            flexDirection: "column",
-                            gap: "1rem",
-                          }}
-                        >
-                          {/* Tipo de sesión */}
-                          <div className="form-group" style={{ marginTop: 0 }}>
-                            <label className="form-label" style={{ fontSize: '0.8rem', color: 'var(--gray-500)', marginBottom: '4px' }}>
-                              Tipo de Sesión
-                            </label>
-                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <div className="tp-modal-body">
+                          <div className="form-group tp-form-group-0">
+                            <label className="form-label tp-form-label-sm">Tipo de Sesión</label>
+                            <div className="tp-tipo-selector">
                               {[{v:'clase',l:'Clase'},{v:'evento',l:'Evento'},{v:'puntos',l:'Puntos'}].map(({v,l}) => (
                                 <button key={v} type="button"
                                   onClick={() => setNewClaseTipo(v)}
-                                  style={{
-                                    flex: 1, padding: '6px 8px', borderRadius: '8px', border: '2px solid',
-                                    borderColor: newClaseTipo === v ? 'var(--primary)' : 'var(--gray-200)',
-                                    background: newClaseTipo === v ? 'var(--primary-bg)' : 'white',
-                                    color: newClaseTipo === v ? 'var(--primary)' : 'var(--gray-500)',
-                                    fontWeight: newClaseTipo === v ? 700 : 500, fontSize: '0.78rem', cursor: 'pointer'
-                                  }}
+                                  className={`tp-tipo-btn ${newClaseTipo === v ? 'is-active' : ''}`}
                                 >{l}</button>
                               ))}
                             </div>
                           </div>
 
-                          <div
-                            style={{
-                              display: "grid",
-                              gridTemplateColumns: "1fr 1fr",
-                              gap: "0.75rem",
-                            }}
-                          >
-                            <div
-                              className="form-group"
-                              style={{ marginTop: 0 }}
-                            >
-                              <label
-                                className="form-label"
-                                style={{
-                                  fontSize: "0.8rem",
-                                  color: "var(--gray-500)",
-                                  marginBottom: "4px",
-                                }}
-                              >
-                                Nombre de la Clase
-                              </label>
-                              <input
-                                className="form-input"
-                                value={newClaseName}
-                                onChange={(e) =>
-                                  setNewClaseName(e.target.value)
-                                }
-                                placeholder="Ej: Sesión 1"
-                                required
-                              />
+                          <div className="tp-form-grid-2">
+                            <div className="form-group tp-form-group-0">
+                              <label className="form-label tp-form-label-sm">Nombre de la Clase</label>
+                              <input className="form-input" value={newClaseName} onChange={(e) => setNewClaseName(e.target.value)} placeholder="Ej: Sesión 1" required />
                             </div>
-                            <div
-                              className="form-group"
-                              style={{ marginTop: 0 }}
-                            >
-                              <label
-                                className="form-label"
-                                style={{
-                                  fontSize: "0.8rem",
-                                  color: "var(--gray-500)",
-                                  marginBottom: "4px",
-                                }}
-                              >
-                                Fecha y Hora
-                              </label>
-                              <input
-                                className="form-input"
-                                type="datetime-local"
-                                value={newClaseDate}
-                                onChange={(e) =>
-                                  setNewClaseDate(e.target.value)
-                                }
-                                required
-                              />
+                            <div className="form-group tp-form-group-0">
+                              <label className="form-label tp-form-label-sm">Fecha y Hora</label>
+                              <input className="form-input" type="datetime-local" value={newClaseDate} onChange={(e) => setNewClaseDate(e.target.value)} required />
                             </div>
                           </div>
 
-
-                          {/* Visible para alumnos */}
-                          <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', color: 'var(--gray-600)', cursor: 'pointer' }}>
+                          <label className="tp-visible-label">
                             <input type="checkbox" checked={newClaseVisible} onChange={e => setNewClaseVisible(e.target.checked)} />
                             Visible para alumnos en su historial
                           </label>
 
-{newClaseTipo === 'clase' && (
-                          <div
-                            style={{
-                              padding: "12px",
-                              background: "rgba(59, 130, 246, 0.06)",
-                              borderRadius: "8px",
-                              border: "1px solid rgba(59, 130, 246, 0.15)",
-                            }}
-                          >
-                            <label
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "0.5rem",
-                                fontSize: "0.85rem",
-                                fontWeight: "bold",
-                                color: "var(--gray-700)",
-                                cursor: "pointer",
-                                marginBottom: "8px",
-                              }}
-                            >
-                              <input
-                                type="checkbox"
-                                checked={showLimits}
-                                onChange={(e) =>
-                                  setShowLimits(e.target.checked)
-                                }
-                              />
-                              Horario límite personalizado
-                            </label>
+                          {newClaseTipo === 'clase' && (
+                            <div className="tp-limits-section">
+                              <label className="tp-limits-label">
+                                <input type="checkbox" checked={showLimits} onChange={(e) => setShowLimits(e.target.checked)} />
+                                Horario límite personalizado
+                              </label>
 
-                            <div
-                              style={{
-                                display: "grid",
-                                gridTemplateColumns: "1fr 1fr 1fr",
-                                gap: "0.5rem",
-                                opacity: showLimits ? 1 : 0.5,
-                                pointerEvents: showLimits ? "auto" : "none",
-                              }}
-                            >
-                              <div
-                                className="form-group"
-                                style={{ marginTop: 0 }}
-                              >
-                                <label
-                                  className="form-label"
-                                  style={{
-                                    fontSize: "0.75rem",
-                                    color: "#059669",
-                                  }}
-                                >
-                                  Puntual
-                                </label>
-                                <input
-                                  type="time"
-                                  className="form-input"
-                                  value={limPuntual}
-                                  onChange={(e) =>
-                                    setLimPuntual(e.target.value)
-                                  }
-                                  style={{ padding: "4px 8px" }}
-                                />
+                              <div className={`tp-form-grid-3 ${!showLimits ? 'is-disabled' : ''}`}>
+                                <div className="form-group tp-form-group-0">
+                                  <label className="form-label tp-time-label--puntual">Puntual</label>
+                                  <input type="time" className="form-input tp-time-input" value={limPuntual} onChange={(e) => setLimPuntual(e.target.value)} />
+                                </div>
+                                <div className="form-group tp-form-group-0">
+                                  <label className="form-label tp-time-label--presente">Presente</label>
+                                  <input type="time" className="form-input tp-time-input" value={limPresente} onChange={(e) => setLimPresente(e.target.value)} />
+                                </div>
+                                <div className="form-group tp-form-group-0">
+                                  <label className="form-label tp-time-label--tarde">Tarde</label>
+                                  <input type="time" className="form-input tp-time-input" value={limTarde} onChange={(e) => setLimTarde(e.target.value)} />
+                                </div>
                               </div>
-                              <div
-                                className="form-group"
-                                style={{ marginTop: 0 }}
-                              >
-                                <label
-                                  className="form-label"
-                                  style={{
-                                    fontSize: "0.75rem",
-                                    color: "#2563eb",
-                                  }}
-                                >
-                                  Presente
-                                </label>
-                                <input
-                                  type="time"
-                                  className="form-input"
-                                  value={limPresente}
-                                  onChange={(e) =>
-                                    setLimPresente(e.target.value)
-                                  }
-                                  style={{ padding: "4px 8px" }}
-                                />
-                              </div>
-                              <div
-                                className="form-group"
-                                style={{ marginTop: 0 }}
-                              >
-                                <label
-                                  className="form-label"
-                                  style={{
-                                    fontSize: "0.75rem",
-                                    color: "#d97706",
-                                  }}
-                                >
-                                  Tarde
-                                </label>
-                                <input
-                                  type="time"
-                                  className="form-input"
-                                  value={limTarde}
-                                  onChange={(e) => setLimTarde(e.target.value)}
-                                  style={{ padding: "4px 8px" }}
-                                />
-                              </div>
-
-                          </div>
-                          </div>
-)}
-{newClaseTipo === 'evento' && (
-                          <div
-                            style={{
-                              padding: "12px",
-                              background: "rgba(34, 197, 94, 0.08)",
-                              borderRadius: "8px",
-                              border: "1px solid rgba(34, 197, 94, 0.2)",
-                              fontSize: "0.8rem",
-                              color: "#15803d",
-                            }}
-                          >
-                            <strong>Evento:</strong> Se activará automáticamente. Los estudiantes que escaneen el QR serán registrados como &quot;Participó&quot;. Al terminar, se marcarán como &quot;Falto&quot; los que no se registraron.
-                          </div>
-)}
-{newClaseTipo === 'puntos' && (
-                          <div
-                            style={{
-                              padding: "12px",
-                              background: "rgba(245, 158, 11, 0.08)",
-                              borderRadius: "8px",
-                              border: "1px solid rgba(245, 158, 11, 0.2)",
-                              fontSize: "0.8rem",
-                              color: "#92400e",
-                            }}
-                          >
-                            <strong>Puntos:</strong> Se agregarán automáticamente a todos los estudiantes en el historial. No requiere activar el monitor de QR.
-                          </div>
-)}
+                            </div>
+                          )}
+                          {newClaseTipo === 'evento' && <div className="tp-info-box--evento"><strong>Evento:</strong> Se activará automáticamente. Los estudiantes que escaneen el QR serán registrados como "Participó".</div>}
+                          {newClaseTipo === 'puntos' && <div className="tp-info-box--puntos"><strong>Puntos:</strong> Se agregarán automáticamente a todos los estudiantes en el historial.</div>}
                         </div>
                       </form>
 
-                      <div
-                        style={{
-                          padding: "14px 20px",
-                          borderTop: "1px solid var(--gray-100)",
-                          display: "flex",
-                          justifyContent: "flex-end",
-                          gap: "0.5rem",
-                          background: "var(--gray-50)",
-                        }}
-                      >
-                        <button
-                          type="button"
-                          className="btn btn-ghost"
-                          onClick={() => setShowAddSesion(false)}
-                        >
-                          Cancelar
-                        </button>
-                        <button
-                          type="submit"
-                          form="add-clase-form"
-                          className="btn btn-primary"
-                          disabled={!newClaseName.trim() || !newClaseDate}
-                        >
-                          Programar
-                        </button>
+                      <div className="tp-modal-footer">
+                        <button type="button" className="btn btn-ghost" onClick={() => setShowAddSesion(false)}>Cancelar</button>
+                        <button type="submit" form="add-clase-form" className="btn btn-primary" disabled={!newClaseName.trim() || !newClaseDate}>Programar</button>
                       </div>
                     </div>
                   </div>
@@ -2224,100 +1545,22 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
 
                 {/* ── Edit Clase Modal ──────────────────────── */}
                 {editingSesion && (
-                  <div
-                    style={{
-                      position: "fixed",
-                      inset: 0,
-                      zIndex: 9999,
-                      background: "rgba(0,0,0,0.45)",
-                      backdropFilter: "blur(4px)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      padding: "1rem",
-                    }}
-                    onClick={() => setEditingSesion(null)}
-                  >
-                    <div
-                      style={{
-                        background: "white",
-                        borderRadius: "16px",
-                        width: "100%",
-                        maxWidth: "480px",
-                        boxShadow: "0 20px 60px rgba(0,0,0,0.25)",
-                        overflow: "hidden",
-                      }}
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      {/* Header */}
-                      <div
-                        style={{
-                          padding: "16px 20px",
-                          borderBottom: "1px solid var(--gray-100)",
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          background: "var(--gray-50)",
-                        }}
-                      >
-                        <h3
-                          style={{
-                            margin: 0,
-                            fontSize: "1rem",
-                            color: "var(--gray-800)",
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "8px",
-                          }}
-                        >
-                          <Edit size={18} style={{ color: "var(--primary)" }} />
-                          Editar Sesión
+                  <div className="tp-modal-overlay--blurred" onClick={() => setEditingSesion(null)}>
+                    <div className="tp-modal-box--xl" onClick={(e) => e.stopPropagation()}>
+                      <div className="tp-modal-header">
+                        <h3 className="tp-modal-header__title">
+                          <Edit size={18} className="tp-modal-header__icon" /> Editar Sesión
                         </h3>
-                        <button
-                          onClick={() => setEditingSesion(null)}
-                          style={{
-                            background: "transparent",
-                            border: "none",
-                            cursor: "pointer",
-                            color: "var(--gray-400)",
-                            padding: "4px",
-                          }}
-                        >
+                        <button onClick={() => setEditingSesion(null)} className="tp-modal-close-btn">
                           <X size={20} />
                         </button>
                       </div>
 
-                      {/* Body */}
                       <form onSubmit={saveEditedSesion} id="edit-clase-form">
-                        <div
-                          style={{
-                            padding: "20px",
-                            display: "flex",
-                            flexDirection: "column",
-                            gap: "1rem",
-                          }}
-                        >
-                          <div
-                            style={{
-                              display: "grid",
-                              gridTemplateColumns: "1fr 1fr",
-                              gap: "0.75rem",
-                            }}
-                          >
-                            <div
-                              className="form-group"
-                              style={{ marginTop: 0 }}
-                            >
-                              <label
-                                className="form-label"
-                                style={{
-                                  fontSize: "0.8rem",
-                                  color: "var(--gray-500)",
-                                  marginBottom: "4px",
-                                }}
-                              >
-                                Nombre
-                              </label>
+                        <div className="tp-modal-body">
+                          <div className="tp-form-grid-2">
+                            <div className="form-group tp-form-group-0">
+                              <label className="form-label tp-form-label-sm">Nombre</label>
                               <input
                                 type="text"
                                 className="form-input"
@@ -2328,24 +1571,12 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                                     nombre_clase: e.target.value,
                                   })
                                 }
-                                style={{ fontSize: "0.9rem" }}
+                                className="form-input tp-input--sm"
                                 required
                               />
                             </div>
-                            <div
-                              className="form-group"
-                              style={{ marginTop: 0 }}
-                            >
-                              <label
-                                className="form-label"
-                                style={{
-                                  fontSize: "0.8rem",
-                                  color: "var(--gray-500)",
-                                  marginBottom: "4px",
-                                }}
-                              >
-                                Fecha y Hora
-                              </label>
+                            <div className="form-group tp-form-group-0">
+                              <label className="form-label tp-form-label-sm">Fecha y Hora</label>
                               <input
                                 type="datetime-local"
                                 className="form-input"
@@ -2356,57 +1587,25 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                                     fecha_programada: e.target.value,
                                   })
                                 }
-                                style={{ fontSize: "0.9rem" }}
+                                className="form-input tp-input--sm"
                                 required
                               />
                             </div>
                           </div>
 
 {editSesionData.tipo === 'clase' && (
-                          <div
-                            style={{
-                              padding: "12px",
-                              background: "rgba(59, 130, 246, 0.06)",
-                              borderRadius: "8px",
-                              border: "1px solid rgba(59, 130, 246, 0.15)",
-                              marginTop: "4px",
-                            }}
-                          >
-                            <label
-                              style={{
-                                fontSize: "0.8rem",
-                                color: "var(--gray-700)",
-                                fontWeight: "bold",
-                                marginBottom: "8px",
-                                display: "block",
-                              }}
-                            >
+                          <div className="tp-limits-section tp-limits-section--mt">
+                            <label className="tp-form-label-sm--group">
                               Límites de Tiempo Personalizados
                             </label>
-                            <div
-                              style={{
-                                display: "grid",
-                                gridTemplateColumns: "1fr 1fr 1fr",
-                                gap: "0.5rem",
-                              }}
-                            >
-                              <div
-                                className="form-group"
-                                style={{ marginTop: 0 }}
-                              >
-                                <label
-                                  className="form-label"
-                                  style={{
-                                    fontSize: "0.75rem",
-                                    color: "#059669",
-                                    marginBottom: "2px",
-                                  }}
-                                >
+                            <div className="tp-form-grid-3">
+                              <div className="form-group tp-form-group-0">
+                                <label className="form-label tp-time-label--puntual">
                                   Puntual
                                 </label>
                                 <input
                                   type="time"
-                                  className="form-input"
+                                  className="form-input tp-time-input--sm"
                                   value={editSesionData.limite_puntual}
                                   onChange={(e) =>
                                     setEditSesionData({
@@ -2414,29 +1613,15 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                                       limite_puntual: e.target.value,
                                     })
                                   }
-                                  style={{
-                                    padding: "4px 8px",
-                                    fontSize: "0.85rem",
-                                  }}
                                 />
                               </div>
-                              <div
-                                className="form-group"
-                                style={{ marginTop: 0 }}
-                              >
-                                <label
-                                  className="form-label"
-                                  style={{
-                                    fontSize: "0.75rem",
-                                    color: "#2563eb",
-                                    marginBottom: "2px",
-                                  }}
-                                >
+                              <div className="form-group tp-form-group-0">
+                                <label className="form-label tp-time-label--presente">
                                   Presente
                                 </label>
                                 <input
                                   type="time"
-                                  className="form-input"
+                                  className="form-input tp-time-input--sm"
                                   value={editSesionData.limite_presente}
                                   onChange={(e) =>
                                     setEditSesionData({
@@ -2444,29 +1629,15 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                                       limite_presente: e.target.value,
                                     })
                                   }
-                                  style={{
-                                    padding: "4px 8px",
-                                    fontSize: "0.85rem",
-                                  }}
                                 />
                               </div>
-                              <div
-                                className="form-group"
-                                style={{ marginTop: 0 }}
-                              >
-                                <label
-                                  className="form-label"
-                                  style={{
-                                    fontSize: "0.75rem",
-                                    color: "#d97706",
-                                    marginBottom: "2px",
-                                  }}
-                                >
+                              <div className="form-group tp-form-group-0">
+                                <label className="form-label tp-time-label--tarde">
                                   Tarde
                                 </label>
                                 <input
                                   type="time"
-                                  className="form-input"
+                                  className="form-input tp-time-input--sm"
                                   value={editSesionData.limite_tarde}
                                   onChange={(e) =>
                                     setEditSesionData({
@@ -2474,31 +1645,13 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                                       limite_tarde: e.target.value,
                                     })
                                   }
-                                  style={{
-                                    padding: "4px 8px",
-                                    fontSize: "0.85rem",
-                                  }}
                                 />
                               </div>
-
                             </div>
                           </div>
 )}
 
-                          <label
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "0.5rem",
-                              fontSize: "0.8rem",
-                              color: "var(--gray-600)",
-                              cursor: "pointer",
-                              padding: "8px 12px",
-                              background: "#f0f9ff",
-                              borderRadius: "6px",
-                              border: "1px solid #bfdbfe",
-                            }}
-                          >
+                          <label className="tp-visible-label--card">
                             <input
                               type="checkbox"
                               checked={editSesionData.visible_alumnos}
@@ -2515,28 +1668,17 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                       </form>
 
                       {/* Footer */}
-                      <div
-                        style={{
-                          padding: "14px 20px",
-                          borderTop: "1px solid var(--gray-100)",
-                          display: "flex",
-                          justifyContent: "flex-end",
-                          gap: "0.5rem",
-                          background: "var(--gray-50)",
-                        }}
-                      >
+                      <div className="tp-modal-footer">
                         <button
-                          className="btn btn-ghost"
+                          className="btn btn-ghost tp-btn-height"
                           onClick={() => setEditingSesion(null)}
-                          style={{ height: "36px" }}
                         >
                           Cancelar
                         </button>
                         <button
                           type="submit"
                           form="edit-clase-form"
-                          className="btn btn-primary"
-                          style={{ height: "36px" }}
+                          className="btn btn-primary tp-btn-height"
                         >
                           Guardar Cambios
                         </button>
@@ -2549,22 +1691,12 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                 {sesionesProgr.length === 0 ? (
                   <p className="text-muted">No hay clases programadas aún.</p>
                 ) : (
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "0.5rem",
-                    }}
-                  >
+                  <div className="tp-sesiones-list">
                     {sesionesProgr.map((s) => (
                       <div key={s.id}>
                         <div
+                          className="tp-session-item"
                           style={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "space-between",
-                            gap: "1rem",
-                            padding: "0.75rem 1rem",
                             background: s.activa
                               ? "var(--success-bg)"
                               : s.tipo === 'evento'
@@ -2572,118 +1704,55 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                                 : s.tipo === 'puntos'
                                   ? 'rgba(245, 158, 11, 0.08)'
                                   : 'rgba(59, 130, 246, 0.06)',
-                            borderRadius: "12px",
                             border: `1px solid ${s.activa ? "var(--success)" : s.tipo === 'evento' ? 'rgba(34, 197, 94, 0.2)' : s.tipo === 'puntos' ? 'rgba(245, 158, 11, 0.2)' : 'rgba(59, 130, 246, 0.15)'}`,
-                            marginBottom: "0.75rem",
-                            transition: "all 0.2s ease",
                           }}
                         >
-                          <div
-                            style={{ display: "flex", flexDirection: "column" }}
-                          >
-                            <strong
-                              style={{
-                                fontSize: "0.95rem",
-                                color: "var(--gray-900)",
-                              }}
-                            >
+                          <div className="tp-session-row">
+                            <strong className="tp-session-row__name">
                               {s.nombre_clase}
                             </strong>
-                            <span
-                              style={{
-                                fontSize: "0.75rem",
-                                color: "var(--gray-500)",
-                                fontWeight: "500",
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '6px',
-                              }}
-                            >
+                            <span className="tp-session-row__meta">
                               {s.fecha_programada
                                 ? fmtFecha(s.fecha_programada)
                                 : fmtFecha(s.fecha_inicio)}
                               {s.total_asistencias > 0 &&
                                 ` • ${s.total_asistencias} asistencias`}
-                              <span style={{
-                                display: 'inline-block',
-                                padding: '1px 6px',
-                                borderRadius: '4px',
-                                fontSize: '0.65rem',
-                                fontWeight: 700,
-                                textTransform: 'uppercase',
-                                letterSpacing: '0.5px',
-                                background: s.tipo === 'evento' ? 'rgba(34,197,94,0.15)' : s.tipo === 'puntos' ? 'rgba(245,158,11,0.15)' : 'rgba(59,130,246,0.12)',
-                                color: s.tipo === 'evento' ? '#15803d' : s.tipo === 'puntos' ? '#92400e' : '#1d4ed8',
-                              }}>{s.tipo || 'clase'}</span>
+                              <span
+                                className={`tp-tipo-pill tp-tipo-pill--${s.tipo || 'clase'}`}
+                              >{s.tipo || 'clase'}</span>
                             </span>
                           </div>
-                          <div
-                            style={{
-                              display: "flex",
-                              gap: "0.5rem",
-                              alignItems: "center",
-                            }}
-                          >
+                          <div className="tp-session-row__actions">
                             {s.activa ? (
-                              <span
-                                className="badge"
-                                style={{
-                                  background: "var(--success)",
-                                  color: "white",
-                                  fontWeight: "700",
-                                  letterSpacing: "0.02em",
-                                }}
-                              >
+                              <span className="badge tp-badge-live">
                                 EN VIVO
                               </span>
                             ) : s.faltas_procesadas ? (
-                              <span
-                                className="badge"
-                                style={{
-                                  background: "var(--gray-300)",
-                                  color: "var(--gray-700)",
-                                  fontWeight: "600",
-                                  fontSize: "0.7rem",
-                                }}
-                              >
+                              <span className="badge tp-badge-done">
                                 FINALIZADA
                               </span>
                             ) : s.tipo === 'puntos' ? (
-                              <span
-                                className="badge"
-                                style={{
-                                  background: 'rgba(245,158,11,0.12)',
-                                  color: '#92400e',
-                                  fontWeight: '600',
-                                  fontSize: '0.68rem',
-                                }}
-                              >
+                              <span className="badge tp-badge-manual">
                                 MANUAL
                               </span>
                             ) : (
                               <button
-                                className="btn btn-sm btn-primary"
+                                className="btn btn-sm btn-primary tp-btn-start"
                                 onClick={() => activarSesion(s.id, s.tipo)}
-                                style={{ borderRadius: "8px" }}
                               >
                                 <Play size={12} fill="currentColor" /> Iniciar
                               </button>
                             )}
                             <button
-                              className="btn btn-sm btn-ghost"
+                              className="btn btn-sm btn-ghost tp-btn-edit-sm"
                               onClick={() => openEditForm(s)}
-                              style={{
-                                color: "var(--gray-600)",
-                                padding: "4px",
-                              }}
                               title="Editar clase"
                             >
                               <Edit size={14} />
                             </button>
                             <button
-                              className="btn btn-sm btn-ghost"
+                              className="btn btn-sm btn-ghost tp-btn-delete-sm"
                               onClick={() => eliminarSesionProgramada(s.id)}
-                              style={{ color: "#ef4444", padding: "4px" }}
                             >
                               <Trash2 size={14} />
                             </button>
@@ -2699,77 +1768,29 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
             {/* ─── HISTORIAL / MATRIZ ─────────────────── */}
             {activeTab === "historial" && (
               <div
-                className="card"
-                style={{ maxWidth: "100%", overflow: "hidden" }}
+                className="card tp-historial-card"
               >
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    flexWrap: "wrap",
-                    gap: "1rem",
-                    marginBottom: "1rem",
-                  }}
-                >
+                <div className="tp-historial-header">
                   <div>
                     <div className="card-title">Asistencias</div>
                   </div>
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "0.5rem",
-                      flexWrap: "nowrap",
-                    }}
-                  >
-                    <div
-                      style={{
-                        position: "relative",
-                        width: "100%",
-                        maxWidth: "280px",
-                      }}
-                    >
+                  <div className="tp-historial-actions">
+                    <div className="tp-historial-search-wrap">
                       <Search
                         size={16}
-                        style={{
-                          position: "absolute",
-                          left: "12px",
-                          top: "50%",
-                          transform: "translateY(-50%)",
-                          color: "var(--gray-400)",
-                        }}
+                        className="tp-historial-search-icon"
                       />
                       <input
                         type="text"
                         placeholder="Buscar alumno o código..."
-                        className="form-input"
+                        className="form-input tp-historial-search-input"
                         value={searchHistorial}
                         onChange={(e) => setSearchHistorial(e.target.value)}
-                        style={{
-                          paddingLeft: "38px",
-                          paddingRight: "30px",
-                          height: "38px",
-                          fontSize: "0.85rem",
-                        }}
                       />
                       {searchHistorial && (
                         <button
                           onClick={() => setSearchHistorial("")}
-                          style={{
-                            position: "absolute",
-                            right: "10px",
-                            top: "50%",
-                            transform: "translateY(-50%)",
-                            background: "transparent",
-                            border: "none",
-                            color: "var(--gray-400)",
-                            cursor: "pointer",
-                            padding: "2px",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                          }}
+                          className="tp-historial-clear-btn"
                         >
                           <X size={14} />
                         </button>
@@ -2778,23 +1799,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                     {historialGen.length > 0 && (
                       <button
                         onClick={exportToExcel}
-                        className="btn"
-                        style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: "6px",
-                          height: "32px",
-                          fontSize: "0.78rem",
-                          whiteSpace: "nowrap",
-                          padding: "0 12px",
-                          background: "white",
-                          color: "#1D6F42",
-                          border: "1px solid #1D6F42",
-                          borderRadius: "8px",
-                          fontWeight: "600",
-                          width: "auto",
-                          cursor: "pointer",
-                        }}
+                        className="btn tp-excel-btn"
                         onMouseEnter={(e) =>
                           (e.currentTarget.style.background = "#f0fdf4")
                         }
@@ -2820,10 +1825,9 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                   </p>
                 ) : (
                   <div
-                    className="table-modelo-wrapper"
-                    style={{ marginTop: "1rem" }}
+                    className="table-modelo-wrapper tp-historial-table-wrap"
                   >
-                    <table className="table-modelo" style={{ minWidth: "100%" }}>
+                    <table className="table-modelo tp-historial-table">
                       <thead>
                         <tr>
                           <th
@@ -2839,51 +1843,22 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                             return (
                               <th
                                 key={c.id}
-                                style={{
-                                  padding: '8px',
-                                  borderBottom: '2px solid var(--gray-200)',
-                                  minWidth: c.tipo === 'puntos' ? '80px' : '70px',
-                                  textAlign: 'center',
-                                  verticalAlign: 'bottom'
-                                }}
+                                className="tp-matrix-th"
+                                style={{ minWidth: c.tipo === 'puntos' ? '80px' : '70px' }}
                               >
-                                <div style={{ 
-                                  display: 'flex', 
-                                  flexDirection: 'column',  
-                                  alignItems: 'center',
-                                  margin: '0 auto',
-                                  gap: '2px'
-                                }}>
-                                  <div style={{ fontSize: '0.75rem', color: 'var(--gray-800)', fontWeight: 700, textAlign: 'center', whiteSpace: 'nowrap' }}>
+                                <div className="tp-matrix-col-header">
+                                  <div className="tp-matrix-col-label">
                                     {c.tipo === 'clase' ? c.label : c.name}
                                   </div>
                                   {c.tipo === 'clase' ? (
-                                    <div style={{ fontSize: '0.65rem', color: 'var(--gray-500)', fontStyle: 'italic', textAlign: 'center', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'center', marginTop: '2px' }}>
-                                      <div style={{ 
-                                        fontSize: '0.55rem', 
-                                        fontWeight: 700, 
-                                        background: typeStyles.bg, 
-                                        color: typeStyles.textPrimary, 
-                                        padding: '2px 6px', 
-                                        borderRadius: '8px', 
-                                        textTransform: 'uppercase',
-                                        fontStyle: 'normal'
-                                      }}>
+                                    <div className="tp-matrix-col-sub">
+                                      <div className="tp-tipo-tag" style={{ background: typeStyles.bg, color: typeStyles.textPrimary }}>
                                         {c.tipo}
                                       </div>
                                       <span>{c.name}</span>
                                     </div>
                                   ) : (
-                                    <div style={{ 
-                                      marginTop: '2px',
-                                      fontSize: '0.55rem', 
-                                      fontWeight: 700, 
-                                      background: typeStyles.bg, 
-                                      color: typeStyles.textPrimary, 
-                                      padding: '2px 6px', 
-                                      borderRadius: '8px', 
-                                      textTransform: 'uppercase' 
-                                    }}>
+                                    <div className="tp-tipo-tag" style={{ background: typeStyles.bg, color: typeStyles.textPrimary }}>
                                       {c.tipo}
                                     </div>
                                   )}
@@ -2892,14 +1867,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                             );
                           })}
                           <th
-                            className="sticky-col-right"
-                            style={{
-                              padding: "12px",
-                              borderBottom: "2px solid var(--gray-200)",
-                              color: "var(--primary-dark)",
-                              minWidth: "60px",
-                              textAlign: "center"
-                            }}
+                            className="sticky-col-right tp-matrix-th--score"
                           >
                             Punt.
                           </th>
@@ -2928,33 +1896,14 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                             return (
                               <tr
                                 key={est.id}
-                                style={{
-                                  background: i % 2 === 0 ? "#fff" : "#fafafa",
-                                }}
+                                className={i % 2 === 0 ? 'tp-tr-even' : 'tp-tr-odd'}
                               >
                                 <td className="sticky-col">
-                                  <div
-                                    style={{
-                                      display: "flex",
-                                      flexDirection: "column",
-                                    }}
-                                  >
-                                    <span
-                                      style={{
-                                        fontWeight: "600",
-                                        color: "var(--gray-800)",
-                                        fontSize: "0.85rem",
-                                      }}
-                                    >
+                                  <div className="tp-student-cell">
+                                    <span className="tp-student-cell__name">
                                       {est.nombre_completo}
                                     </span>
-                                    <span
-                                      style={{
-                                        fontSize: "0.72rem",
-                                        color: "var(--gray-400)",
-                                        fontFamily: "monospace"
-                                      }}
-                                    >
+                                    <span className="tp-student-cell__code">
                                       {est.codigo}
                                     </span>
                                   </div>
@@ -3056,13 +2005,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                                   );
                                 })}
                                 <td
-                                  className="sticky-col-right"
-                                  style={{
-                                    fontWeight: "bold",
-                                    color: "var(--primary-dark)",
-                                    fontSize: "0.9rem",
-                                    textAlign: "center",
-                                  }}
+                                  className="sticky-col-right tp-score-cell"
                                 >
                                   {Math.round(points)}
                                 </td>
@@ -3071,36 +2014,19 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                           })}
                       </tbody>
                     </table>
-                    <div
-                      style={{
-                        padding: "10px 12px",
-                        fontSize: "0.75rem",
-                        color: "var(--gray-500)",
-                        display: "flex",
-                        gap: "1rem",
-                        flexWrap: "wrap",
-                        justifyContent: "center",
-                      }}
-                    >
+                    <div className="tp-legend">
                       {Object.keys(ESTADOS_UI).map((k) => (
                         <div
                           key={k}
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "4px",
-                          }}
+                          className="tp-legend__item"
                         >
                           <span
+                            className="tp-legend__dot"
                             style={{
-                              display: "inline-block",
-                              width: "14px",
-                              height: "14px",
-                              borderRadius: "4px",
                               background: ESTADOS_UI[k].bg,
                               border: `1px solid ${ESTADOS_UI[k].border}`
                             }}
-                          ></span>
+                          />
                           <span
                             style={{
                               fontWeight: 500,
@@ -3121,72 +2047,59 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
             {activeTab === "config" && (
               <>
                 {/* ── Estados de Asistencia CRUD ──────────── */}
-                <div
-                  className="card"
-                  style={{ maxWidth: 700, margin: "1.5rem auto", padding: "20px" }}
-                >
-                  <div style={{ marginBottom: "1.5rem" }}>
-                    <div className="card-title" style={{ margin: 0 }}>Estados de Asistencia</div>
-                    <div className="card-subtitle" style={{ marginTop: "4px", marginBottom: "1rem" }}>
+                <div className="card tp-config-card">
+                  <div className="tp-config-header">
+                    <div className="card-title tp-alumnos-subtitle">Estados de Asistencia</div>
+                    <div className="card-subtitle tp-card-subtitle-mt">
                       Administra los tipos de asistencia, sus colores y puntuación.
                     </div>
                     <button
-                      className="btn btn-primary"
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        gap: "6px",
-                        fontSize: "0.85rem",
-                        padding: "10px",
-                        borderRadius: "8px",
-                        width: "100%"
-                      }}
+                      className="btn btn-primary tp-config-add-btn"
                       onClick={handleNewEstado}
                     >
                       <Plus size={16} /> Nuevo
                     </button>
                   </div>
                   
-                  <div style={{ overflowX: "auto" }}>
-                    <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", fontSize: "0.9rem" }}>
+                  <div className="tp-table-wrap">
+                    <table className="tp-config-table">
                       <thead>
-                        <tr style={{ borderBottom: "2px solid var(--gray-200)", color: "var(--gray-500)" }}>
-                          <th style={{ padding: "12px", fontWeight: "600", width: "60px" }}>Color</th>
-                          <th style={{ padding: "12px", fontWeight: "600" }}>Nombre del Estado</th>
-                          <th style={{ padding: "12px", fontWeight: "600", textAlign: "center" }}>Puntos</th>
-                          <th style={{ padding: "12px", fontWeight: "600", textAlign: "center", width: "120px" }}>Acciones</th>
+                        <tr>
+                          <th className="tp-config-table__th">Color</th>
+                          <th className="tp-config-table__th">Nombre del Estado</th>
+                          <th className="tp-config-table__th tp-config-table__th--center">Puntos</th>
+                          <th className="tp-config-table__th tp-config-table__th--center">Acciones</th>
                         </tr>
                       </thead>
                       <tbody>
                         {estadosDB.map((est) => (
-                          <tr key={est.id} style={{ borderBottom: "1px solid var(--gray-100)", transition: "background 0.2s" }} onMouseEnter={(e) => e.currentTarget.style.background = "var(--gray-50)"} onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}>
-                            <td style={{ padding: "12px" }}>
-                              <div style={{
-                                width: "24px", height: "24px", borderRadius: "6px", background: `color-mix(in srgb, ${est.color} 15%, transparent)`, border: `1px solid ${est.color}`
-                              }}></div>
+                          <tr key={est.id} className="tp-config-table__tr">
+                            <td className="tp-config-table__td">
+                              <div
+                                className="tp-estado-dot"
+                                style={{
+                                  background: `color-mix(in srgb, ${est.color} 15%, transparent)`,
+                                  border: `1px solid ${est.color}`
+                                }}
+                              />
                             </td>
-                            <td style={{ padding: "12px", fontWeight: "500", color: "var(--gray-800)" }}>{est.nombre}</td>
-                            <td style={{ padding: "12px", textAlign: "center" }}>
-                              <span style={{
-                                background: "var(--gray-100)", color: "var(--gray-700)", padding: "4px 10px", borderRadius: "12px", fontWeight: "600", fontSize: "0.85rem"
-                              }}>
+                            <td className="tp-config-table__td tp-config-table__td--name">{est.nombre}</td>
+                            <td className="tp-config-table__td tp-config-table__td--center">
+                              <span className="tp-estado-puntos-badge">
                                 {est.puntuacion}
                               </span>
                             </td>
-                            <td style={{ padding: "12px", textAlign: "center" }}>
-                              <div style={{ display: "flex", gap: "8px", justifyContent: "center" }}>
+                            <td className="tp-config-table__td tp-config-table__td--center">
+                              <div className="tp-table-actions">
                                 <button
-                                  className="btn btn-ghost"
-                                  style={{ padding: "6px", color: "var(--primary)", border: "1px solid var(--primary-bg)", background: "var(--primary-bg)" }}
+                                  className="btn btn-ghost tp-btn-edit"
                                   onClick={() => handleEditEstado(est)}
                                   title="Editar"
                                 >
                                   <Edit size={16} />
                                 </button>
                                 <button
-                                  className="btn btn-ghost"
-                                  style={{ padding: "6px", color: "var(--error)", border: "1px solid #fee2e2", background: "#fef2f2" }}
+                                  className="btn btn-ghost tp-btn-delete"
                                   onClick={async () => {
                                     if (!confirm(`¿Eliminar el estado "${est.nombre}"?`)) return;
                                     try {
@@ -3221,89 +2134,48 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
 
             {/* Modal para Crear / Editar Estado */}
             {showEstadoModal && (
-              <div
-                style={{
-                  position: "fixed",
-                  inset: 0,
-                  zIndex: 9999,
-                  background: "rgba(0,0,0,0.45)",
-                  backdropFilter: "blur(4px)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  padding: "1rem",
-                }}
-                onClick={() => setShowEstadoModal(false)}
-              >
                 <div
-                  style={{
-                    background: "white",
-                    borderRadius: "16px",
-                    width: "100%",
-                    maxWidth: "420px",
-                    boxShadow: "0 20px 60px rgba(0,0,0,0.25)",
-                    overflow: "hidden",
-                  }}
+                  className="tp-modal-overlay--high"
+                  onClick={() => setShowEstadoModal(false)}
+                >
+                <div
+                  className="tp-modal-box--md"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <div
-                    style={{
-                      padding: "16px 20px",
-                      borderBottom: "1px solid var(--gray-100)",
-                      background: "var(--gray-50)",
-                    }}
-                  >
-                    <h3
-                      style={{
-                        margin: 0,
-                        fontSize: "1rem",
-                        color: "var(--gray-800)",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "8px",
-                      }}
-                    >
-                      {editEstado ? <Edit size={18} style={{ color: "var(--primary)" }} /> : <Plus size={18} style={{ color: "var(--primary)" }} />}
+                  <div className="tp-modal-header--simple">
+                    <h3 className="tp-modal-title-row">
+                      {editEstado ? <Edit size={18} className="tp-modal-icon-primary" /> : <Plus size={18} className="tp-modal-icon-primary" />}
                       {editEstado ? "Editar Estado" : "Nuevo Estado"}
                     </h3>
                   </div>
                   <form onSubmit={saveEstado}>
-                    <div style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "1rem" }}>
-                      <div className="form-group">
-                        <label className="form-label" style={{ fontSize: "0.85rem", color: "var(--gray-600)", marginBottom: "6px" }}>Nombre del Estado</label>
+                    <div className="tp-modal-body-pad">
+                      <div className="form-group tp-form-group-0">
+                        <label className="form-label tp-modal-label">Nombre del Estado</label>
                         <input
                           className="form-input"
                           value={estadoData.nombre}
                           onChange={(e) => setEstadoData({ ...estadoData, nombre: e.target.value })}
                           required
-                          style={{ height: "42px" }}
                         />
                       </div>
-                      <div style={{ display: "flex", gap: "1rem" }}>
-                        <div className="form-group" style={{ flex: 1 }}>
-                          <label className="form-label" style={{ fontSize: "0.85rem", color: "var(--gray-600)", marginBottom: "6px" }}>Color de Etiqueta</label>
-                          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                      <div className="tp-color-row">
+                        <div className="form-group tp-flex-1">
+                          <label className="form-label tp-modal-label">Color de Etiqueta</label>
+                          <div className="tp-color-input-wrap">
                             <input
                               type="color"
                               value={estadoData.color}
                               onChange={(e) => setEstadoData({ ...estadoData, color: e.target.value })}
-                              style={{
-                                width: "42px",
-                                height: "42px",
-                                border: "1px solid var(--gray-200)",
-                                borderRadius: "8px",
-                                cursor: "pointer",
-                                padding: "2px",
-                                background: "white"
-                              }}
+                              className="tp-color-picker"
                             />
-                            <span style={{ fontSize: "0.9rem", color: "var(--gray-500)", fontFamily: "monospace" }}>{estadoData.color.toUpperCase()}</span>
+                            <span className="tp-color-hex">{estadoData.color.toUpperCase()}</span>
                           </div>
                         </div>
-                        <div className="form-group" style={{ width: "100px" }}>
-                          <label className="form-label" style={{ fontSize: "0.85rem", color: "var(--gray-600)", marginBottom: "6px" }}>Puntos</label>
+                        <div className="form-group tp-form-group--score">
+                          <label className="form-label tp-modal-label">Puntos</label>
                           <input
-                            className="form-input"
+                            className="form-input tp-input-score"
                             type="number"
                             step="0.01"
                             min="-9.99"
@@ -3311,21 +2183,11 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                             value={estadoData.puntuacion}
                             onChange={(e) => setEstadoData({ ...estadoData, puntuacion: e.target.value })}
                             required
-                            style={{ height: "42px", textAlign: "center" }}
                           />
                         </div>
                       </div>
                     </div>
-                    <div
-                      style={{
-                        padding: "14px 20px",
-                        borderTop: "1px solid var(--gray-100)",
-                        display: "flex",
-                        justifyContent: "flex-end",
-                        gap: "0.5rem",
-                        background: "var(--gray-50)",
-                      }}
-                    >
+                    <div className="tp-modal-footer--start" style={{ justifyContent: "flex-end" }}>
                       <button
                         type="button"
                         className="btn btn-ghost"

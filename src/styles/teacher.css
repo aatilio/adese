@@ -1,9 +1,8 @@
-/* ================================================================
-   teacher.css — Extracted CSS for TeacherPage.jsx
-   Prefix: tp- (TeacherPage), uv- (UsersView)
-   ================================================================ */
+/* ============================================================
+   teacher.css — Extracted styles for TeacherPage (tp- prefix)
+   ============================================================ */
 
-/* ── Loading shell ─────────────────────────────────────────────── */
+/* ── Loading state ───────────────────────────────────────── */
 .tp-loading-shell {
   align-items: center;
   justify-content: center;
@@ -15,7 +14,7 @@
   height: 32px;
 }
 
-/* ── Modal overlay (shared across all modals) ──────────────────── */
+/* ── Confirm-delete modal ────────────────────────────────── */
 .tp-modal-overlay {
   position: fixed;
   inset: 0;
@@ -27,8 +26,7 @@
   padding: 1rem;
 }
 
-/* Higher z-index variant used by most modals */
-.tp-modal-overlay--high {
+.tp-modal-overlay--blurred {
   position: fixed;
   inset: 0;
   z-index: 9999;
@@ -40,30 +38,7 @@
   padding: 1rem;
 }
 
-/* ── Modal box ─────────────────────────────────────────────────── */
 .tp-modal-box {
-  background: white;
-  border-radius: 16px;
-  width: 100%;
-  max-width: 420px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
-  overflow: hidden;
-}
-
-.tp-modal-box--sm {
-  max-width: 420px;
-}
-
-.tp-modal-box--md {
-  max-width: 480px;
-}
-
-.tp-modal-box--lg {
-  max-width: 600px;
-}
-
-/* Confirm-delete modal box (no overflow:hidden, has animation) */
-.tp-confirm-box {
   background: white;
   border-radius: 16px;
   padding: 2rem;
@@ -73,14 +48,39 @@
   animation: slideIn 0.2s ease;
 }
 
-/* ── Modal icon (emoji header) ─────────────────────────────────── */
-.tp-modal-icon {
+.tp-modal-box--wide {
+  background: white;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+}
+
+.tp-modal-box--xl {
+  background: white;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+}
+
+.tp-modal-box--user {
+  background: white;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 600px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+}
+
+.tp-modal-emoji {
   font-size: 2.5rem;
   text-align: center;
   margin-bottom: 0.75rem;
 }
 
-/* ── Modal title (confirm style) ───────────────────────────────── */
 .tp-modal-title {
   margin: 0 0 0.5rem;
   color: var(--gray-900);
@@ -89,8 +89,7 @@
   font-weight: 700;
 }
 
-/* ── Modal body text (confirm style) ───────────────────────────── */
-.tp-modal-body {
+.tp-modal-desc {
   font-size: 0.85rem;
   color: var(--gray-500);
   text-align: center;
@@ -98,19 +97,76 @@
   line-height: 1.6;
 }
 
-/* ── Modal actions row ─────────────────────────────────────────── */
+.tp-modal-desc strong {
+  color: var(--danger);
+}
+
 .tp-modal-actions {
   display: flex;
   gap: 0.75rem;
 }
 
-/* ── Flex-1 utility ────────────────────────────────────────────── */
-.tp-flex-1 {
+.tp-modal-actions .btn {
   flex: 1;
 }
 
-/* ── Page header ───────────────────────────────────────────────── */
-.tp-page-header {
+/* ── Modal header / footer (shared) ─────────────────────── */
+.tp-modal-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--gray-100);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--gray-50);
+}
+
+.tp-modal-header__title {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--gray-800);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tp-modal-header__icon {
+  color: var(--primary);
+}
+
+.tp-modal-close-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--gray-400);
+  padding: 4px;
+}
+
+.tp-modal-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.tp-modal-footer {
+  padding: 14px 20px;
+  border-top: 1px solid var(--gray-100);
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  background: var(--gray-50);
+}
+
+.tp-modal-footer--btn-row {
+  padding: 14px 20px;
+  border-top: 1px solid var(--gray-100);
+  display: flex;
+  gap: 0.5rem;
+  background: var(--gray-50);
+}
+
+/* ── Page header ─────────────────────────────────────────── */
+.tp-header {
   justify-content: space-between;
 }
 
@@ -125,10 +181,6 @@
   height: auto;
 }
 
-.tp-header__logo-pad {
-  padding: 0;
-}
-
 .tp-header__title {
   margin: 0;
   font-size: 1.2rem;
@@ -138,10 +190,11 @@
 .tp-header__actions {
   display: flex;
   align-items: center;
+  margin-left: auto;
 }
 
-/* ── Back button (profile view) ────────────────────────────────── */
-.tp-back-wrap {
+/* ── Back button (perfil wrap) ───────────────────────────── */
+.tp-perfil-back-wrap {
   padding: 0 1rem;
   margin-bottom: 1rem;
 }
@@ -159,12 +212,12 @@
   background: white;
 }
 
-/* ── Dashboard ─────────────────────────────────────────────────── */
+/* ── Dashboard ───────────────────────────────────────────── */
 .tp-dashboard {
   padding: 1rem;
 }
 
-.tp-dashboard__bar {
+.tp-dashboard__header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -189,8 +242,7 @@
   color: var(--gray-800);
 }
 
-/* ── Admin Usuarios button ─────────────────────────────────────── */
-.tp-btn-usuarios {
+.tp-admin-users-btn {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -204,7 +256,7 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-/* ── Search wrapper ────────────────────────────────────────────── */
+/* ── Curso search input ──────────────────────────────────── */
 .tp-search-wrap {
   margin-bottom: 1.5rem;
   position: relative;
@@ -230,115 +282,29 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
 }
 
-.tp-search-input:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
-/* ── Modal header (for add/edit modals) ────────────────────────── */
-.tp-modal-header {
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--gray-100);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: var(--gray-50);
-}
-
-.tp-modal-header--simple {
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--gray-100);
-  background: var(--gray-50);
-}
-
-/* ── Modal title row (h3 inside header) ────────────────────────── */
-.tp-modal-title-row {
-  margin: 0;
-  font-size: 1rem;
-  color: var(--gray-800);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-/* ── Icon primary (inside modal title) ─────────────────────────── */
-.tp-modal-icon-primary {
-  color: var(--primary);
-}
-
-/* ── Modal close button ────────────────────────────────────────── */
-.tp-modal-close {
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  color: var(--gray-400);
-  padding: 4px;
-}
-
-/* ── Modal body padding ────────────────────────────────────────── */
-.tp-modal-body-pad {
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-/* ── Modal form label (small) ──────────────────────────────────── */
-.tp-modal-label {
-  font-size: 0.8rem;
-  color: var(--gray-500);
-  margin-bottom: 4px;
-}
-
-/* ── Form group: no top margin ─────────────────────────────────── */
-.tp-form-group-0 {
-  margin-top: 0;
-}
-
-/* ── Modal footer ──────────────────────────────────────────────── */
-.tp-modal-footer {
-  padding: 14px 20px;
-  border-top: 1px solid var(--gray-100);
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.5rem;
-  background: var(--gray-50);
-}
-
-.tp-modal-footer--start {
-  padding: 14px 20px;
-  border-top: 1px solid var(--gray-100);
-  display: flex;
-  gap: 0.5rem;
-  background: var(--gray-50);
-}
-
-/* ── Course cards grid ─────────────────────────────────────────── */
+/* ── Courses grid ────────────────────────────────────────── */
 .tp-courses-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 1rem;
 }
 
-/* ── Course card ───────────────────────────────────────────────── */
+.tp-courses-grid > .card {
+  margin: 0 !important;
+}
+
 .tp-course-card {
   cursor: pointer;
   transition: transform 0.2s;
   margin: 0;
 }
 
-.tp-course-card:hover {
-  transform: translateY(-2px);
-}
-
-/* ── Course card header row ────────────────────────────────────── */
 .tp-course-card__header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
 }
 
-/* ── Course card tag (BookOpen + "Curso") ──────────────────────── */
 .tp-course-card__tag {
   display: flex;
   align-items: center;
@@ -347,21 +313,34 @@
   margin-bottom: 0.5rem;
 }
 
-/* ── Course card label ("Curso") ───────────────────────────────── */
-.tp-course-card__label {
+.tp-course-card__tag-label {
   font-weight: 500;
   font-size: 0.85rem;
 }
 
-/* ── Course card name (h3) ─────────────────────────────────────── */
 .tp-course-card__name {
   font-size: 1.1rem;
   margin: 0 0 0.5rem 0;
   color: var(--gray-800);
 }
 
-/* ── Docente badge ─────────────────────────────────────────────── */
-.tp-course-card__docente {
+.tp-course-card__actions {
+  display: flex;
+  gap: 4px;
+}
+
+.tp-course-card__btn-edit {
+  color: var(--gray-500);
+  padding: 4px;
+}
+
+.tp-course-card__btn-delete {
+  color: var(--danger);
+  padding: 4px;
+}
+
+/* Profesor badge on card */
+.tp-profesor-badge {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -375,30 +354,13 @@
   margin-bottom: 8px;
 }
 
-.tp-course-card__docente-label {
+.tp-profesor-badge__label {
   color: #94a3b8;
   font-weight: 500;
 }
 
-/* ── Action buttons row ────────────────────────────────────────── */
-.tp-course-card__actions {
-  display: flex;
-  gap: 4px;
-}
-
-/* ── Icon action button (edit) ─────────────────────────────────── */
-.tp-icon-btn {
-  color: var(--gray-500);
-  padding: 4px;
-}
-
-.tp-icon-btn--danger {
-  color: var(--danger);
-  padding: 4px;
-}
-
-/* ── Stats row ─────────────────────────────────────────────────── */
-.tp-course-card__stats {
+/* Stats row */
+.tp-course-stats {
   display: flex;
   gap: 1rem;
   margin-top: 1rem;
@@ -406,14 +368,14 @@
   color: var(--gray-500);
 }
 
-.tp-course-card__stat {
+.tp-course-stats__item {
   display: flex;
   align-items: center;
   gap: 4px;
 }
 
-/* ── Add Course card ───────────────────────────────────────────── */
-.tp-add-course-card {
+/* Add course sketch card */
+.tp-add-card {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -428,19 +390,7 @@
   box-shadow: none;
 }
 
-.tp-add-course-card:hover {
-  border-color: var(--primary);
-  background: var(--primary-bg);
-  transform: translateY(-2px);
-}
-
-.tp-add-course-card:hover .tp-add-course-icon {
-  background: var(--primary-bg);
-  color: var(--primary);
-}
-
-/* ── Add course icon circle ────────────────────────────────────── */
-.tp-add-course-icon {
+.tp-add-card__icon-wrap {
   width: 40px;
   height: 40px;
   border-radius: 50%;
@@ -452,38 +402,54 @@
   transition: all 0.2s ease;
 }
 
-/* ── Add course text ───────────────────────────────────────────── */
-.tp-add-course-text {
+.tp-add-card__label {
   font-size: 0.95rem;
   font-weight: 600;
   color: var(--gray-500);
 }
 
-/* ── Course view toolbar ───────────────────────────────────────── */
-.tp-toolbar-mb {
+/* ── Modal form label (small) ────────────────────────────── */
+.tp-form-label-sm {
+  font-size: 0.8rem;
+  color: var(--gray-500);
+  margin-bottom: 4px;
+}
+
+.tp-form-label-sm--group {
+  font-size: 0.8rem;
+  color: var(--gray-500);
+  margin-bottom: 4px;
+  display: block;
+}
+
+.tp-form-group-mt {
+  margin-top: 1rem;
+}
+
+/* ── Course view toolbar ─────────────────────────────────── */
+.tp-course-toolbar-margin {
   margin-bottom: 0.5rem;
 }
 
-/* ── Course view title (h2) ────────────────────────────────────── */
-.tp-course-view-title {
+.tp-course-heading {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   font-size: 1.1rem;
 }
 
-.tp-course-subtitle {
+.tp-course-heading__sub {
   color: var(--gray-500);
   font-weight: 500;
 }
 
-.tp-course-name {
+.tp-course-heading__name {
   color: var(--primary);
   font-weight: 800;
 }
 
-/* ── Tabs bar ──────────────────────────────────────────────────── */
-.tp-tabs-bar {
+/* ── Course nav bar ──────────────────────────────────────── */
+.tp-course-nav {
   display: flex;
   align-items: center;
   border-bottom: 1px solid var(--gray-200);
@@ -493,8 +459,7 @@
   gap: 1rem;
 }
 
-/* ── Back button (inside tabs bar, has right border) ───────────── */
-.tp-back-btn--tabs {
+.tp-course-nav__back-btn {
   color: var(--gray-600);
   font-size: 0.8rem;
   font-weight: 600;
@@ -507,24 +472,22 @@
   height: 100%;
 }
 
-/* ── Tabs inline (no border/padding) ──────────────────────────── */
-.tp-tabs-inline {
-  border-bottom: none !important;
-  padding: 0 !important;
-  gap: 1.5rem !important;
+.tp-tabs--nav {
+  border-bottom: none;
+  padding: 0;
+  gap: 1.5rem;
 }
 
-/* ── Individual tab button ─────────────────────────────────────── */
-.tp-tab-btn {
+.tp-tab--nav {
   padding: 12px 0;
 }
 
-/* ── page-body full width ──────────────────────────────────────── */
-.tp-page-body-full {
+/* ── Page body full width ────────────────────────────────── */
+.tp-page-body {
   width: 100%;
 }
 
-/* ── No session card ───────────────────────────────────────────── */
+/* ── No-session card ─────────────────────────────────────── */
 .tp-no-session-card {
   max-width: 480px;
   margin: 0 auto;
@@ -535,43 +498,32 @@
   border-radius: 24px;
 }
 
-.tp-no-session-icon {
+.tp-no-session-card__icon {
   margin: 0 auto 1.5rem;
   color: var(--primary);
   opacity: 0.5;
 }
 
-.tp-no-session-title {
+.tp-no-session-card__title {
   justify-content: center;
   font-size: 1.2rem;
 }
 
-.tp-no-session-body {
+.tp-no-session-card__desc {
   font-size: 0.95rem;
   color: var(--gray-500);
   margin-bottom: 2rem;
   line-height: 1.6;
 }
 
-.tp-btn-go-classes {
+.tp-no-session-card__btn {
   margin: 0 auto;
   width: auto;
   padding: 0.8rem 2.5rem;
   font-size: 0.9rem;
 }
 
-.tp-btn-icon-mr {
-  margin-right: 8px;
-}
-
-/* ── Live chip row ─────────────────────────────────────────────── */
-.tp-live-chip-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-/* ── Alumnos card ──────────────────────────────────────────────── */
+/* ── Alumnos section ─────────────────────────────────────── */
 .tp-alumnos-card {
   max-width: 1000px;
   margin: 1.5rem auto;
@@ -582,17 +534,7 @@
   margin-bottom: 1.5rem;
 }
 
-.tp-alumnos-subtitle {
-  margin: 0;
-}
-
-.tp-card-subtitle-mt {
-  margin-top: 4px;
-  margin-bottom: 1rem;
-}
-
-/* ── Add alumno primary button ─────────────────────────────────── */
-.tp-btn-add-alumno {
+.tp-add-alumno-btn {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -603,46 +545,49 @@
   width: 100%;
 }
 
-/* ── Nuevo alumno modal — search status boxes ──────────────────── */
-.tp-alumno-found-wrap {
+/* Nuevo alumno modal search feedback */
+.tp-alumno-found {
   margin-top: 6px;
   padding: 8px 12px;
+  background: #f0fdf4;
   border-radius: 8px;
+  border: 1px solid #bbf7d0;
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.tp-alumno-found-wrap--warn {
-  background: #fffbeb;
-  border: 1px solid #fde68a;
-}
-
-.tp-alumno-found-wrap--ok {
-  background: #f0fdf4;
-  border: 1px solid #bbf7d0;
-}
-
-.tp-alumno-found-title--warn {
-  font-size: 0.82rem;
-  font-weight: 700;
-  color: #92400e;
-}
-
-.tp-alumno-found-sub--warn {
-  font-size: 0.75rem;
-  color: #a16207;
-}
-
-.tp-alumno-found-title--ok {
+.tp-alumno-found__title {
   font-size: 0.82rem;
   font-weight: 700;
   color: #15803d;
 }
 
-.tp-alumno-found-sub--ok {
+.tp-alumno-found__sub {
   font-size: 0.75rem;
   color: #166534;
+}
+
+.tp-alumno-warn {
+  margin-top: 6px;
+  padding: 8px 12px;
+  background: #fffbeb;
+  border-radius: 8px;
+  border: 1px solid #fde68a;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tp-alumno-warn__title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #92400e;
+}
+
+.tp-alumno-warn__sub {
+  font-size: 0.75rem;
+  color: #a16207;
 }
 
 .tp-alumno-hint {
@@ -651,20 +596,20 @@
   margin-top: 4px;
 }
 
-/* ── Spinner inline (for search) ───────────────────────────────── */
-.tp-spinner-search {
+/* Spinner small (for search) */
+.tp-spinner-sm {
   position: absolute;
   right: 10px;
   top: 62%;
   transform: translateY(-50%);
 }
 
-.tp-spinner-sm {
+.tp-spinner-xs {
   width: 14px;
   height: 14px;
 }
 
-/* ── Alumnos table ─────────────────────────────────────────────── */
+/* Alumnos table */
 .tp-table-wrap {
   overflow-x: auto;
 }
@@ -690,6 +635,12 @@
 }
 
 .tp-table th--center {
+  padding: 10px 12px;
+  color: var(--gray-500);
+  font-weight: 600;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
   text-align: center;
   width: 100px;
 }
@@ -699,8 +650,8 @@
   transition: background 0.15s;
 }
 
-.tp-table tbody tr:hover {
-  background: var(--gray-50);
+.tp-table td {
+  padding: 10px 12px;
 }
 
 .tp-table td--num {
@@ -716,6 +667,34 @@
   color: var(--gray-800);
 }
 
+/* BEM-style direct class variants (used in alumnos table) */
+.tp-table__td--num {
+  padding: 10px 12px;
+  color: var(--gray-400);
+  font-weight: 500;
+  width: 40px;
+}
+
+.tp-table__td--name {
+  padding: 10px 12px;
+  font-weight: 600;
+  color: var(--gray-800);
+  white-space: normal;
+  word-break: break-word;
+}
+
+.tp-table__td--code {
+  padding: 10px 12px;
+  color: var(--gray-500);
+  font-family: monospace;
+  font-weight: 500;
+}
+
+.tp-table__td--center {
+  padding: 10px 12px;
+  text-align: center;
+}
+
 .tp-table td--code {
   padding: 10px 12px;
   color: var(--gray-500);
@@ -728,24 +707,19 @@
   text-align: center;
 }
 
-.tp-table td--actions {
-  padding: 10px 12px;
-  text-align: center;
-}
-
-.tp-table-actions {
+.tp-table-cell-actions {
   display: flex;
   gap: 8px;
   justify-content: center;
 }
 
-.tp-table td--empty {
+.tp-table-empty {
   padding: 2rem;
   text-align: center;
   color: var(--gray-400);
 }
 
-/* ── Edit / Delete action buttons ──────────────────────────────── */
+/* Action buttons in tables */
 .tp-btn-edit {
   padding: 6px;
   color: var(--primary);
@@ -760,174 +734,22 @@
   background: #fef2f2;
 }
 
-/* ── Clases section header row ─────────────────────────────────── */
-.tp-clases-bar {
+/* ── Clases section ──────────────────────────────────────── */
+.tp-clases-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
 }
 
-/* ── Nueva sesión whitespace ───────────────────────────────────── */
-.tp-nowrap {
-  white-space: nowrap;
-}
-
-/* ── Session type selector buttons ────────────────────────────── */
-.tp-session-type-row {
-  display: flex;
-  gap: 0.5rem;
-}
-
-/* ── Session type pill button (dynamic border/bg based on active) ─ */
-/* Colors driven by state, kept partly inline - base styles here */
-.tp-session-type-btn {
-  flex: 1;
-  padding: 6px 8px;
-  border-radius: 8px;
-  border: 2px solid;
-  font-size: 0.78rem;
-  cursor: pointer;
-}
-
-/* ── Grid for form fields (name + datetime) ────────────────────── */
-.tp-form-grid-2 {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
-}
-
-/* ── Grid for time limits (3 columns) ─────────────────────────── */
-.tp-form-grid-3 {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 0.5rem;
-}
-
-/* ── Visible checkbox label ────────────────────────────────────── */
-.tp-checkbox-label {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.8rem;
-  color: var(--gray-600);
-  cursor: pointer;
-}
-
-/* ── Limits panel (clase) ──────────────────────────────────────── */
-.tp-limits-panel {
-  padding: 12px;
-  background: rgba(59, 130, 246, 0.06);
-  border-radius: 8px;
-  border: 1px solid rgba(59, 130, 246, 0.15);
-}
-
-.tp-limits-label {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.85rem;
-  font-weight: bold;
-  color: var(--gray-700);
-  cursor: pointer;
-  margin-bottom: 8px;
-}
-
-/* ── Time input compact ────────────────────────────────────────── */
-.tp-time-input {
-  padding: 4px 8px;
-}
-
-.tp-time-input--sm {
-  padding: 4px 8px;
-  font-size: 0.85rem;
-}
-
-/* ── Info panels (evento / puntos type) ────────────────────────── */
-.tp-info-panel--evento {
-  padding: 12px;
-  background: rgba(34, 197, 94, 0.08);
-  border-radius: 8px;
-  border: 1px solid rgba(34, 197, 94, 0.2);
-  font-size: 0.8rem;
-  color: #15803d;
-}
-
-.tp-info-panel--puntos {
-  padding: 12px;
-  background: rgba(245, 158, 11, 0.08);
-  border-radius: 8px;
-  border: 1px solid rgba(245, 158, 11, 0.2);
-  font-size: 0.8rem;
-  color: #92400e;
-}
-
-/* ── Edit sesion: visible label ────────────────────────────────── */
-.tp-visible-label {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.8rem;
-  color: var(--gray-600);
-  cursor: pointer;
-  padding: 8px 12px;
-  background: #f0f9ff;
-  border-radius: 6px;
-  border: 1px solid #bfdbfe;
-}
-
-/* ── Edit sesion: limits label (block) ─────────────────────────── */
-.tp-limits-label-block {
-  font-size: 0.8rem;
-  color: var(--gray-700);
-  font-weight: bold;
-  margin-bottom: 8px;
-  display: block;
-}
-
-/* ── Edit sesion: edit panel (blue) ───────────────────────────── */
-.tp-edit-limits-panel {
-  padding: 12px;
-  background: rgba(59, 130, 246, 0.06);
-  border-radius: 8px;
-  border: 1px solid rgba(59, 130, 246, 0.15);
-  margin-top: 4px;
-}
-
-/* ── Session card in list ──────────────────────────────────────── */
-/* Background/border are dynamic (s.activa, s.tipo) — kept inline */
-.tp-session-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 0.75rem 1rem;
-  border-radius: 12px;
-  margin-bottom: 0.75rem;
-  transition: all 0.2s ease;
-}
-
-.tp-session-info {
+.tp-sesiones-list {
   display: flex;
   flex-direction: column;
+  gap: 0.5rem;
 }
 
-.tp-session-name {
-  font-size: 0.95rem;
-  color: var(--gray-900);
-}
-
-.tp-session-meta {
-  font-size: 0.75rem;
-  color: var(--gray-500);
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-/* Session type chip (dynamic colors kept inline) */
-.tp-session-type-chip {
+/* Session tipo type pill */
+.tp-tipo-pill {
   display: inline-block;
   padding: 1px 6px;
   border-radius: 4px;
@@ -937,13 +759,48 @@
   letter-spacing: 0.5px;
 }
 
-.tp-session-actions {
+.tp-tipo-pill--clase {
+  background: rgba(59, 130, 246, 0.12);
+  color: #1d4ed8;
+}
+
+.tp-tipo-pill--evento {
+  background: rgba(34, 197, 94, 0.15);
+  color: #15803d;
+}
+
+.tp-tipo-pill--puntos {
+  background: rgba(245, 158, 11, 0.15);
+  color: #92400e;
+}
+
+/* Session row */
+.tp-session-row {
+  display: flex;
+  flex-direction: column;
+}
+
+.tp-session-row__name {
+  font-size: 0.95rem;
+  color: var(--gray-900);
+}
+
+.tp-session-row__meta {
+  font-size: 0.75rem;
+  color: var(--gray-500);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tp-session-row__actions {
   display: flex;
   gap: 0.5rem;
   align-items: center;
 }
 
-/* ── Session badges ────────────────────────────────────────────── */
+/* Session badges */
 .tp-badge-live {
   background: var(--success);
   color: white;
@@ -965,34 +822,130 @@
   font-size: 0.68rem;
 }
 
-.tp-btn-iniciar {
+.tp-btn-start {
   border-radius: 8px;
 }
 
-.tp-btn-edit-small {
+.tp-btn-edit-sm {
   color: var(--gray-600);
   padding: 4px;
 }
 
-.tp-btn-delete-small {
+.tp-btn-delete-sm {
   color: #ef4444;
   padding: 4px;
 }
 
-/* ── Sesiones list ─────────────────────────────────────────────── */
-.tp-sessions-list {
+/* Add/Edit sesion modal */
+.tp-tipo-selector {
   display: flex;
-  flex-direction: column;
   gap: 0.5rem;
 }
 
-/* ── Historial / Matrix ────────────────────────────────────────── */
-.tp-historial-card {
-  max-width: 100%;
-  overflow: hidden;
+.tp-form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
 }
 
-.tp-historial-bar {
+.tp-form-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.tp-limits-section {
+  padding: 12px;
+  background: rgba(59, 130, 246, 0.06);
+  border-radius: 8px;
+  border: 1px solid rgba(59, 130, 246, 0.15);
+}
+
+.tp-limits-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  font-weight: bold;
+  color: var(--gray-700);
+  cursor: pointer;
+  margin-bottom: 8px;
+}
+
+.tp-time-label--puntual {
+  font-size: 0.75rem;
+  color: #059669;
+}
+
+.tp-time-label--presente {
+  font-size: 0.75rem;
+  color: #2563eb;
+}
+
+.tp-time-label--tarde {
+  font-size: 0.75rem;
+  color: #d97706;
+}
+
+.tp-time-input {
+  padding: 4px 8px;
+}
+
+.tp-time-input--sm {
+  padding: 4px 8px;
+  font-size: 0.85rem;
+}
+
+.tp-visible-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--gray-600);
+  cursor: pointer;
+}
+
+.tp-visible-label--card {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--gray-600);
+  cursor: pointer;
+  padding: 8px 12px;
+  background: #f0f9ff;
+  border-radius: 6px;
+  border: 1px solid #bfdbfe;
+}
+
+.tp-info-box--evento {
+  padding: 12px;
+  background: rgba(34, 197, 94, 0.08);
+  border-radius: 8px;
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  font-size: 0.8rem;
+  color: #15803d;
+}
+
+.tp-info-box--puntos {
+  padding: 12px;
+  background: rgba(245, 158, 11, 0.08);
+  border-radius: 8px;
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  font-size: 0.8rem;
+  color: #92400e;
+}
+
+.tp-btn-height {
+  height: 36px;
+}
+
+.tp-whitespace-nowrap {
+  white-space: nowrap;
+}
+
+/* ── Historial section ───────────────────────────────────── */
+.tp-historial-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -1001,20 +954,13 @@
   margin-bottom: 1rem;
 }
 
-.tp-historial-controls {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex-wrap: nowrap;
-}
-
-.tp-search-wrap-sm {
+.tp-historial-search-wrap {
   position: relative;
   width: 100%;
   max-width: 280px;
 }
 
-.tp-search-icon-abs {
+.tp-historial-search-icon {
   position: absolute;
   left: 12px;
   top: 50%;
@@ -1022,14 +968,14 @@
   color: var(--gray-400);
 }
 
-.tp-search-input-sm {
+.tp-historial-search-input {
   padding-left: 38px;
   padding-right: 30px;
   height: 38px;
   font-size: 0.85rem;
 }
 
-.tp-clear-btn {
+.tp-historial-clear-btn {
   position: absolute;
   right: 10px;
   top: 50%;
@@ -1044,8 +990,14 @@
   justify-content: center;
 }
 
-/* ── Excel export button ───────────────────────────────────────── */
-.tp-btn-excel {
+.tp-historial-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: nowrap;
+}
+
+.tp-excel-btn {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -1054,31 +1006,31 @@
   white-space: nowrap;
   padding: 0 12px;
   background: white;
-  color: #1d6f42;
-  border: 1px solid #1d6f42;
+  color: #1D6F42;
+  border: 1px solid #1D6F42;
   border-radius: 8px;
   font-weight: 600;
   width: auto;
   cursor: pointer;
 }
 
-.tp-btn-excel:hover {
-  background: #f0fdf4;
-}
-
-/* ── Historial table ───────────────────────────────────────────── */
-.tp-historial-table {
-  margin-top: 1rem;
-}
-
-.tp-hist-th {
+/* Matrix table th */
+.tp-matrix-th {
   padding: 8px;
   border-bottom: 2px solid var(--gray-200);
   text-align: center;
   vertical-align: bottom;
 }
 
-.tp-hist-th-inner {
+.tp-matrix-th--score {
+  padding: 12px;
+  border-bottom: 2px solid var(--gray-200);
+  color: var(--primary-dark);
+  min-width: 60px;
+  text-align: center;
+}
+
+.tp-matrix-col-header {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1086,7 +1038,7 @@
   gap: 2px;
 }
 
-.tp-hist-th-label {
+.tp-matrix-col-label {
   font-size: 0.75rem;
   color: var(--gray-800);
   font-weight: 700;
@@ -1094,7 +1046,7 @@
   white-space: nowrap;
 }
 
-.tp-hist-th-sub {
+.tp-matrix-col-sub {
   font-size: 0.65rem;
   color: var(--gray-500);
   font-style: italic;
@@ -1107,53 +1059,43 @@
   margin-top: 2px;
 }
 
-/* Type badge inside table header */
-.tp-hist-type-badge {
+.tp-tipo-tag {
   font-size: 0.55rem;
   font-weight: 700;
   padding: 2px 6px;
   border-radius: 8px;
   text-transform: uppercase;
   font-style: normal;
+  margin-top: 2px;
 }
 
-.tp-hist-th-right {
-  padding: 12px;
-  border-bottom: 2px solid var(--gray-200);
-  color: var(--primary-dark);
-  min-width: 60px;
-  text-align: center;
-}
-
-.tp-hist-tr {
-  /* background is dynamic (i % 2) — kept inline */
-}
-
-.tp-hist-student-cell {
+/* Student name cell */
+.tp-student-cell {
   display: flex;
   flex-direction: column;
 }
 
-.tp-hist-student-name {
+.tp-student-cell__name {
   font-weight: 600;
   color: var(--gray-800);
   font-size: 0.85rem;
 }
 
-.tp-hist-student-code {
+.tp-student-cell__code {
   font-size: 0.72rem;
   color: var(--gray-400);
   font-family: monospace;
 }
 
-.tp-hist-td-right {
+/* Score cell */
+.tp-score-cell {
   font-weight: bold;
   color: var(--primary-dark);
   font-size: 0.9rem;
   text-align: center;
 }
 
-/* ── Legend strip ──────────────────────────────────────────────── */
+/* Legend row */
 .tp-legend {
   padding: 10px 12px;
   font-size: 0.75rem;
@@ -1164,21 +1106,20 @@
   justify-content: center;
 }
 
-.tp-legend-item {
+.tp-legend__item {
   display: flex;
   align-items: center;
   gap: 4px;
 }
 
-/* Legend color swatch (bg/border driven by DB — kept inline) */
-.tp-legend-dot {
+.tp-legend__dot {
   display: inline-block;
   width: 14px;
   height: 14px;
   border-radius: 4px;
 }
 
-/* ── Config / Estados ──────────────────────────────────────────── */
+/* ── Config section ──────────────────────────────────────── */
 .tp-config-card {
   max-width: 700px;
   margin: 1.5rem auto;
@@ -1189,7 +1130,7 @@
   margin-bottom: 1.5rem;
 }
 
-.tp-btn-new-estado {
+.tp-config-add-btn {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1200,79 +1141,39 @@
   width: 100%;
 }
 
-/* ── Estados table ─────────────────────────────────────────────── */
-.tp-estados-table-wrap {
-  overflow-x: auto;
-}
-
-.tp-estados-table {
+.tp-config-table {
   width: 100%;
   border-collapse: collapse;
   text-align: left;
   font-size: 0.9rem;
 }
 
-.tp-estados-table thead tr {
+.tp-config-table thead tr {
   border-bottom: 2px solid var(--gray-200);
   color: var(--gray-500);
 }
 
-.tp-estados-th {
+.tp-config-table th {
   padding: 12px;
   font-weight: 600;
 }
 
-.tp-estados-th--color {
-  padding: 12px;
-  font-weight: 600;
-  width: 60px;
-}
-
-.tp-estados-th--center {
-  padding: 12px;
-  font-weight: 600;
-  text-align: center;
-}
-
-.tp-estados-th--actions {
-  padding: 12px;
-  font-weight: 600;
-  text-align: center;
-  width: 120px;
-}
-
-.tp-estados-tr {
+.tp-config-table tbody tr {
   border-bottom: 1px solid var(--gray-100);
   transition: background 0.2s;
 }
 
-.tp-estados-tr:hover {
-  background: var(--gray-50);
+.tp-config-table td {
+  padding: 12px;
 }
 
-.tp-estado-color-dot {
+.tp-estado-dot {
   width: 24px;
   height: 24px;
   border-radius: 6px;
-  /* bg/border driven by DB color — kept inline */
 }
 
-.tp-estado-td {
-  padding: 12px;
-}
-
-.tp-estado-td--name {
-  padding: 12px;
-  font-weight: 500;
-  color: var(--gray-800);
-}
-
-.tp-estado-td--center {
-  padding: 12px;
-  text-align: center;
-}
-
-.tp-estado-punt-badge {
+.tp-estado-puntos-badge {
   background: var(--gray-100);
   color: var(--gray-700);
   padding: 4px 10px;
@@ -1281,57 +1182,13 @@
   font-size: 0.85rem;
 }
 
-.tp-estado-actions {
-  padding: 12px;
-  text-align: center;
-}
-
-.tp-estado-actions-row {
-  display: flex;
-  gap: 8px;
-  justify-content: center;
-}
-
-.tp-estado-td--empty {
-  padding: 24px;
-  text-align: center;
-  color: var(--gray-400);
-  font-style: italic;
-}
-
-/* ── Estado Modal ──────────────────────────────────────────────── */
-.tp-estado-modal-body {
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.tp-estado-label {
-  font-size: 0.85rem;
-  color: var(--gray-600);
-  margin-bottom: 6px;
-}
-
-.tp-estado-input--h42 {
-  height: 42px;
-}
-
-.tp-estado-input--h42-center {
-  height: 42px;
-  text-align: center;
-}
-
-.tp-color-row {
-  display: flex;
-  gap: 1rem;
-}
-
-.tp-color-flex {
-  flex: 1;
-}
-
+/* Estado modal */
 .tp-color-picker-row {
+  display: flex;
+  gap: 1rem;
+}
+
+.tp-color-picker-wrap {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -1353,21 +1210,21 @@
   font-family: monospace;
 }
 
-.tp-punt-group {
-  width: 100px;
+.tp-form-input-h42 {
+  height: 42px;
 }
 
-/* ================================================================
-   UsersView — uv- prefix
-   ================================================================ */
+.tp-form-input-center {
+  height: 42px;
+  text-align: center;
+}
 
-/* ── UsersView wrapper ─────────────────────────────────────────── */
-.uv-wrapper {
+/* ── UsersView ───────────────────────────────────────────── */
+.tp-users-view {
   padding: 1rem;
 }
 
-/* ── UsersView header ──────────────────────────────────────────── */
-.uv-header {
+.tp-users-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -1376,31 +1233,30 @@
   margin-bottom: 1.5rem;
 }
 
-.uv-header__left {
+.tp-users-header__left {
   display: flex;
   align-items: center;
   gap: 0.75rem;
 }
 
-.uv-back-btn {
+.tp-users-back-btn {
   padding: 6px 10px;
   background: white;
   border: 1px solid var(--gray-200);
 }
 
-.uv-title {
+.tp-users-title {
   font-size: 1.2rem;
   margin: 0;
   color: var(--gray-800);
 }
 
-.uv-title-icon {
+.tp-users-title-icon {
   vertical-align: middle;
   margin-right: 6px;
 }
 
-/* ── UsersView filters bar ─────────────────────────────────────── */
-.uv-filters {
+.tp-users-filters {
   display: flex;
   gap: 0.75rem;
   flex-wrap: wrap;
@@ -1409,8 +1265,7 @@
   justify-content: flex-end;
 }
 
-/* Segmented control */
-.uv-role-control {
+.tp-role-filter {
   display: flex;
   background: #f1f5f9;
   padding: 4px;
@@ -1421,33 +1276,24 @@
   max-width: 100%;
   white-space: nowrap;
   -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
 }
 
-.uv-role-control::-webkit-scrollbar {
+.tp-role-filter::-webkit-scrollbar {
   display: none;
 }
 
-/* Role filter button - active/inactive driven by state (kept inline for dynamic) */
-.uv-role-btn {
-  border: none;
-  font-size: 0.82rem;
-  padding: 6px 14px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  flex-shrink: 0;
+.tp-role-filter {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
-/* ── UsersView search ──────────────────────────────────────────── */
-.uv-search-wrap {
+.tp-users-search-wrap {
   position: relative;
   flex: 1 1 200px;
   max-width: 100%;
 }
 
-.uv-search-icon {
+.tp-users-search-icon {
   position: absolute;
   left: 12px;
   top: 50%;
@@ -1456,7 +1302,7 @@
   z-index: 1;
 }
 
-.uv-search-input {
+.tp-users-search-input {
   padding-left: 38px;
   padding-right: 34px;
   height: 42px;
@@ -1467,7 +1313,7 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
 }
 
-.uv-clear-btn {
+.tp-users-clear-btn {
   position: absolute;
   right: 10px;
   top: 50%;
@@ -1481,8 +1327,7 @@
   align-items: center;
 }
 
-/* ── Add user button ───────────────────────────────────────────── */
-.uv-btn-add {
+.tp-add-user-btn {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -1494,43 +1339,21 @@
   box-shadow: 0 4px 12px rgba(0, 65, 130, 0.2);
 }
 
-/* ── Loading spinner center ────────────────────────────────────── */
-.uv-loading {
-  text-align: center;
-  padding: 3rem;
-}
-
-.uv-spinner {
-  border-top-color: var(--primary);
-  width: 32px;
-  height: 32px;
-  margin: 0 auto;
-}
-
-/* ── Users list card ───────────────────────────────────────────── */
-.uv-list-card {
-  padding: 0;
-  overflow: hidden;
-}
-
-.uv-table-wrap {
-  overflow-x: auto;
-}
-
-.uv-table {
+/* Users table */
+.tp-users-table {
   width: 100%;
   min-width: 800px;
   border-collapse: collapse;
   font-size: 0.85rem;
 }
 
-.uv-table thead tr {
+.tp-users-table thead tr {
   border-bottom: 2px solid var(--gray-200);
   text-align: left;
   background: var(--gray-50);
 }
 
-.uv-table th {
+.tp-users-table th {
   padding: 12px 16px;
   color: var(--gray-500);
   font-weight: 600;
@@ -1539,27 +1362,47 @@
   letter-spacing: 0.5px;
 }
 
-.uv-table th--num { width: 40px; }
-.uv-table th--actions { text-align: center; width: 100px; }
+.tp-users-table th--center {
+  padding: 12px 16px;
+  color: var(--gray-500);
+  font-weight: 600;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-align: center;
+  width: 100px;
+}
 
-.uv-table tbody tr {
+.tp-users-table tbody tr {
   border-bottom: 1px solid var(--gray-100);
   transition: background 0.15s;
 }
 
-.uv-table tbody tr:hover {
-  background: var(--gray-50);
-}
-
-.uv-table td {
+.tp-users-table td {
   padding: 12px 16px;
 }
 
-.uv-table td--num { color: var(--gray-400); font-weight: 500; }
+.tp-users-table td--num {
+  color: var(--gray-400);
+  font-weight: 500;
+}
 
-.uv-user-name { font-weight: 600; color: var(--gray-800); }
+.tp-users-table td--code {
+  color: var(--gray-500);
+  font-family: monospace;
+  font-weight: 500;
+}
 
-.uv-badge-admin {
+.tp-users-table td--center {
+  text-align: center;
+}
+
+.tp-user-name-cell {
+  font-weight: 600;
+  color: var(--gray-800);
+}
+
+.tp-badge-admin {
   margin-left: 6px;
   background: var(--primary);
   color: white;
@@ -1569,7 +1412,7 @@
   font-weight: 600;
 }
 
-.uv-badge-prof {
+.tp-badge-profesor {
   margin-left: 6px;
   background: var(--gray-200);
   color: var(--gray-700);
@@ -1579,19 +1422,13 @@
   font-weight: 600;
 }
 
-.uv-code-cell {
-  color: var(--gray-500);
-  font-family: monospace;
-  font-weight: 500;
-}
-
-.uv-courses-cell {
+.tp-curso-tags {
   display: flex;
   gap: 4px;
   flex-wrap: wrap;
 }
 
-.uv-course-tag--prof {
+.tp-curso-tag--dictado {
   display: inline-block;
   background: #e0f2fe;
   color: #0369a1;
@@ -1602,7 +1439,7 @@
   font-weight: 600;
 }
 
-.uv-course-tag--student {
+.tp-curso-tag--matriculado {
   display: inline-block;
   background: var(--primary-bg);
   color: var(--primary-dark);
@@ -1613,58 +1450,33 @@
   font-weight: 600;
 }
 
-.uv-no-courses {
+.tp-curso-tag--empty {
   font-size: 0.68rem;
   color: var(--gray-400);
   font-style: italic;
 }
 
-.uv-table td--actions { text-align: center; }
-
-.uv-td-actions {
-  display: flex;
-  gap: 8px;
-  justify-content: center;
+/* Spinner in users loading */
+.tp-spinner-center {
+  text-align: center;
+  padding: 3rem;
 }
 
-.uv-empty {
+.tp-spinner-md {
+  border-top-color: var(--primary);
+  width: 32px;
+  height: 32px;
+  margin: 0 auto;
+}
+
+.tp-table-empty-center {
   text-align: center;
   padding: 3rem;
   color: var(--gray-400);
 }
 
-/* ── Edit User Modal ───────────────────────────────────────────── */
-.uv-modal-body {
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.uv-form-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1rem;
-  align-items: end;
-}
-
-.uv-form-group-0 {
-  margin: 0;
-}
-
-.uv-courses-section {
-  /* container */
-}
-
-.uv-courses-label {
-  font-size: 0.8rem;
-  color: var(--gray-500);
-  margin-bottom: 8px;
-  display: block;
-}
-
-/* Professor courses grid */
-.uv-prof-courses-grid {
+/* ── Edit user modal: curso list ─────────────────────────── */
+.tp-user-cursos-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 8px;
@@ -1674,8 +1486,7 @@
   padding-right: 6px;
 }
 
-/* Course ownership item (dynamic border/bg based on isOwner) */
-.uv-course-owner-item {
+.tp-user-curso-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1685,24 +1496,23 @@
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
 }
 
-.uv-course-owner-info {
+.tp-user-curso-item__info {
   display: flex;
   flex-direction: column;
 }
 
-.uv-course-owner-name {
+.tp-user-curso-item__name {
   font-size: 0.85rem;
   font-weight: 600;
   color: var(--gray-800);
 }
 
-.uv-course-owner-sub {
+.tp-user-curso-item__owner {
   font-size: 0.72rem;
   color: var(--gray-400);
 }
 
-/* Radio circle (dynamic border/bg) */
-.uv-radio-circle {
+.tp-user-curso-check {
   width: 20px;
   height: 20px;
   border-radius: 50%;
@@ -1711,15 +1521,13 @@
   justify-content: center;
 }
 
-/* Student enrollment items */
-.uv-enroll-list {
+.tp-user-cursos-enrolled {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
-/* Enrollment item (dynamic border/bg based on enrolled) */
-.uv-enroll-item {
+.tp-enrolled-item {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -1729,8 +1537,7 @@
   transition: all 0.15s ease;
 }
 
-/* Checkbox square (dynamic) */
-.uv-checkbox-sq {
+.tp-enrolled-item__checkbox {
   width: 20px;
   height: 20px;
   border-radius: 4px;
@@ -1741,29 +1548,796 @@
   transition: all 0.15s ease;
 }
 
-.uv-no-courses-msg {
+.tp-form-label-block {
   font-size: 0.8rem;
-  color: var(--gray-400);
-  font-style: italic;
+  color: var(--gray-500);
+  margin-bottom: 8px;
+  display: block;
 }
 
-.uv-modal-btn-h36 {
-  height: 36px;
+.tp-user-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  align-items: end;
 }
 
+/* ── Responsive tweaks ───────────────────────────────────── */
 @media (max-width: 767px) {
-  .responsive-filters {
+  .tp-users-filters {
     flex-direction: column;
-    align-items: stretch !important;
+    align-items: stretch;
     width: 100%;
   }
-  .responsive-filters > div,
-  .responsive-filters > button {
+
+  .tp-users-filters > div,
+  .tp-users-filters > button {
     width: 100% !important;
     max-width: 100% !important;
     flex: unset !important;
   }
-  .btn-add-user {
+
+  .tp-add-user-btn {
     justify-content: center;
   }
 }
+
+/* ─────────────────────────────────────────────────────────
+   Additional classes added during inline-style refactor pass
+   ───────────────────────────────────────────────────────── */
+
+/* High-zindex blurred overlay (alias) */
+.tp-modal-overlay--high {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+/* Medium-width modal box */
+.tp-modal-box--md {
+  background: white;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+}
+
+/* Modal header title row */
+.tp-modal-title-row {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--gray-800);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Icon tinted in primary color inside modal headers */
+.tp-modal-icon-primary {
+  color: var(--primary);
+}
+
+/* Modal close button */
+.tp-modal-close {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--gray-400);
+  padding: 4px;
+}
+
+/* Modal body with padding + column flex (alias for tp-modal-body) */
+.tp-modal-body-pad {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Minimal modal header: just padding/border, no flex-row */
+.tp-modal-header--simple {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--gray-100);
+  background: var(--gray-50);
+}
+
+/* Modal footer: flex-start alignment */
+.tp-modal-footer--start {
+  padding: 14px 20px;
+  border-top: 1px solid var(--gray-100);
+  display: flex;
+  gap: 0.5rem;
+  background: var(--gray-50);
+}
+
+/* Compact form label inside modals */
+.tp-modal-label {
+  font-size: 0.8rem;
+  color: var(--gray-500);
+  margin-bottom: 4px;
+}
+
+/* Form group with no top margin */
+.tp-form-group-0 {
+  margin-top: 0;
+}
+
+/* Flex 1 utility */
+.tp-flex-1 {
+  flex: 1;
+}
+
+/* Live session chip inner row */
+.tp-live-chip-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Inline search spinner (positioned absolute) */
+.tp-spinner-search {
+  position: absolute;
+  right: 10px;
+  top: 62%;
+  transform: translateY(-50%);
+}
+
+/* ── Alumno found / warn banners ─────────────────────────── */
+.tp-alumno-found-wrap {
+  margin-top: 6px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tp-alumno-found-wrap--ok {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+}
+
+.tp-alumno-found-wrap--warn {
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+}
+
+.tp-alumno-found-title--ok  { font-size: 0.82rem; font-weight: 700; color: #15803d; }
+.tp-alumno-found-sub--ok    { font-size: 0.75rem; color: #166534; }
+.tp-alumno-found-title--warn { font-size: 0.82rem; font-weight: 700; color: #92400e; }
+.tp-alumno-found-sub--warn  { font-size: 0.75rem; color: #a16207; }
+
+/* ── No-session card extras ──────────────────────────────── */
+.tp-no-session-icon {
+  margin: 0 auto 1.5rem;
+  color: var(--primary);
+  opacity: 0.5;
+  display: block;
+}
+
+.tp-no-session-title {
+  justify-content: center;
+  font-size: 1.2rem;
+}
+
+.tp-no-session-body {
+  font-size: 0.95rem;
+  color: var(--gray-500);
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
+.tp-btn-go-classes {
+  margin: 0 auto;
+  width: auto;
+  padding: 0.8rem 2.5rem;
+  font-size: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+}
+
+.tp-btn-icon-mr { margin-right: 8px; }
+
+/* ── Alumnos section extras ──────────────────────────────── */
+.tp-alumnos-subtitle { margin: 0; }
+
+.tp-card-subtitle-mt {
+  margin-top: 4px;
+  margin-bottom: 1rem;
+}
+
+.tp-btn-add-alumno {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  padding: 10px;
+  border-radius: 8px;
+  width: 100%;
+}
+
+/* ── Table action cell ───────────────────────────────────── */
+.tp-table-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+/* ── Course view toolbar extras ──────────────────────────── */
+.tp-toolbar-mb { margin-bottom: 0.5rem; }
+
+.tp-course-view-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.1rem;
+}
+
+.tp-course-subtitle { color: var(--gray-500); font-weight: 500; }
+.tp-course-name     { color: var(--primary);  font-weight: 800; }
+
+/* ── Tabs bar ────────────────────────────────────────────── */
+.tp-tabs-bar {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--gray-200);
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(10px);
+  padding: 0 1rem;
+  gap: 1rem;
+}
+
+.tp-back-btn--tabs {
+  color: var(--gray-600);
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px;
+  border-right: 1px solid var(--gray-200);
+  border-radius: 12px;
+  height: 100%;
+}
+
+.tp-tabs-inline {
+  border-bottom: none;
+  padding: 0;
+  gap: 1.5rem;
+}
+
+/* ── Page body full width ────────────────────────────────── */
+.tp-page-body-full { width: 100%; }
+
+/* ── Course card extras ──────────────────────────────────── */
+.tp-course-card__label {
+  font-weight: 500;
+  font-size: 0.85rem;
+}
+
+.tp-course-card__docente {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #f1f5f9;
+  color: #475569;
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  margin-top: 2px;
+  margin-bottom: 8px;
+}
+
+.tp-course-card__docente-label {
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+/* Course card hover */
+.tp-course-card { transition: transform 0.2s; }
+.tp-course-card:hover { transform: translateY(-2px); }
+
+/* ── Add course card ─────────────────────────────────────── */
+.tp-add-course-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.4);
+  border: 2px dashed var(--gray-300);
+  min-height: 140px;
+  margin: 0;
+  transition: all 0.2s ease;
+  box-shadow: none;
+}
+
+.tp-add-course-card:hover {
+  border-color: var(--primary);
+  background: var(--primary-bg);
+  transform: translateY(-2px);
+}
+
+.tp-add-course-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--gray-100);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gray-500);
+  transition: all 0.2s ease;
+}
+
+.tp-add-course-card:hover .tp-add-course-icon {
+  background: var(--primary-bg);
+  color: var(--primary);
+}
+
+.tp-add-course-text {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--gray-500);
+}
+
+/* Stats on course card */
+.tp-course-card__stats {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+  font-size: 0.85rem;
+  color: var(--gray-500);
+}
+
+.tp-course-card__stat {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ── Icon-only action buttons in cards ───────────────────── */
+.tp-icon-btn       { color: var(--gray-500); padding: 4px; }
+.tp-icon-btn--danger { color: var(--danger); padding: 4px; }
+
+/* ── Tipo button selector ────────────────────────────────── */
+.tp-tipo-btn {
+  flex: 1;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 2px solid var(--gray-200);
+  background: white;
+  color: var(--gray-500);
+  font-weight: 500;
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.tp-tipo-btn.is-active {
+  border-color: var(--primary);
+  background: var(--primary-bg);
+  color: var(--primary);
+  font-weight: 700;
+}
+
+/* ── Session item (in the sesiones list) ─────────────────── */
+.tp-session-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  margin-bottom: 0.75rem;
+  transition: all 0.2s ease;
+}
+
+/* Historial tab card (overrides card overflow) */
+.tp-historial-card {
+  max-width: 100%;
+  overflow: hidden;
+}
+
+/* Historial table wrapper */
+.tp-historial-table-wrap {
+  margin-top: 1rem;
+}
+
+.tp-historial-table {
+  min-width: 100%;
+}
+
+/* Zebra rows in matrix table */
+.tp-tr-even { background: #fff; }
+.tp-tr-odd  { background: #fafafa; }
+
+/* ── Student cell in matrix table ───────────────────────── */
+.tp-student-cell {
+  display: flex;
+  flex-direction: column;
+}
+
+.tp-student-cell__name {
+  font-weight: 600;
+  color: var(--gray-800);
+  font-size: 0.85rem;
+}
+
+.tp-student-cell__code {
+  font-size: 0.72rem;
+  color: var(--gray-400);
+  font-family: monospace;
+}
+
+/* ── Score cell ──────────────────────────────────────────── */
+.tp-score-cell {
+  font-weight: bold;
+  color: var(--primary-dark);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+/* ── Matrix table special ths ────────────────────────────── */
+.tp-matrix-th {
+  padding: 8px;
+  border-bottom: 2px solid var(--gray-200);
+  text-align: center;
+  vertical-align: bottom;
+}
+
+.tp-matrix-th--score {
+  padding: 12px;
+  border-bottom: 2px solid var(--gray-200);
+  color: var(--primary-dark);
+  min-width: 60px;
+  text-align: center;
+}
+
+/* Column header flex container */
+.tp-matrix-col-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0 auto;
+  gap: 2px;
+}
+
+/* Column main label */
+.tp-matrix-col-label {
+  font-size: 0.75rem;
+  color: var(--gray-800);
+  font-weight: 700;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* Sub label (date/name row for clase type) */
+.tp-matrix-col-sub {
+  font-size: 0.65rem;
+  color: var(--gray-500);
+  font-style: italic;
+  text-align: center;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: center;
+  margin-top: 2px;
+}
+
+/* Type tag pill (uses dynamic bg/color inline) */
+.tp-tipo-tag {
+  font-size: 0.55rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 8px;
+  text-transform: uppercase;
+  font-style: normal;
+  margin-top: 2px;
+}
+
+/* ── Legend bar ──────────────────────────────────────────── */
+.tp-legend {
+  padding: 10px 12px;
+  font-size: 0.75rem;
+  color: var(--gray-500);
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.tp-legend__item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.tp-legend__dot {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+/* ── Session badges ──────────────────────────────────────── */
+.tp-badge-live {
+  background: var(--success);
+  color: white;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.tp-badge-done {
+  background: var(--gray-300);
+  color: var(--gray-700);
+  font-weight: 600;
+  font-size: 0.7rem;
+}
+
+.tp-badge-manual {
+  background: rgba(245, 158, 11, 0.12);
+  color: #92400e;
+  font-weight: 600;
+  font-size: 0.68rem;
+}
+
+/* ── Session row elements ────────────────────────────────── */
+.tp-session-row {
+  display: flex;
+  flex-direction: column;
+}
+
+.tp-session-row__name {
+  font-size: 0.95rem;
+  color: var(--gray-900);
+}
+
+.tp-session-row__meta {
+  font-size: 0.75rem;
+  color: var(--gray-500);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tp-session-row__actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+/* Session type pill */
+.tp-tipo-pill {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.tp-tipo-pill--clase  { background: rgba(59,130,246,0.12); color: #1d4ed8; }
+.tp-tipo-pill--evento { background: rgba(34,197,94,0.15);  color: #15803d; }
+.tp-tipo-pill--puntos { background: rgba(245,158,11,0.15); color: #92400e; }
+
+/* Start button rounded */
+.tp-btn-start { border-radius: 8px; }
+
+/* Small icon buttons */
+.tp-btn-edit-sm  { color: var(--gray-600); padding: 4px; }
+.tp-btn-delete-sm { color: #ef4444; padding: 4px; }
+
+/* ── Historial header ────────────────────────────────────── */
+.tp-historial-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.tp-historial-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: nowrap;
+}
+
+.tp-historial-search-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 280px;
+}
+
+.tp-historial-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--gray-400);
+}
+
+.tp-historial-search-input {
+  padding-left: 38px;
+  padding-right: 30px;
+  height: 38px;
+  font-size: 0.85rem;
+}
+
+.tp-historial-clear-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: var(--gray-400);
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Excel export button */
+.tp-excel-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  font-size: 0.78rem;
+  white-space: nowrap;
+  padding: 0 12px;
+  background: white;
+  color: #1D6F42;
+  border: 1px solid #1D6F42;
+  border-radius: 8px;
+  font-weight: 600;
+  width: auto;
+  cursor: pointer;
+}
+
+.tp-excel-btn:hover { background: #f0fdf4; }
+
+/* ── Config section ──────────────────────────────────────── */
+.tp-config-card {
+  max-width: 700px;
+  margin: 1.5rem auto;
+  padding: 20px;
+}
+
+.tp-config-header {
+  margin-bottom: 1.5rem;
+}
+
+.tp-config-add-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  padding: 10px;
+  border-radius: 8px;
+  width: 100%;
+}
+
+/* Config table */
+.tp-table-wrap { overflow-x: auto; }
+
+.tp-config-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.9rem;
+}
+
+.tp-config-table thead tr {
+  border-bottom: 2px solid var(--gray-200);
+  color: var(--gray-500);
+}
+
+.tp-config-table__th {
+  padding: 12px;
+  font-weight: 600;
+}
+
+.tp-config-table__th--center { text-align: center; }
+
+.tp-config-table__tr {
+  border-bottom: 1px solid var(--gray-100);
+  transition: background 0.2s;
+}
+
+.tp-config-table__tr:hover { background: var(--gray-50); }
+
+.tp-config-table__td { padding: 12px; }
+
+.tp-config-table__td--name  { font-weight: 500; color: var(--gray-800); }
+.tp-config-table__td--center { text-align: center; }
+
+/* Estado color dot */
+.tp-estado-dot {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+}
+
+/* Puntos badge in config table */
+.tp-estado-puntos-badge {
+  background: var(--gray-100);
+  color: var(--gray-700);
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+/* Edit/delete buttons in config table */
+.tp-btn-edit   { padding: 6px; color: var(--primary); border: 1px solid var(--primary-bg) !important; background: var(--primary-bg) !important; }
+.tp-btn-delete { padding: 6px; color: var(--error);   border: 1px solid #fee2e2 !important; background: #fef2f2 !important; }
+
+/* ── Estado modal color picker ───────────────────────────── */
+.tp-color-row {
+  display: flex;
+  gap: 1rem;
+}
+
+.tp-color-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tp-color-picker {
+  width: 42px;
+  height: 42px;
+  border: 1px solid var(--gray-200);
+  border-radius: 8px;
+  cursor: pointer;
+  padding: 2px;
+  background: white;
+}
+
+.tp-color-hex {
+  font-size: 0.9rem;
+  color: var(--gray-500);
+  font-family: monospace;
+}
+
+.tp-form-group--score {
+  width: 100px;
+}
+
+.tp-input-score {
+  height: 42px;
+  text-align: center;
+}
+
+/* ── Sesiones list ───────────────────────────────────────── */
+.tp-sesiones-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Tab compact padding (for inline tab rows) */
+.tp-tab--compact { padding: 12px 0; }
+
+/* Form group with top margin */
+.tp-form-group--mt { margin-top: 1rem; }

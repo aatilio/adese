@@ -15,8 +15,7 @@ import {
 import { Html5Qrcode } from "html5-qrcode";
 import { api } from "../api/client";
 import { toast } from "../components/Toast";
-import appLogo from "../assets/ac-d.svg";
-import UserMenu from "../components/UserMenu";
+import Header from "../components/Header";
 import ProfileView from "../components/ProfileView";
 import Footer from "../components/Footer";
 import EconometricsPage from "./EconometricsPage";
@@ -220,51 +219,36 @@ export default function StudentPage({ user, onLogout, onUpdateUser }) {
 
   return (
     <div className="app-shell">
-      <div className="page-header sp-header">
-        {/* Left Side: Logo & App Name */}
-        <div className="sp-header__brand">
-          <img src={appLogo} alt="Logo" className="sp-header__logo" />
-          <div>
-            <div style={{ padding: 0 }}>
-              <h1 className="sp-header__title">Adese</h1>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Side: User Menu Dropdown */}
-        <div className="sp-header__actions">
-          <UserMenu 
-            user={user} 
-            roleLabel="Estudiante" 
-            onLogout={onLogout}
-            onOpenProfile={() => setViewMode("perfil")}
-            extraOptions={
-              viewMode === "curso" ? [
-                {
-                  label: "Marcar Asistencia",
-                  icon: CheckCircle,
-                  onClick: () => setActiveTab("marcar"),
-                  active: activeTab === "marcar"
-                },
-                {
-                  label: "Historial",
-                  icon: History,
-                  onClick: () => setActiveTab("historial"),
-                  active: activeTab === "historial"
-                },
-                ...(cursoActivo?.nombre?.toLowerCase().includes('econometría') ? [
-                  {
-                    label: "Estimador",
-                    icon: BarChart3,
-                    onClick: () => setActiveTab("econometria"),
-                    active: activeTab === "econometria"
-                  }
-                ] : [])
-              ] : []
-            }
-          />
-        </div>
-      </div>
+      <Header
+        user={user}
+        roleLabel="Estudiante"
+        onLogout={onLogout}
+        onOpenProfile={() => setViewMode("perfil")}
+        extraOptions={
+          viewMode === "curso" ? [
+            {
+              label: "Marcar Asistencia",
+              icon: CheckCircle,
+              onClick: () => setActiveTab("marcar"),
+              active: activeTab === "marcar"
+            },
+            {
+              label: "Historial",
+              icon: History,
+              onClick: () => setActiveTab("historial"),
+              active: activeTab === "historial"
+            },
+            ...(cursoActivo?.nombre?.toLowerCase().includes('econometría') ? [
+              {
+                label: "Estimador",
+                icon: BarChart3,
+                onClick: () => setActiveTab("econometria"),
+                active: activeTab === "econometria"
+              }
+            ] : [])
+          ] : []
+        }
+      />
 
       <div className="page-body sp-body">
         {viewMode === "perfil" ? (
