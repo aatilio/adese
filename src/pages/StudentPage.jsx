@@ -114,12 +114,15 @@ export default function StudentPage({ user, onLogout, onUpdateUser }) {
 
   // Determine valid statuses based on rules
   const getValidStatuses = () => {
+    if (sesionActiva?.tipo === 'evento') {
+      return ['Participó'];
+    }
+
     // Only use session-level limits
     const limits = sesionActiva?.limite_puntual ? {
       limite_puntual: sesionActiva.limite_puntual,
       limite_presente: sesionActiva.limite_presente,
       limite_tarde: sesionActiva.limite_tarde,
-      permitir_falto: sesionActiva.permitir_falto ?? true,
     } : null;
 
     if (!limits) return [];
@@ -136,9 +139,6 @@ export default function StudentPage({ user, onLogout, onUpdateUser }) {
       valid.push('Presente');
     } else if (currentHM <= limits.limite_tarde) {
       valid.push('Tarde');
-    }
-    if (limits.permitir_falto && currentHM > limits.limite_tarde) {
-      valid.push('Falto');
     }
     return valid;
   };

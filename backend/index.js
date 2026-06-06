@@ -362,11 +362,11 @@ app.get('/api/usuarios/buscar', async (req, res) => {
 
 // POST /api/usuarios
 app.post('/api/usuarios', async (req, res) => {
-  const { codigo, nombre_completo, rol } = req.body;
+  const { codigo, nombre_completo, rol, pass } = req.body;
   try {
     const r = await pool.query(
-      'INSERT INTO usuarios (codigo, nombre_completo, rol) VALUES ($1, $2, $3) RETURNING *',
-      [codigo, nombre_completo, rol || ROL_ESTUDIANTE]
+      'INSERT INTO usuarios (codigo, nombre_completo, rol, pass) VALUES ($1, $2, $3, $4) RETURNING *',
+      [codigo, nombre_completo, rol || ROL_ESTUDIANTE, pass || codigo]
     );
     res.json({ usuario: { ...r.rows[0], cursos: [] } });
   } catch (err) { res.status(500).json({ error: err.message }); }
@@ -382,12 +382,20 @@ app.delete('/api/usuarios/:id', async (req, res) => {
 
 // PUT /api/estudiantes/:id (usuarios)
 app.put('/api/estudiantes/:id', async (req, res) => {
-  const { codigo, nombre_completo } = req.body;
+  const { codigo, nombre_completo, pass } = req.body;
   try {
-    const r = await pool.query(
-      'UPDATE usuarios SET codigo = $1, nombre_completo = $2 WHERE id = $3 RETURNING *',
-      [codigo, nombre_completo, req.params.id]
-    );
+    let r;
+    if (pass !== undefined) {
+      r = await pool.query(
+        'UPDATE usuarios SET codigo = $1, nombre_completo = $2, pass = $3 WHERE id = $4 RETURNING *',
+        [codigo, nombre_completo, pass, req.params.id]
+      );
+    } else {
+      r = await pool.query(
+        'UPDATE usuarios SET codigo = $1, nombre_completo = $2 WHERE id = $3 RETURNING *',
+        [codigo, nombre_completo, req.params.id]
+      );
+    }
     res.json({ estudiante: r.rows[0] });
   } catch (err) {
     res.status(500).json({ error: err.message });

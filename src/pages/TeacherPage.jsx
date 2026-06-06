@@ -21,6 +21,8 @@ import {
   Check,
   Library,
   User,
+  Pencil,
+  AlertTriangle,
 } from "lucide-react";
 import * as XLSX from "xlsx";
 import { api } from "../api/client";
@@ -94,6 +96,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
   const [nuevoAlumnoEncontrado, setNuevoAlumnoEncontrado] = useState(null);
   const [buscandoAlumno, setBuscandoAlumno] = useState(false);
   const [csvImportando, setCsvImportando] = useState(false);
+  const [editingAlumnoData, setEditingAlumnoData] = useState(null);
 
   // ── Init: load courses ──────────────────────────────────
   useEffect(() => {
@@ -491,6 +494,15 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
   const crearYAgregarAlumno = async (e) => {
     e.preventDefault();
     if (!nuevoAlumnoCodigo.trim()) return;
+    
+    if (nuevoAlumnoEncontrado) {
+      const yaMatriculado = estudiantesCurso.some(est => est.id === nuevoAlumnoEncontrado.id);
+      if (yaMatriculado) {
+        toast.error("El alumno ya está matriculado en este curso.");
+        return;
+      }
+    }
+
     try {
       let estudianteId;
       if (nuevoAlumnoEncontrado) {
@@ -883,25 +895,27 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                 Mis Cursos
               </h2>
             </div>
-            <button
-              className="btn btn-sm btn-ghost"
-              onClick={() => setViewMode("usuarios")}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "6px",
-                background: "white",
-                color: "var(--gray-700)",
-                border: "1px solid var(--gray-300)",
-                fontWeight: "600",
-                width: "auto",
-                padding: "0.4rem 0.8rem",
-                borderRadius: "8px",
-                boxShadow: "0 2px 4px rgba(0,0,0,0.05)",
-              }}
-            >
-              <Users size={14} /> Usuarios
-            </button>
+            {isAdmin && (
+              <button
+                className="btn btn-sm btn-ghost"
+                onClick={() => setViewMode("usuarios")}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  background: "white",
+                  color: "var(--gray-700)",
+                  border: "1px solid var(--gray-300)",
+                  fontWeight: "600",
+                  width: "auto",
+                  padding: "0.4rem 0.8rem",
+                  borderRadius: "8px",
+                  boxShadow: "0 2px 4px rgba(0,0,0,0.05)",
+                }}
+              >
+                <Users size={14} /> Usuarios
+              </button>
+            )}
 
           </div>
 
@@ -1434,13 +1448,13 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                   Alumnos de {cursoActivo.nombre}
                 </div>
                 <div className="card-subtitle">
-                  {estudiantesCurso.length} inscritos. Añade o remueve alumnos
+                  {estudiantesCurso.length} matriculados. Añade o remueve alumnos
                   de este curso.
                 </div>
 
                 {/* Toolbar: Nuevo Alumno + Importar CSV */}
                 <div style={{ display: 'flex', gap: '0.5rem', margin: '1rem 0', flexWrap: 'wrap' }}>
-                  <button className="btn btn-sm btn-primary" onClick={() => setShowNuevoAlumno(true)} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <button className="btn btn-sm btn-primary" onClick={() => { setShowNuevoAlumno(true); setNuevoAlumnoCodigo(''); setNuevoAlumnoNombre(''); setNuevoAlumnoEncontrado(null); }} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <UserPlus size={14} /> Nuevo Alumno
                   </button>
                   <label style={{
@@ -1454,7 +1468,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                   </label>
                 </div>
 
-                {/* Modal Nuevo Alumno */}
+                {/* Modal Nuevo Alumno (Matricular) */}
                 {showNuevoAlumno && (
                   <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}
                     onClick={() => setShowNuevoAlumno(false)}>
@@ -1462,7 +1476,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                       onClick={e => e.stopPropagation()}>
                       <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--gray-100)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--gray-50)' }}>
                         <h3 style={{ margin: 0, fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <UserPlus size={18} style={{ color: 'var(--primary)' }} /> Nuevo Usuario
+                          <UserPlus size={18} style={{ color: 'var(--primary)' }} /> Matricular Alumno
                         </h3>
                         <button onClick={() => setShowNuevoAlumno(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--gray-400)' }}><X size={20} /></button>
                       </div>
@@ -1476,20 +1490,30 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                               value={nuevoAlumnoCodigo}
                               onChange={e => buscarAlumnoPorCodigo(e.target.value)}
                               placeholder="Código del alumno"
-                              style={{ borderColor: nuevoAlumnoEncontrado ? '#22c55e' : undefined }}
+                              style={{ borderColor: nuevoAlumnoEncontrado ? (estudiantesCurso.some(est => est.id === nuevoAlumnoEncontrado.id) ? '#f59e0b' : '#22c55e') : undefined }}
                             />
                             {buscandoAlumno && <div style={{ position: 'absolute', right: '10px', top: '62%', transform: 'translateY(-50%)' }}><div className="spinner" style={{ width: 14, height: 14 }} /></div>}
                             {nuevoAlumnoEncontrado && (
-                              <div style={{ marginTop: '6px', padding: '8px 12px', background: '#f0fdf4', borderRadius: '8px', border: '1px solid #bbf7d0', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <Check size={14} style={{ color: '#16a34a' }} />
-                                <div>
-                                  <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#15803d' }}>Alumno encontrado</div>
-                                  <div style={{ fontSize: '0.75rem', color: '#166534' }}>{nuevoAlumnoEncontrado.nombre_completo}</div>
+                              estudiantesCurso.some(est => est.id === nuevoAlumnoEncontrado.id) ? (
+                                <div style={{ marginTop: '6px', padding: '8px 12px', background: '#fffbeb', borderRadius: '8px', border: '1px solid #fde68a', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                  <AlertTriangle size={14} style={{ color: '#d97706', flexShrink: 0 }} />
+                                  <div>
+                                    <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#92400e' }}>Ya está matriculado</div>
+                                    <div style={{ fontSize: '0.75rem', color: '#a16207' }}>{nuevoAlumnoEncontrado.nombre_completo} ya pertenece a este curso.</div>
+                                  </div>
                                 </div>
-                              </div>
+                              ) : (
+                                <div style={{ marginTop: '6px', padding: '8px 12px', background: '#f0fdf4', borderRadius: '8px', border: '1px solid #bbf7d0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                  <Check size={14} style={{ color: '#16a34a' }} />
+                                  <div>
+                                    <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#15803d' }}>Alumno encontrado</div>
+                                    <div style={{ fontSize: '0.75rem', color: '#166534' }}>{nuevoAlumnoEncontrado.nombre_completo}</div>
+                                  </div>
+                                </div>
+                              )
                             )}
                           </div>
-                          {!nuevoAlumnoEncontrado && (
+                          {!nuevoAlumnoEncontrado && nuevoAlumnoCodigo.trim().length >= 2 && !buscandoAlumno && (
                             <div className="form-group" style={{ marginTop: 0 }}>
                               <label className="form-label" style={{ fontSize: '0.82rem', color: 'var(--gray-500)' }}>Nombre Completo</label>
                               <input
@@ -1499,13 +1523,27 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                                 placeholder="Nombre Completo"
                                 required={!nuevoAlumnoEncontrado}
                               />
+                              <div style={{ fontSize: '0.72rem', color: 'var(--gray-400)', marginTop: '4px' }}>
+                                Se creará un nuevo usuario. La contraseña será igual al código.
+                              </div>
                             </div>
                           )}
                         </div>
                         <div style={{ padding: '14px 20px', borderTop: '1px solid var(--gray-100)', display: 'flex', gap: '0.5rem', background: 'var(--gray-50)' }}>
                           <button type="button" className="btn btn-ghost" onClick={() => setShowNuevoAlumno(false)} style={{ flex: 1 }}>Cancelar</button>
-                          <button type="submit" className="btn btn-primary" style={{ flex: 1 }} disabled={!nuevoAlumnoCodigo.trim() || (!nuevoAlumnoEncontrado && !nuevoAlumnoNombre.trim())}>
-                            {nuevoAlumnoEncontrado ? 'Añadir al Curso' : 'Crear Usuario'}
+                          <button
+                            type="submit"
+                            className="btn btn-primary"
+                            style={{ flex: 1 }}
+                            disabled={
+                              !nuevoAlumnoCodigo.trim() ||
+                              (!nuevoAlumnoEncontrado && !nuevoAlumnoNombre.trim()) ||
+                              (nuevoAlumnoEncontrado && estudiantesCurso.some(est => est.id === nuevoAlumnoEncontrado.id))
+                            }
+                          >
+                            {nuevoAlumnoEncontrado
+                              ? (estudiantesCurso.some(est => est.id === nuevoAlumnoEncontrado.id) ? 'Ya Matriculado' : 'Añadir al Curso')
+                              : 'Crear y Matricular'}
                           </button>
                         </div>
                       </form>
@@ -1513,48 +1551,119 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                   </div>
                 )}
 
-                <div style={{ display: "flex", flexDirection: "column" }}>
-                  {estudiantesCurso.map((est) => (
-                    <div key={est.id} className="editable-row">
-                      {isAdmin ? (
-                        <>
+                {/* Modal Editar Alumno */}
+                {editingAlumnoData && (
+                  <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}
+                    onClick={() => setEditingAlumnoData(null)}>
+                    <div style={{ background: 'white', borderRadius: '16px', width: '100%', maxWidth: '440px', boxShadow: '0 20px 60px rgba(0,0,0,0.25)', overflow: 'hidden' }}
+                      onClick={e => e.stopPropagation()}>
+                      <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--gray-100)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--gray-50)' }}>
+                        <h3 style={{ margin: 0, fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <Pencil size={18} style={{ color: 'var(--primary)' }} /> Editar Alumno
+                        </h3>
+                        <button onClick={() => setEditingAlumnoData(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--gray-400)' }}><X size={20} /></button>
+                      </div>
+                      <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                        <div className="form-group" style={{ marginTop: 0 }}>
+                          <label className="form-label" style={{ fontSize: '0.82rem', color: 'var(--gray-500)' }}>CUI / Código</label>
                           <input
-                            type="text"
-                            defaultValue={est.nombre_completo}
-                            onBlur={(e) =>
-                              updateEstudiante(
-                                est.id,
-                                "nombre_completo",
-                                e.target.value,
-                              )
-                            }
-                            placeholder="Nombre"
+                            className="form-input"
+                            value={editingAlumnoData.codigo}
+                            onChange={e => setEditingAlumnoData({ ...editingAlumnoData, codigo: e.target.value })}
                           />
+                        </div>
+                        <div className="form-group" style={{ marginTop: 0 }}>
+                          <label className="form-label" style={{ fontSize: '0.82rem', color: 'var(--gray-500)' }}>Nombre Completo</label>
                           <input
-                            type="text"
-                            defaultValue={est.codigo}
-                            onBlur={(e) =>
-                              updateEstudiante(est.id, "codigo", e.target.value)
-                            }
-                            placeholder="CUI"
+                            className="form-input"
+                            value={editingAlumnoData.nombre_completo}
+                            onChange={e => setEditingAlumnoData({ ...editingAlumnoData, nombre_completo: e.target.value })}
                           />
-                        </>
-                      ) : (
-                        <>
-                          <span style={{ padding: '8px 12px', flex: 1, fontSize: '0.85rem' }}>{est.nombre_completo}</span>
-                          <span style={{ padding: '8px 12px', flex: 1, fontSize: '0.85rem' }}>{est.codigo}</span>
-                        </>
-                      )}
-                      <button
-                        className="btn btn-sm btn-ghost"
-                        onClick={() => removeAlumno(est.id)}
-                        style={{ color: "#ef4444" }}
-                        title="Quitar del curso"
-                      >
-                        <X size={14} />
-                      </button>
+                        </div>
+                        <div className="form-group" style={{ marginTop: 0 }}>
+                          <label className="form-label" style={{ fontSize: '0.82rem', color: 'var(--gray-500)' }}>Nueva Contraseña (dejar vacío para no cambiar)</label>
+                          <input
+                            className="form-input"
+                            type="text"
+                            value={editingAlumnoData.newPass || ''}
+                            onChange={e => setEditingAlumnoData({ ...editingAlumnoData, newPass: e.target.value })}
+                            placeholder="Escribir nueva contraseña"
+                          />
+                        </div>
+                      </div>
+                      <div style={{ padding: '14px 20px', borderTop: '1px solid var(--gray-100)', display: 'flex', gap: '0.5rem', background: 'var(--gray-50)' }}>
+                        <button type="button" className="btn btn-ghost" onClick={() => setEditingAlumnoData(null)} style={{ flex: 1 }}>Cancelar</button>
+                        <button
+                          type="button"
+                          className="btn btn-primary"
+                          style={{ flex: 1 }}
+                          onClick={async () => {
+                            try {
+                              const payload = { codigo: editingAlumnoData.codigo, nombre_completo: editingAlumnoData.nombre_completo };
+                              if (editingAlumnoData.newPass?.trim()) payload.pass = editingAlumnoData.newPass.trim();
+                              await api.updateEstudiante(editingAlumnoData.id, payload);
+                              setEstudiantesCurso(prev => prev.map(e => e.id === editingAlumnoData.id ? { ...e, codigo: editingAlumnoData.codigo, nombre_completo: editingAlumnoData.nombre_completo } : e));
+                              toast.success('Alumno actualizado');
+                              setEditingAlumnoData(null);
+                            } catch (err) { toast.error(err.message); }
+                          }}
+                        >Guardar</button>
+                      </div>
                     </div>
-                  ))}
+                  </div>
+                )}
+
+                {/* Tabla de Alumnos */}
+                <div style={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '2px solid var(--gray-200)', textAlign: 'left' }}>
+                        <th style={{ padding: '10px 12px', color: 'var(--gray-500)', fontWeight: 600, fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>#</th>
+                        <th style={{ padding: '10px 12px', color: 'var(--gray-500)', fontWeight: 600, fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Nombre</th>
+                        <th style={{ padding: '10px 12px', color: 'var(--gray-500)', fontWeight: 600, fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>CUI</th>
+                        <th style={{ padding: '10px 12px', color: 'var(--gray-500)', fontWeight: 600, fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'center', width: '100px' }}>Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {estudiantesCurso.map((est, idx) => (
+                        <tr key={est.id} style={{ borderBottom: '1px solid var(--gray-100)', transition: 'background 0.15s' }}
+                          onMouseEnter={e => e.currentTarget.style.background = 'var(--gray-50)'}
+                          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                        >
+                          <td style={{ padding: '10px 12px', color: 'var(--gray-400)', fontWeight: 500, width: '40px' }}>{idx + 1}</td>
+                          <td style={{ padding: '10px 12px', fontWeight: 600, color: 'var(--gray-800)' }}>{est.nombre_completo}</td>
+                          <td style={{ padding: '10px 12px', color: 'var(--gray-500)', fontFamily: 'monospace', fontWeight: 500 }}>{est.codigo}</td>
+                          <td style={{ padding: '10px 12px', textAlign: 'center' }}>
+                            <div style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>
+                              <button
+                                onClick={() => setEditingAlumnoData({ ...est, newPass: '' })}
+                                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--gray-400)', padding: '4px', borderRadius: '6px', display: 'flex', alignItems: 'center' }}
+                                onMouseEnter={e => e.currentTarget.style.color = 'var(--primary)'}
+                                onMouseLeave={e => e.currentTarget.style.color = 'var(--gray-400)'}
+                                title="Editar alumno"
+                              >
+                                <Pencil size={15} />
+                              </button>
+                              <button
+                                onClick={() => { if (confirm(`¿Desmatricular a "${est.nombre_completo}" de este curso?`)) removeAlumno(est.id); }}
+                                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--gray-400)', padding: '4px', borderRadius: '6px', display: 'flex', alignItems: 'center' }}
+                                onMouseEnter={e => e.currentTarget.style.color = '#ef4444'}
+                                onMouseLeave={e => e.currentTarget.style.color = 'var(--gray-400)'}
+                                title="Desmatricular del curso"
+                              >
+                                <X size={15} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                      {estudiantesCurso.length === 0 && (
+                        <tr>
+                          <td colSpan={4} style={{ padding: '2rem', textAlign: 'center', color: 'var(--gray-400)' }}>No hay alumnos matriculados en este curso.</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             )}
@@ -1573,11 +1682,15 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                     marginBottom: "1rem",
                   }}
                 >
+                  <div className="card-subtitle" style={{ margin: 0 }}>
+                    Gestiona sesiones de clase, eventos y registros de puntos.
+                  </div>
                   <button
                     className="btn btn-primary btn-sm"
                     onClick={() => setShowAddSesion(true)}
+                    style={{ whiteSpace: 'nowrap' }}
                   >
-                    <Plus size={14} /> Programar Clase
+                    <Plus size={14} /> Nueva Sesión
                   </button>
                 </div>
 
@@ -1629,7 +1742,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                           }}
                         >
                           <Plus size={18} style={{ color: "var(--primary)" }} />
-                          Programar Nueva Clase
+                          Nueva Sesión
                         </h3>
                         <button
                           onClick={() => setShowAddSesion(false)}
@@ -1654,6 +1767,27 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                             gap: "1rem",
                           }}
                         >
+                          {/* Tipo de sesión */}
+                          <div className="form-group" style={{ marginTop: 0 }}>
+                            <label className="form-label" style={{ fontSize: '0.8rem', color: 'var(--gray-500)', marginBottom: '4px' }}>
+                              Tipo de Sesión
+                            </label>
+                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                              {[{v:'clase',l:'Clase'},{v:'evento',l:'Evento'},{v:'puntos',l:'Puntos'}].map(({v,l}) => (
+                                <button key={v} type="button"
+                                  onClick={() => setNewClaseTipo(v)}
+                                  style={{
+                                    flex: 1, padding: '6px 8px', borderRadius: '8px', border: '2px solid',
+                                    borderColor: newClaseTipo === v ? 'var(--primary)' : 'var(--gray-200)',
+                                    background: newClaseTipo === v ? 'var(--primary-bg)' : 'white',
+                                    color: newClaseTipo === v ? 'var(--primary)' : 'var(--gray-500)',
+                                    fontWeight: newClaseTipo === v ? 700 : 500, fontSize: '0.78rem', cursor: 'pointer'
+                                  }}
+                                >{l}</button>
+                              ))}
+                            </div>
+                          </div>
+
                           <div
                             style={{
                               display: "grid",
@@ -1711,26 +1845,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                             </div>
                           </div>
 
-                          {/* Tipo de sesión */}
-                          <div className="form-group" style={{ marginTop: 0 }}>
-                            <label className="form-label" style={{ fontSize: '0.8rem', color: 'var(--gray-500)', marginBottom: '4px' }}>
-                              Tipo de Sesión
-                            </label>
-                            <div style={{ display: 'flex', gap: '0.5rem' }}>
-                              {[{v:'clase',l:'📚 Clase'},{v:'evento',l:'🎯 Evento'},{v:'puntos',l:'⭐ Puntos'}].map(({v,l}) => (
-                                <button key={v} type="button"
-                                  onClick={() => setNewClaseTipo(v)}
-                                  style={{
-                                    flex: 1, padding: '6px 8px', borderRadius: '8px', border: '2px solid',
-                                    borderColor: newClaseTipo === v ? 'var(--primary)' : 'var(--gray-200)',
-                                    background: newClaseTipo === v ? 'var(--primary-bg)' : 'white',
-                                    color: newClaseTipo === v ? 'var(--primary)' : 'var(--gray-500)',
-                                    fontWeight: newClaseTipo === v ? 700 : 500, fontSize: '0.78rem', cursor: 'pointer'
-                                  }}
-                                >{l}</button>
-                              ))}
-                            </div>
-                          </div>
+
                           {/* Visible para alumnos */}
                           <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', color: 'var(--gray-600)', cursor: 'pointer' }}>
                             <input type="checkbox" checked={newClaseVisible} onChange={e => setNewClaseVisible(e.target.checked)} />
@@ -1741,9 +1856,9 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                           <div
                             style={{
                               padding: "12px",
-                              background: "#f8fafc",
+                              background: "rgba(59, 130, 246, 0.06)",
                               borderRadius: "8px",
-                              border: "1px solid #e2e8f0",
+                              border: "1px solid rgba(59, 130, 246, 0.15)",
                             }}
                           >
                             <label
@@ -1844,59 +1959,36 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                                   style={{ padding: "4px 8px" }}
                                 />
                               </div>
-                            </div>
 
-                            <label
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "0.5rem",
-                                fontSize: "0.8rem",
-                                color: "var(--gray-600)",
-                                cursor: "pointer",
-                                marginTop: "12px",
-                                paddingTop: "10px",
-                                borderTop: "1px solid #e2e8f0",
-                              }}
-                            >
-                              <input
-                                type="checkbox"
-                                checked={permitirFalto}
-                                onChange={(e) =>
-                                  setPermitirFalto(e.target.checked)
-                                }
-                              />
-                              Permitir marcar INASISTENCIA (Falto) desde el
-                              móvil
-                            </label>
+                          </div>
                           </div>
 )}
 {newClaseTipo === 'evento' && (
                           <div
                             style={{
                               padding: "12px",
-                              background: "#fef3c7",
+                              background: "rgba(34, 197, 94, 0.08)",
                               borderRadius: "8px",
-                              border: "1px solid #fcd34d",
+                              border: "1px solid rgba(34, 197, 94, 0.2)",
                               fontSize: "0.8rem",
-                              color: "#92400e",
+                              color: "#15803d",
                             }}
                           >
-                            <strong>ℹ️ Evento:</strong> Se activará automáticamente. Los estudiantes que escaneen el QR serán registrados como &quot;Participó&quot;. Al terminar, se marcarán como &quot;Falto&quot; los que no se registraron.
+                            <strong>Evento:</strong> Se activará automáticamente. Los estudiantes que escaneen el QR serán registrados como &quot;Participó&quot;. Al terminar, se marcarán como &quot;Falto&quot; los que no se registraron.
                           </div>
 )}
 {newClaseTipo === 'puntos' && (
                           <div
                             style={{
                               padding: "12px",
-                              background: "#fce7f3",
+                              background: "rgba(245, 158, 11, 0.08)",
                               borderRadius: "8px",
-                              border: "1px solid #fbcfe8",
+                              border: "1px solid rgba(245, 158, 11, 0.2)",
                               fontSize: "0.8rem",
-                              color: "#831843",
+                              color: "#92400e",
                             }}
                           >
-                            <strong>✓ Puntos:</strong> Se agregarán automáticamente a todos los estudiantes en el historial. No requiere activar el monitor de QR.
+                            <strong>Puntos:</strong> Se agregarán automáticamente a todos los estudiantes en el historial. No requiere activar el monitor de QR.
                           </div>
 )}
                         </div>
@@ -1981,7 +2073,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                           }}
                         >
                           <Edit size={18} style={{ color: "var(--primary)" }} />
-                          Editar Clase
+                          Editar Sesión
                         </h3>
                         <button
                           onClick={() => setEditingSesion(null)}
@@ -2076,9 +2168,9 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                           <div
                             style={{
                               padding: "12px",
-                              background: "#f8fafc",
+                              background: "rgba(59, 130, 246, 0.06)",
                               borderRadius: "8px",
-                              border: "1px solid #e2e8f0",
+                              border: "1px solid rgba(59, 130, 246, 0.15)",
                               marginTop: "4px",
                             }}
                           >
@@ -2190,34 +2282,8 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                                   }}
                                 />
                               </div>
-                            </div>
 
-                            <label
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "0.5rem",
-                                fontSize: "0.8rem",
-                                color: "var(--gray-600)",
-                                cursor: "pointer",
-                                marginTop: "12px",
-                                paddingTop: "10px",
-                                borderTop: "1px solid #e2e8f0",
-                              }}
-                            >
-                              <input
-                                type="checkbox"
-                                checked={editSesionData.permitir_falto}
-                                onChange={(e) =>
-                                  setEditSesionData({
-                                    ...editSesionData,
-                                    permitir_falto: e.target.checked,
-                                  })
-                                }
-                              />
-                              Permitir marcar INASISTENCIA (Falto) desde el
-                              móvil
-                            </label>
+                            </div>
                           </div>
 )}
 
@@ -2303,9 +2369,13 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                             padding: "0.75rem 1rem",
                             background: s.activa
                               ? "var(--success-bg)"
-                              : "var(--gray-50)",
+                              : s.tipo === 'evento'
+                                ? 'rgba(34, 197, 94, 0.08)'
+                                : s.tipo === 'puntos'
+                                  ? 'rgba(245, 158, 11, 0.08)'
+                                  : 'rgba(59, 130, 246, 0.06)',
                             borderRadius: "12px",
-                            border: `1px solid ${s.activa ? "var(--success)" : "var(--gray-200)"}`,
+                            border: `1px solid ${s.activa ? "var(--success)" : s.tipo === 'evento' ? 'rgba(34, 197, 94, 0.2)' : s.tipo === 'puntos' ? 'rgba(245, 158, 11, 0.2)' : 'rgba(59, 130, 246, 0.15)'}`,
                             marginBottom: "0.75rem",
                             transition: "all 0.2s ease",
                           }}
@@ -2326,6 +2396,9 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                                 fontSize: "0.75rem",
                                 color: "var(--gray-500)",
                                 fontWeight: "500",
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px',
                               }}
                             >
                               {s.fecha_programada
@@ -2333,6 +2406,17 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                                 : fmtFecha(s.fecha_inicio)}
                               {s.total_asistencias > 0 &&
                                 ` • ${s.total_asistencias} asistencias`}
+                              <span style={{
+                                display: 'inline-block',
+                                padding: '1px 6px',
+                                borderRadius: '4px',
+                                fontSize: '0.65rem',
+                                fontWeight: 700,
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.5px',
+                                background: s.tipo === 'evento' ? 'rgba(34,197,94,0.15)' : s.tipo === 'puntos' ? 'rgba(245,158,11,0.15)' : 'rgba(59,130,246,0.12)',
+                                color: s.tipo === 'evento' ? '#15803d' : s.tipo === 'puntos' ? '#92400e' : '#1d4ed8',
+                              }}>{s.tipo || 'clase'}</span>
                             </span>
                           </div>
                           <div
@@ -2365,6 +2449,18 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                                 }}
                               >
                                 FINALIZADA
+                              </span>
+                            ) : s.tipo === 'puntos' ? (
+                              <span
+                                className="badge"
+                                style={{
+                                  background: 'rgba(245,158,11,0.12)',
+                                  color: '#92400e',
+                                  fontWeight: '600',
+                                  fontSize: '0.68rem',
+                                }}
+                              >
+                                MANUAL
                               </span>
                             ) : (
                               <button
