@@ -23,6 +23,7 @@ import {
   User,
   Pencil,
   AlertTriangle,
+  ChevronDown,
 } from "lucide-react";
 import * as XLSX from "xlsx";
 import { api } from "../api/client";
@@ -40,10 +41,23 @@ import "../styles/table-modelo.css";
 export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateUser }) {
   // ── Course-level state ──────────────────────────────────
   const [cursos, setCursos] = useState([]);
+  const [searchCursoQuery, setSearchCursoQuery] = useState("");
+  const filteredCursos = useMemo(() => {
+    if (!searchCursoQuery.trim()) return cursos;
+    const lowerQuery = searchCursoQuery.toLowerCase();
+    return cursos.filter(c => 
+      (c.nombre || "").toLowerCase().includes(lowerQuery) || 
+      (c.profesor_nombre || "").toLowerCase().includes(lowerQuery) ||
+      (c.profesor_codigo || "").toLowerCase().includes(lowerQuery)
+    );
+  }, [cursos, searchCursoQuery]);
+
   const [cursoActivo, setCursoActivo] = useState(null);
   const [showNewCurso, setShowNewCurso] = useState(false);
   const [editingCurso, setEditingCurso] = useState(null);
   const [newCursoName, setNewCursoName] = useState("");
+  const [profesores, setProfesores] = useState([]);
+  const [selectedProfesorId, setSelectedProfesorId] = useState("");
 
   // ── Tab state ───────────────────────────────────────────
   const [activeTab, setActiveTab] = useState("vivo"); // vivo | alumnos | clases | historial | config
@@ -165,6 +179,33 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
       .catch(() => {});
   }, []);
 
+  // ── Init: load professors (only for admin) ──────────────
+  const reloadProfesores = () => {
+    if (!isAdmin) return;
+    api
+      .getUsuarios()
+      .then((res) => {
+        const profs = res.usuarios.filter((u) => Number(u.rol) === 2);
+        setProfesores(profs);
+      })
+      .catch(() => {});
+  };
+
+  const reloadCursos = () => {
+    api
+      .getCursos(isAdmin ? '' : `?profesor_id=${user.id}`)
+      .then((res) => {
+        setCursos(res.cursos);
+      })
+      .catch(() => {});
+  };
+
+  useEffect(() => {
+    if (isAdmin) {
+      reloadProfesores();
+    }
+  }, [isAdmin]);
+
   // ── Load active session ─────────────────────────────────
   useEffect(() => {
     api
@@ -231,11 +272,27 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
   const crearCurso = async (e) => {
     e.preventDefault();
     if (!newCursoName.trim()) return;
+    if (isAdmin && !selectedProfesorId) {
+      toast.error("Por favor, selecciona un profesor para el curso");
+      return;
+    }
     try {
-      const { curso } = await api.crearCurso({ nombre: newCursoName.trim(), profesor_id: user.id });
-      setCursos((prev) => [curso, ...prev]);
-      setCursoActivo(curso);
+      const pId = isAdmin ? Number(selectedProfesorId) : user.id;
+      const { curso } = await api.crearCurso({ nombre: newCursoName.trim(), profesor_id: pId });
+      
+      const prof = profesores.find(p => p.id === Number(pId));
+      const newCursoFormatted = { 
+        ...curso, 
+        total_alumnos: 0, 
+        total_clases: 0,
+        profesor_nombre: prof ? prof.nombre_completo : "",
+        profesor_codigo: prof ? prof.codigo : ""
+      };
+
+      setCursos((prev) => [newCursoFormatted, ...prev]);
+      setCursoActivo(newCursoFormatted);
       setNewCursoName("");
+      setSelectedProfesorId("");
       setShowNewCurso(false);
       setViewMode("curso");
       toast.success(`Curso "${curso.nombre}" creado`);
@@ -247,13 +304,30 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
   const updateCurso = async (e) => {
     e.preventDefault();
     if (!editingCurso || !newCursoName.trim()) return;
+    if (isAdmin && !selectedProfesorId) {
+      toast.error("Por favor, selecciona un profesor para el curso");
+      return;
+    }
     try {
+      const pId = isAdmin ? Number(selectedProfesorId) : editingCurso.profesor_id;
       const { curso } = await api.updateCurso(editingCurso.id, {
         nombre: newCursoName.trim(),
+        profesor_id: pId
       });
-      setCursos((prev) => prev.map((c) => (c.id === curso.id ? curso : c)));
-      if (cursoActivo?.id === curso.id) setCursoActivo(curso);
+      
+      const prof = profesores.find(p => p.id === Number(pId));
+      const updatedFormatted = { 
+        ...curso, 
+        total_alumnos: editingCurso.total_alumnos, 
+        total_clases: editingCurso.total_clases,
+        profesor_nombre: prof ? prof.nombre_completo : "",
+        profesor_codigo: prof ? prof.codigo : ""
+      };
+
+      setCursos((prev) => prev.map((c) => (c.id === curso.id ? updatedFormatted : c)));
+      if (cursoActivo?.id === curso.id) setCursoActivo(updatedFormatted);
       setNewCursoName("");
+      setSelectedProfesorId("");
       setEditingCurso(null);
       toast.success("Curso actualizado");
     } catch (err) {
@@ -967,6 +1041,44 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
 
           </div>
 
+          {/* Buscador de Cursos */}
+          <div style={{ marginBottom: "1.5rem", position: "relative", maxWidth: "400px" }}>
+            <Search 
+              size={18} 
+              style={{ 
+                position: "absolute", 
+                left: "12px", 
+                top: "50%", 
+                transform: "translateY(-50%)", 
+                color: "var(--gray-400)" 
+              }} 
+            />
+            <input
+              type="text"
+              placeholder="Buscar curso..."
+              value={searchCursoQuery}
+              onChange={(e) => setSearchCursoQuery(e.target.value)}
+              style={{
+                width: "100%",
+                padding: "10px 12px 10px 38px",
+                borderRadius: "10px",
+                border: "1px solid var(--gray-200)",
+                fontSize: "0.95rem",
+                outline: "none",
+                transition: "border-color 0.2s, box-shadow 0.2s",
+                boxShadow: "0 1px 3px rgba(0,0,0,0.02)"
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = "var(--primary)";
+                e.target.style.boxShadow = "0 0 0 3px rgba(59, 130, 246, 0.1)";
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = "var(--gray-200)";
+                e.target.style.boxShadow = "0 1px 3px rgba(0,0,0,0.02)";
+              }}
+            />
+          </div>
+
           {/* ── Add/Edit Course Modal ──────────────────────── */}
           {(showNewCurso || editingCurso) && (
             <div
@@ -1028,6 +1140,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                     onClick={() => {
                       setShowNewCurso(false);
                       setEditingCurso(null);
+                      setSelectedProfesorId("");
                     }}
                     style={{
                       background: "transparent",
@@ -1062,6 +1175,34 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                         required
                       />
                     </div>
+                    {isAdmin && (
+                      <div className="form-group" style={{ marginTop: "1rem" }}>
+                        <label
+                          className="form-label"
+                          style={{
+                            fontSize: "0.8rem",
+                            color: "var(--gray-500)",
+                            marginBottom: "4px",
+                          }}
+                        >
+                          Asignar Profesor
+                        </label>
+                        <select
+                          className="form-input"
+                          value={selectedProfesorId}
+                          onChange={(e) => setSelectedProfesorId(e.target.value)}
+                          style={{ fontSize: "0.9rem" }}
+                          required
+                        >
+                          <option value="">-- Seleccionar Profesor --</option>
+                          {profesores.map((p) => (
+                            <option key={p.id} value={p.id}>
+                              {p.nombre_completo} ({p.codigo})
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
                   </div>
                   <div
                     style={{
@@ -1079,6 +1220,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                       onClick={() => {
                         setShowNewCurso(false);
                         setEditingCurso(null);
+                        setSelectedProfesorId("");
                       }}
                     >
                       Cancelar
@@ -1100,7 +1242,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                 gap: "1rem",
               }}
             >
-              {cursos.map((c) => (
+              {filteredCursos.map((c) => (
                 <div
                   key={c.id}
                   className="card"
@@ -1153,6 +1295,27 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                       >
                         {c.nombre}
                       </h3>
+                      {isAdmin && c.profesor_codigo && (
+                        <div
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "4px",
+                            background: "#f1f5f9",
+                            color: "#475569",
+                            borderRadius: "6px",
+                            padding: "2px 8px",
+                            fontSize: "0.72rem",
+                            fontWeight: "600",
+                            marginTop: "2px",
+                            marginBottom: "8px",
+                          }}
+                          title={`Propietario: ${c.profesor_nombre}`}
+                        >
+                          <span style={{ color: "#94a3b8", fontWeight: "500" }}>Docente:</span>
+                          {c.profesor_codigo}
+                        </div>
+                      )}
                     </div>
                     <div style={{ display: "flex", gap: "4px" }}>
                       <button
@@ -1160,6 +1323,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                         onClick={(e) => {
                           e.stopPropagation();
                           setNewCursoName(c.nombre);
+                          setSelectedProfesorId(c.profesor_id || "");
                           setEditingCurso(c);
                         }}
                         style={{ color: "var(--gray-500)", padding: "4px" }}
@@ -1230,6 +1394,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                 }}
                 onClick={() => {
                   setNewCursoName("");
+                  setSelectedProfesorId("");
                   setShowNewCurso(true);
                 }}
                 onMouseEnter={(e) => {
@@ -1274,7 +1439,12 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
         </div>
       ) : viewMode === "usuarios" ? (
         /* ══════ VISTA USUARIOS ══════════════════════ */
-        <UsersView onBack={() => setViewMode("dashboard")} cursos={cursos} />
+        <UsersView 
+          onBack={() => setViewMode("dashboard")} 
+          cursos={cursos} 
+          onCursosUpdated={reloadCursos}
+          onProfesoresUpdated={reloadProfesores}
+        />
       ) : (
         <>
           {/* COURSE VIEW: Header & Tabs */}
@@ -3182,9 +3352,10 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
 // ══════════════════════════════════════════════════════════════
 // UsersView — Gestión de usuarios
 // ══════════════════════════════════════════════════════════════
-function UsersView({ onBack, cursos }) {
+function UsersView({ onBack, cursos, onCursosUpdated, onProfesoresUpdated }) {
   const [usuarios, setUsuarios] = useState([]);
   const [search, setSearch] = useState("");
+  const [rolFilter, setRolFilter] = useState("3"); // Estudiantes por defecto
   const [editUser, setEditUser] = useState(null);
   const [editData, setEditData] = useState({ codigo: "", nombre_completo: "", rol: 3, pass: "" });
   const [showAdd, setShowAdd] = useState(false);
@@ -3199,11 +3370,14 @@ function UsersView({ onBack, cursos }) {
       .finally(() => setLoadingU(false));
   }, []);
 
-  const filteredUsers = usuarios.filter(
-    (u) =>
+  const filteredUsers = usuarios.filter((u) => {
+    const matchesSearch =
       u.nombre_completo.toLowerCase().includes(search.toLowerCase()) ||
-      u.codigo.toLowerCase().includes(search.toLowerCase()),
-  );
+      u.codigo.toLowerCase().includes(search.toLowerCase());
+    const matchesRol =
+      rolFilter === "all" || Number(u.rol) === Number(rolFilter);
+    return matchesSearch && matchesRol;
+  });
 
   const openEdit = (u) => {
     setEditUser(u);
@@ -3214,11 +3388,15 @@ function UsersView({ onBack, cursos }) {
     if (!editUser) return;
     try {
       await api.updateEstudiante(editUser.id, editData);
-      setUsuarios((prev) =>
-        prev.map((u) => (u.id === editUser.id ? { ...u, codigo: editData.codigo, nombre_completo: editData.nombre_completo, rol: editData.rol } : u)),
-      );
+      
+      const resU = await api.getUsuarios();
+      setUsuarios(resU.usuarios);
       setEditUser(null);
       toast.success("Usuario actualizado");
+      
+      if (onProfesoresUpdated) {
+        onProfesoresUpdated();
+      }
     } catch (err) {
       toast.error(err.message);
     }
@@ -3235,6 +3413,10 @@ function UsersView({ onBack, cursos }) {
       await api.deleteUsuario(u.id);
       setUsuarios((prev) => prev.filter((x) => x.id !== u.id));
       toast.info("Usuario eliminado");
+      
+      if (Number(u.rol) === 2 && onProfesoresUpdated) {
+        onProfesoresUpdated();
+      }
     } catch (err) {
       toast.error(err.message);
     }
@@ -3258,6 +3440,10 @@ function UsersView({ onBack, cursos }) {
       setNewUser({ codigo: "", nombre_completo: "", rol: 3, pass: "" });
       setShowAdd(false);
       toast.success("Usuario creado");
+      
+      if (Number(usuario.rol) === 2 && onProfesoresUpdated) {
+        onProfesoresUpdated();
+      }
     } catch (err) {
       toast.error(err.message);
     }
@@ -3300,6 +3486,31 @@ function UsersView({ onBack, cursos }) {
 
   return (
     <div style={{ padding: "1rem" }}>
+      <style dangerouslySetInnerHTML={{ __html: `
+        @media (max-width: 767px) {
+          .responsive-filters {
+            flex-direction: column;
+            align-items: stretch !important;
+            width: 100%;
+          }
+          .responsive-filters > div, 
+          .responsive-filters > button {
+            width: 100% !important;
+            max-width: 100% !important;
+            flex: unset !important;
+          }
+          .btn-add-user {
+            justify-content: center;
+          }
+        }
+        .responsive-filters-control::-webkit-scrollbar {
+          display: none;
+        }
+        .responsive-filters-control {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}} />
       {/* ── Edit Modal ──────────────────────── */}
       {editUser && (
         <div
@@ -3445,92 +3656,195 @@ function UsersView({ onBack, cursos }) {
                 </div>
               </div>
 
-              {/* Course enrollment checkboxes */}
+              {/* Cursos del Profesor o Cursos Matriculados del Estudiante */}
               <div>
-                <label
-                  className="form-label"
-                  style={{
-                    fontSize: "0.8rem",
-                    color: "var(--gray-500)",
-                    marginBottom: "8px",
-                    display: "block",
-                  }}
-                >
-                  Cursos Matriculados
-                </label>
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "6px",
-                  }}
-                >
-                  {cursos.map((c) => {
-                    const enrolled = (editUser.cursos || []).some(
-                      (uc) => uc.id === c.id,
-                    );
-                    return (
-                      <div
-                        key={c.id}
-                        onClick={() => toggleCurso(editUser.id, c.id, enrolled)}
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "10px",
-                          padding: "8px 12px",
-                          borderRadius: "8px",
-                          cursor: "pointer",
-                          border: enrolled
-                            ? "1.5px solid var(--primary)"
-                            : "1px solid var(--gray-200)",
-                          background: enrolled ? "var(--primary-bg)" : "white",
-                          transition: "all 0.15s ease",
-                        }}
-                      >
-                        <div
-                          style={{
-                            width: "20px",
-                            height: "20px",
-                            borderRadius: "4px",
-                            flexShrink: 0,
-                            border: enrolled
-                              ? "2px solid var(--primary)"
-                              : "2px solid var(--gray-300)",
-                            background: enrolled ? "var(--primary)" : "white",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            transition: "all 0.15s ease",
-                          }}
-                        >
-                          {enrolled && <Check size={14} color="white" />}
-                        </div>
-                        <span
-                          style={{
-                            fontSize: "0.85rem",
-                            fontWeight: enrolled ? "600" : "400",
-                            color: enrolled
-                              ? "var(--primary-dark)"
-                              : "var(--gray-600)",
-                          }}
-                        >
-                          {c.nombre}
-                        </span>
-                      </div>
-                    );
-                  })}
-                  {cursos.length === 0 && (
-                    <div
+                {Number(editData.rol) === 2 ? (
+                  <>
+                    <label
+                      className="form-label"
                       style={{
                         fontSize: "0.8rem",
-                        color: "var(--gray-400)",
-                        fontStyle: "italic",
+                        color: "var(--gray-500)",
+                        marginBottom: "8px",
+                        display: "block",
                       }}
                     >
-                      No hay cursos creados.
+                      Propiedad de Cursos (Rol Docente)
+                    </label>
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
+                        gap: "8px",
+                        maxHeight: "260px",
+                        overflowY: "auto",
+                        padding: "2px",
+                        paddingRight: "6px"
+                      }}
+                    >
+                      {cursos.map((c) => {
+                        const currentOwnerUser = usuarios.find((u) => u.id === c.profesor_id);
+                        const isOwner = c.profesor_id === editUser.id;
+                        
+                        return (
+                          <div
+                            key={c.id}
+                            onClick={async () => {
+                              if (isOwner) {
+                                toast.info("Este curso ya pertenece a este profesor. Para cambiar el propietario, asígnaselo desde el perfil de otro profesor o reasígnalo en el dashboard.");
+                                return;
+                              }
+                              if (confirm(`¿Transferir la propiedad del curso "${c.nombre}" a ${editUser.nombre_completo}?`)) {
+                                try {
+                                  await api.updateCurso(c.id, { profesor_id: editUser.id });
+                                  toast.success(`Curso "${c.nombre}" asignado a ${editUser.nombre_completo}`);
+                                  
+                                  // Refresh users list
+                                  const resU = await api.getUsuarios();
+                                  setUsuarios(resU.usuarios);
+                                  
+                                  // Sync editUser state
+                                  const updatedUser = resU.usuarios.find(x => x.id === editUser.id);
+                                  if (updatedUser) {
+                                    setEditUser(updatedUser);
+                                  }
+                                  
+                                  // Refresh parent courses list
+                                  if (onCursosUpdated) onCursosUpdated();
+                                } catch (err) {
+                                  toast.error(err.message);
+                                }
+                              }
+                            }}
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "space-between",
+                              padding: "8px 12px",
+                              borderRadius: "8px",
+                              cursor: isOwner ? "default" : "pointer",
+                              border: isOwner
+                                ? "1.5px solid #22c55e"
+                                : "1px solid var(--gray-200)",
+                              background: isOwner ? "#f0fdf4" : "white",
+                              transition: "all 0.15s ease",
+                              boxShadow: "0 1px 2px rgba(0,0,0,0.02)"
+                            }}
+                          >
+                            <div style={{ display: "flex", flexDirection: "column" }}>
+                              <span style={{ fontSize: "0.85rem", fontWeight: "600", color: "var(--gray-800)" }}>
+                                {c.nombre}
+                              </span>
+                              <span style={{ fontSize: "0.72rem", color: "var(--gray-400)" }}>
+                                {isOwner ? "Propio" : `Propietario actual: ${currentOwnerUser?.nombre_completo || 'Desconocido'}`}
+                              </span>
+                            </div>
+                            <div
+                              style={{
+                                width: "20px",
+                                height: "20px",
+                                borderRadius: "50%",
+                                border: isOwner ? "2px solid #22c55e" : "2px solid var(--gray-300)",
+                                background: isOwner ? "#22c55e" : "transparent",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                              }}
+                            >
+                              {isOwner && <Check size={12} color="white" />}
+                            </div>
+                          </div>
+                        );
+                      })}
+                      {cursos.length === 0 && (
+                        <div style={{ fontSize: "0.8rem", color: "var(--gray-400)", fontStyle: "italic" }}>
+                          No hay cursos creados.
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
+                  </>
+                ) : Number(editData.rol) === 3 ? (
+                  <>
+                    <label
+                      className="form-label"
+                      style={{
+                        fontSize: "0.8rem",
+                        color: "var(--gray-500)",
+                        marginBottom: "8px",
+                        display: "block",
+                      }}
+                    >
+                      Cursos Matriculados
+                    </label>
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "6px",
+                      }}
+                    >
+                      {cursos.map((c) => {
+                        const enrolled = (editUser.cursos || []).some(
+                          (uc) => uc.id === c.id,
+                        );
+                        return (
+                          <div
+                            key={c.id}
+                            onClick={() => toggleCurso(editUser.id, c.id, enrolled)}
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "10px",
+                              padding: "8px 12px",
+                              borderRadius: "8px",
+                              cursor: "pointer",
+                              border: enrolled
+                                ? "1.5px solid var(--primary)"
+                                : "1px solid var(--gray-200)",
+                              background: enrolled ? "var(--primary-bg)" : "white",
+                              transition: "all 0.15s ease",
+                            }}
+                          >
+                            <div
+                              style={{
+                                width: "20px",
+                                height: "20px",
+                                borderRadius: "4px",
+                                flexShrink: 0,
+                                border: enrolled
+                                  ? "2px solid var(--primary)"
+                                  : "2px solid var(--gray-300)",
+                                background: enrolled ? "var(--primary)" : "white",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                transition: "all 0.15s ease",
+                              }}
+                            >
+                              {enrolled && <Check size={14} color="white" />}
+                            </div>
+                            <span
+                              style={{
+                                fontSize: "0.85rem",
+                                fontWeight: enrolled ? "600" : "400",
+                                color: enrolled
+                                  ? "var(--primary-dark)"
+                                  : "var(--gray-600)",
+                              }}
+                            >
+                              {c.nombre}
+                            </span>
+                          </div>
+                        );
+                      })}
+                      {cursos.length === 0 && (
+                        <div style={{ fontSize: "0.8rem", color: "var(--gray-400)", fontStyle: "italic" }}>
+                          No hay cursos creados.
+                        </div>
+                      )}
+                    </div>
+                  </>
+                ) : null}
               </div>
             </div>
 
@@ -3594,20 +3908,8 @@ function UsersView({ onBack, cursos }) {
               size={20}
               style={{ verticalAlign: "middle", marginRight: "6px" }}
             />
-            Gestión de Usuarios
+            Usuarios
           </h2>
-          <span
-            style={{
-              background: "var(--primary)",
-              color: "white",
-              borderRadius: "20px",
-              padding: "2px 10px",
-              fontSize: "0.75rem",
-              fontWeight: "700",
-            }}
-          >
-            {usuarios.length}
-          </span>
         </div>
         <div 
           className="responsive-filters" 
@@ -3620,11 +3922,58 @@ function UsersView({ onBack, cursos }) {
             justifyContent: "flex-end"
           }}
         >
+          {/* Segmented Control for Roles */}
+          <div
+            className="responsive-filters-control"
+            style={{
+              display: "flex",
+              background: "#f1f5f9",
+              padding: "4px",
+              borderRadius: "10px",
+              gap: "2px",
+              border: "1px solid #e2e8f0",
+              overflowX: "auto",
+              maxWidth: "100%",
+              whiteSpace: "nowrap",
+              WebkitOverflowScrolling: "touch",
+            }}
+          >
+            {[
+              { label: "Estudiantes", value: "3" },
+              { label: "Profesores", value: "2" },
+              { label: "Administradores", value: "1" },
+              { label: "Todos", value: "all" },
+            ].map((btn) => {
+              const active = rolFilter === btn.value;
+              return (
+                <button
+                  key={btn.value}
+                  onClick={() => setRolFilter(btn.value)}
+                  style={{
+                    border: "none",
+                    background: active ? "white" : "transparent",
+                    color: active ? "#1e293b" : "#64748b",
+                    fontWeight: active ? "600" : "500",
+                    fontSize: "0.82rem",
+                    padding: "6px 14px",
+                    borderRadius: "8px",
+                    cursor: "pointer",
+                    boxShadow: active ? "0 1px 3px rgba(0,0,0,0.1)" : "none",
+                    transition: "all 0.15s ease",
+                    flexShrink: 0,
+                  }}
+                >
+                  {btn.label}
+                </button>
+              );
+            })}
+          </div>
+
           <div 
             className="search-container-historial"
             style={{ 
               position: "relative",
-              flex: "1 1 300px",
+              flex: "1 1 200px",
               maxWidth: "100%"
             }}
           >
@@ -3882,13 +4231,15 @@ function UsersView({ onBack, cursos }) {
       ) : (
         <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
           <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
+            <table style={{ width: '100%', minWidth: '800px', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
               <thead>
                 <tr style={{ borderBottom: '2px solid var(--gray-200)', textAlign: 'left', background: 'var(--gray-50)' }}>
                   <th style={{ padding: '12px 16px', color: 'var(--gray-500)', fontWeight: 600, fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.5px', width: '40px' }}>#</th>
                   <th style={{ padding: '12px 16px', color: 'var(--gray-500)', fontWeight: 600, fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Nombre</th>
-                  <th style={{ padding: '12px 16px', color: 'var(--gray-500)', fontWeight: 600, fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>CUI</th>
-                  <th style={{ padding: '12px 16px', color: 'var(--gray-500)', fontWeight: 600, fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Cursos Matriculados</th>
+                  <th style={{ padding: '12px 16px', color: 'var(--gray-500)', fontWeight: 600, fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>CUI / Código</th>
+                  <th style={{ padding: '12px 16px', color: 'var(--gray-500)', fontWeight: 600, fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    {rolFilter === "2" ? "Cursos Propios" : rolFilter === "1" ? "Cursos" : "Cursos Matriculados"}
+                  </th>
                   <th style={{ padding: '12px 16px', color: 'var(--gray-500)', fontWeight: 600, fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'center', width: '100px' }}>Acciones</th>
                 </tr>
               </thead>
@@ -3919,33 +4270,68 @@ function UsersView({ onBack, cursos }) {
                     </td>
                     <td style={{ padding: '12px 16px' }}>
                       <div style={{ display: "flex", gap: "4px", flexWrap: "wrap" }}>
-                        {(u.cursos || []).map((c) => (
-                          <span
-                            key={c.id}
-                            style={{
-                              display: "inline-block",
-                              background: "var(--primary-bg)",
-                              color: "var(--primary-dark)",
-                              border: "1px solid var(--primary-light, #c7d2fe)",
-                              borderRadius: "12px",
-                              padding: "2px 8px",
-                              fontSize: "0.68rem",
-                              fontWeight: "600",
-                            }}
-                          >
-                            {c.nombre}
-                          </span>
-                        ))}
-                        {(!u.cursos || u.cursos.length === 0) && (
-                          <span
-                            style={{
-                              fontSize: "0.68rem",
-                              color: "var(--gray-400)",
-                              fontStyle: "italic",
-                            }}
-                          >
-                            Sin curso
-                          </span>
+                        {Number(u.rol) === 2 ? (
+                          <>
+                            {(u.cursos_dictados || []).map((c) => (
+                              <span
+                                key={c.id}
+                                style={{
+                                  display: "inline-block",
+                                  background: "#e0f2fe",
+                                  color: "#0369a1",
+                                  border: "1px solid #bae6fd",
+                                  borderRadius: "12px",
+                                  padding: "2px 8px",
+                                  fontSize: "0.68rem",
+                                  fontWeight: "600",
+                                }}
+                              >
+                                {c.nombre}
+                              </span>
+                            ))}
+                            {(!u.cursos_dictados || u.cursos_dictados.length === 0) && (
+                              <span
+                                style={{
+                                  fontSize: "0.68rem",
+                                  color: "var(--gray-400)",
+                                  fontStyle: "italic",
+                                }}
+                              >
+                                Sin cursos asignados
+                              </span>
+                            )}
+                          </>
+                        ) : (
+                          <>
+                            {(u.cursos || []).map((c) => (
+                              <span
+                                key={c.id}
+                                style={{
+                                  display: "inline-block",
+                                  background: "var(--primary-bg)",
+                                  color: "var(--primary-dark)",
+                                  border: "1px solid var(--primary-light, #c7d2fe)",
+                                  borderRadius: "12px",
+                                  padding: "2px 8px",
+                                  fontSize: "0.68rem",
+                                  fontWeight: "600",
+                                }}
+                              >
+                                {c.nombre}
+                              </span>
+                            ))}
+                            {(!u.cursos || u.cursos.length === 0) && (
+                              <span
+                                style={{
+                                  fontSize: "0.68rem",
+                                  color: "var(--gray-400)",
+                                  fontStyle: "italic",
+                                }}
+                              >
+                                Sin curso
+                              </span>
+                            )}
+                          </>
                         )}
                       </div>
                     </td>

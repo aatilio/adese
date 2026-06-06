@@ -331,19 +331,25 @@ app.get('/api/estudiantes', async (req, res) => {
   }
 });
 
-// GET /api/usuarios (all users with enrolled courses)
+// GET /api/usuarios (all users with enrolled courses and owned courses)
 app.get('/api/usuarios', async (req, res) => {
   try {
     const r = await pool.query(`
       SELECT u.*, 
         COALESCE(
-          json_agg(json_build_object('id', c.id, 'nombre', c.nombre)) 
-          FILTER (WHERE c.id IS NOT NULL), '[]'
-        ) AS cursos
+          (SELECT json_agg(json_build_object('id', c.id, 'nombre', c.nombre))
+           FROM curso_estudiantes ce
+           JOIN cursos c ON c.id = ce.curso_id
+           WHERE ce.estudiante_id = u.id),
+          '[]'
+        ) AS cursos,
+        COALESCE(
+          (SELECT json_agg(json_build_object('id', c.id, 'nombre', c.nombre))
+           FROM cursos c
+           WHERE c.profesor_id = u.id),
+          '[]'
+        ) AS cursos_dictados
       FROM usuarios u
-      LEFT JOIN curso_estudiantes ce ON ce.estudiante_id = u.id
-      LEFT JOIN cursos c ON c.id = ce.curso_id
-      GROUP BY u.id
       ORDER BY u.nombre_completo
     `);
     res.json({ usuarios: r.rows });
@@ -387,7 +393,7 @@ app.post('/api/usuarios', async (req, res) => {
       `, [newUser.id]);
     }
     
-    res.json({ usuario: { ...newUser, cursos: [] } });
+    res.json({ usuario: { ...newUser, cursos: [], cursos_dictados: [] } });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
@@ -620,9 +626,12 @@ app.get('/api/cursos', async (req, res) => {
   try {
     let query = `
       SELECT c.*,
+        u.nombre_completo AS profesor_nombre,
+        u.codigo AS profesor_codigo,
         (SELECT COUNT(*) FROM curso_estudiantes ce WHERE ce.curso_id = c.id)::int AS total_alumnos,
         (SELECT COUNT(*) FROM sesiones sc WHERE sc.curso_id = c.id)::int AS total_clases
       FROM cursos c
+      LEFT JOIN usuarios u ON u.id = c.profesor_id
     `;
     const params = [];
     if (profesor_id) {
@@ -649,11 +658,11 @@ app.post('/api/cursos', async (req, res) => {
 
 // PUT /api/cursos/:id
 app.put('/api/cursos/:id', async (req, res) => {
-  const { nombre, descripcion } = req.body;
+  const { nombre, descripcion, profesor_id } = req.body;
   try {
     const r = await pool.query(
-      'UPDATE cursos SET nombre=$1, descripcion=COALESCE($2, descripcion) WHERE id=$3 RETURNING *',
-      [nombre, descripcion, req.params.id]
+      'UPDATE cursos SET nombre=COALESCE($1, nombre), descripcion=COALESCE($2, descripcion), profesor_id=COALESCE($3, profesor_id) WHERE id=$4 RETURNING *',
+      [nombre, descripcion, profesor_id, req.params.id]
     );
     res.json({ curso: r.rows[0] });
   } catch (err) { res.status(500).json({ error: err.message }); }
