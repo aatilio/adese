@@ -2,7 +2,7 @@ import { useState, useCallback } from "react";
 import DataManager from "../components/econometrics/DataManager";
 import ModelConfig from "../components/econometrics/ModelConfig";
 import ResultsPanel from "../components/econometrics/ResultsPanel";
-import "../components/econometrics/econometrics.css";
+import "../styles/econometrics.css";
 import { Upload, BarChart3, Settings2, ArrowLeft } from "lucide-react";
 
 const API_URL = import.meta.env.VITE_API_URL || "";

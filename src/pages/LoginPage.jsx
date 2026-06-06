@@ -4,8 +4,8 @@ import { api } from "../api/client";
 import { toast } from "../components/Toast";
 import { mapRolToUiRole } from "../constants/roles";
 import appLogo from "../assets/ac-d.svg";
-
 import Footer from "../components/Footer";
+import "../styles/components/profile-view.css"; // shared .eye-btn and .password-input-wrap
 
 export default function LoginPage({ onLogin }) {
   const [codigo, setCodigo] = useState("");
@@ -24,7 +24,6 @@ export default function LoginPage({ onLogin }) {
         toast.error("Rol de usuario no reconocido");
         return;
       }
-
       onLogin({ ...usuario, role });
       toast.success("¡Bienvenido!");
     } catch (err) {
@@ -38,38 +37,30 @@ export default function LoginPage({ onLogin }) {
     <div className="login-screen">
       <div className="login-card">
         {/* Logo */}
-        <div className="login-logo" style={{ textAlign: "center", marginBottom: '1.5rem' }}>
-          <img 
-            src={appLogo} 
-            alt="Adese Logo" 
-            style={{ width: '70px', height: 'auto', marginBottom: '-0.8rem', display: 'block', margin: '0 auto' }} 
-          />
-          <div className="login-logo-title" style={{ margin: "0", fontSize: '2rem' }}>
-            Adese
-          </div>
+        <div className="login-logo">
+          <img src={appLogo} alt="Adese Logo" style={{ width: "70px", height: "auto" }} />
+          <div className="login-logo-title">Adese</div>
         </div>
 
-        {/* Form — un solo acceso; el código define si es estudiante o administrador */}
+        {/* Form */}
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label className="form-label">CUI</label>
-            <div style={{ position: "relative" }}>
-              <input
-                className="form-input"
-                type="text"
-                autoFocus
-                spellCheck={false}
-                autoComplete="username"
-                value={codigo}
-                onChange={(e) => setCodigo(e.target.value)}
-                placeholder="20201234"
-              />
-            </div>
+            <input
+              className="form-input"
+              type="text"
+              autoFocus
+              spellCheck={false}
+              autoComplete="username"
+              value={codigo}
+              onChange={(e) => setCodigo(e.target.value)}
+              placeholder="20201234"
+            />
           </div>
 
-          <div className="form-group" style={{ marginTop: '1rem' }}>
+          <div className="form-group mt-4">
             <label className="form-label">Contraseña</label>
-            <div style={{ position: "relative" }}>
+            <div className="password-input-wrap">
               <input
                 className="form-input"
                 type={showPass ? "text" : "password"}
@@ -81,31 +72,16 @@ export default function LoginPage({ onLogin }) {
               />
               <button
                 type="button"
-                onClick={() => setShowPass(v => !v)}
+                className="eye-btn"
+                onClick={() => setShowPass((v) => !v)}
                 aria-label={showPass ? "Ocultar contraseña" : "Mostrar contraseña"}
-                style={{
-                  position: "absolute",
-                  right: "0.8rem",
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  color: "var(--gray-400)",
-                  display: "flex",
-                  alignItems: "center",
-                  padding: "0",
-                  transition: "color 0.15s ease",
-                }}
-                onMouseEnter={e => e.currentTarget.style.color = "var(--primary)"}
-                onMouseLeave={e => e.currentTarget.style.color = "var(--gray-400)"}
               >
                 {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
           </div>
 
-          <div style={{ marginTop: "1.5rem" }}>
+          <div className="mt-6">
             <button
               className="btn btn-primary"
               type="submit"

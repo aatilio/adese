@@ -1,0 +1,39 @@
+/* ── Footer Component ───────────────────────────────────────
+   App-wide footer shown at the bottom of all pages.
+   ──────────────────────────────────────────────────────── */
+
+.app-footer {
+  font-size: 11px;
+  color: var(--gray-400);
+  text-align: center;
+  margin-top: 2rem;
+  padding-bottom: 1.5rem;
+  line-height: 1.6;
+  opacity: 0.8;
+}
+
+.app-footer__link {
+  color: var(--gray-600);
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.app-footer__link:hover {
+  color: var(--gray-800);
+}
+
+.app-footer__dev {
+  margin-top: 4px;
+  font-size: 10px;
+  opacity: 0.7;
+}
+
+.app-footer__dev-link {
+  color: var(--primary);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.app-footer__dev-link:hover {
+  text-decoration: underline;
+}

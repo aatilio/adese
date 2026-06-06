@@ -1,0 +1,125 @@
+/* ── ProfileView Component ──────────────────────────────────
+   User profile edit form shown when clicking on the user menu.
+   ──────────────────────────────────────────────────────── */
+
+.profile-view {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+/* Header: avatar icon + user meta */
+.profile-view__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 1.5rem;
+}
+
+.profile-view__avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: var(--gray-50);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
+.profile-view__title {
+  margin: 0;
+  font-size: 1.25rem;
+  color: var(--gray-800);
+}
+
+/* Meta chips row (código, rol) */
+.profile-view__meta {
+  display: flex;
+  gap: 1rem;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.profile-view__chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: var(--gray-500);
+}
+
+.profile-view__chip-label {
+  font-weight: 600;
+}
+
+.profile-view__chip-val {
+  font-family: monospace;
+  background: var(--gray-100);
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--gray-700);
+}
+
+.profile-view__chip-val--role {
+  font-family: var(--font);
+  text-transform: capitalize;
+  background: var(--primary-bg);
+  color: var(--primary);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+/* Section divider */
+.profile-view__divider {
+  margin: 2rem 0;
+  border: none;
+  border-top: 1px solid var(--gray-100);
+}
+
+/* Password section heading */
+.profile-view__section-title {
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 1rem;
+  color: var(--gray-700);
+  font-weight: 600;
+}
+
+/* Action buttons row */
+.profile-view__actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+/* ── Shared: Eye toggle button ──────────────────────────────
+   Used by ProfileView AND LoginPage for password visibility toggle.
+   ──────────────────────────────────────────────────────── */
+
+.password-input-wrap {
+  position: relative;
+}
+
+.eye-btn {
+  position: absolute;
+  right: 0.8rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--gray-400);
+  display: flex;
+  align-items: center;
+  padding: 0;
+  transition: color 0.15s ease;
+}
+
+.eye-btn:hover {
+  color: var(--primary);
+}

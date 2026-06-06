@@ -19,7 +19,7 @@ import appLogo from "../assets/ac-d.svg";
 import UserMenu from "../components/UserMenu";
 import ProfileView from "../components/ProfileView";
 import Footer from "../components/Footer";
-import EconometricsPage from "./app";
+import EconometricsPage from "./EconometricsPage";
 
 const STEPS = { SELECT: "select", SCANNING: "scanning", DONE: "done" };
 
