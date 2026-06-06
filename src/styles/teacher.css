@@ -1,0 +1,1769 @@
+/* ================================================================
+   teacher.css — Extracted CSS for TeacherPage.jsx
+   Prefix: tp- (TeacherPage), uv- (UsersView)
+   ================================================================ */
+
+/* ── Loading shell ─────────────────────────────────────────────── */
+.tp-loading-shell {
+  align-items: center;
+  justify-content: center;
+}
+
+.tp-spinner-lg {
+  border-top-color: var(--primary);
+  width: 32px;
+  height: 32px;
+}
+
+/* ── Modal overlay (shared across all modals) ──────────────────── */
+.tp-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  background: rgba(15, 23, 42, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+/* Higher z-index variant used by most modals */
+.tp-modal-overlay--high {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+/* ── Modal box ─────────────────────────────────────────────────── */
+.tp-modal-box {
+  background: white;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+}
+
+.tp-modal-box--sm {
+  max-width: 420px;
+}
+
+.tp-modal-box--md {
+  max-width: 480px;
+}
+
+.tp-modal-box--lg {
+  max-width: 600px;
+}
+
+/* Confirm-delete modal box (no overflow:hidden, has animation) */
+.tp-confirm-box {
+  background: white;
+  border-radius: 16px;
+  padding: 2rem;
+  max-width: 420px;
+  width: 100%;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+  animation: slideIn 0.2s ease;
+}
+
+/* ── Modal icon (emoji header) ─────────────────────────────────── */
+.tp-modal-icon {
+  font-size: 2.5rem;
+  text-align: center;
+  margin-bottom: 0.75rem;
+}
+
+/* ── Modal title (confirm style) ───────────────────────────────── */
+.tp-modal-title {
+  margin: 0 0 0.5rem;
+  color: var(--gray-900);
+  text-align: center;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+/* ── Modal body text (confirm style) ───────────────────────────── */
+.tp-modal-body {
+  font-size: 0.85rem;
+  color: var(--gray-500);
+  text-align: center;
+  margin: 0 0 1.5rem;
+  line-height: 1.6;
+}
+
+/* ── Modal actions row ─────────────────────────────────────────── */
+.tp-modal-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+/* ── Flex-1 utility ────────────────────────────────────────────── */
+.tp-flex-1 {
+  flex: 1;
+}
+
+/* ── Page header ───────────────────────────────────────────────── */
+.tp-page-header {
+  justify-content: space-between;
+}
+
+.tp-header__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.tp-header__logo {
+  width: 32px;
+  height: auto;
+}
+
+.tp-header__logo-pad {
+  padding: 0;
+}
+
+.tp-header__title {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+
+.tp-header__actions {
+  display: flex;
+  align-items: center;
+}
+
+/* ── Back button (profile view) ────────────────────────────────── */
+.tp-back-wrap {
+  padding: 0 1rem;
+  margin-bottom: 1rem;
+}
+
+.tp-back-btn {
+  color: var(--gray-600);
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px;
+  border: 1px solid var(--gray-200);
+  border-radius: 12px;
+  background: white;
+}
+
+/* ── Dashboard ─────────────────────────────────────────────────── */
+.tp-dashboard {
+  padding: 1rem;
+}
+
+.tp-dashboard__bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.tp-dashboard__title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.tp-dashboard__icon {
+  color: var(--primary);
+}
+
+.tp-dashboard__title {
+  font-size: 1.2rem;
+  margin: 0;
+  color: var(--gray-800);
+}
+
+/* ── Admin Usuarios button ─────────────────────────────────────── */
+.tp-btn-usuarios {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: white;
+  color: var(--gray-700);
+  border: 1px solid var(--gray-300);
+  font-weight: 600;
+  width: auto;
+  padding: 0.4rem 0.8rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* ── Search wrapper ────────────────────────────────────────────── */
+.tp-search-wrap {
+  margin-bottom: 1.5rem;
+  position: relative;
+  max-width: 400px;
+}
+
+.tp-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--gray-400);
+}
+
+.tp-search-input {
+  width: 100%;
+  padding: 10px 12px 10px 38px;
+  border-radius: 10px;
+  border: 1px solid var(--gray-200);
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.tp-search-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* ── Modal header (for add/edit modals) ────────────────────────── */
+.tp-modal-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--gray-100);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--gray-50);
+}
+
+.tp-modal-header--simple {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--gray-100);
+  background: var(--gray-50);
+}
+
+/* ── Modal title row (h3 inside header) ────────────────────────── */
+.tp-modal-title-row {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--gray-800);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ── Icon primary (inside modal title) ─────────────────────────── */
+.tp-modal-icon-primary {
+  color: var(--primary);
+}
+
+/* ── Modal close button ────────────────────────────────────────── */
+.tp-modal-close {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--gray-400);
+  padding: 4px;
+}
+
+/* ── Modal body padding ────────────────────────────────────────── */
+.tp-modal-body-pad {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* ── Modal form label (small) ──────────────────────────────────── */
+.tp-modal-label {
+  font-size: 0.8rem;
+  color: var(--gray-500);
+  margin-bottom: 4px;
+}
+
+/* ── Form group: no top margin ─────────────────────────────────── */
+.tp-form-group-0 {
+  margin-top: 0;
+}
+
+/* ── Modal footer ──────────────────────────────────────────────── */
+.tp-modal-footer {
+  padding: 14px 20px;
+  border-top: 1px solid var(--gray-100);
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  background: var(--gray-50);
+}
+
+.tp-modal-footer--start {
+  padding: 14px 20px;
+  border-top: 1px solid var(--gray-100);
+  display: flex;
+  gap: 0.5rem;
+  background: var(--gray-50);
+}
+
+/* ── Course cards grid ─────────────────────────────────────────── */
+.tp-courses-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+/* ── Course card ───────────────────────────────────────────────── */
+.tp-course-card {
+  cursor: pointer;
+  transition: transform 0.2s;
+  margin: 0;
+}
+
+.tp-course-card:hover {
+  transform: translateY(-2px);
+}
+
+/* ── Course card header row ────────────────────────────────────── */
+.tp-course-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+/* ── Course card tag (BookOpen + "Curso") ──────────────────────── */
+.tp-course-card__tag {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--primary);
+  margin-bottom: 0.5rem;
+}
+
+/* ── Course card label ("Curso") ───────────────────────────────── */
+.tp-course-card__label {
+  font-weight: 500;
+  font-size: 0.85rem;
+}
+
+/* ── Course card name (h3) ─────────────────────────────────────── */
+.tp-course-card__name {
+  font-size: 1.1rem;
+  margin: 0 0 0.5rem 0;
+  color: var(--gray-800);
+}
+
+/* ── Docente badge ─────────────────────────────────────────────── */
+.tp-course-card__docente {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #f1f5f9;
+  color: #475569;
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  margin-top: 2px;
+  margin-bottom: 8px;
+}
+
+.tp-course-card__docente-label {
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+/* ── Action buttons row ────────────────────────────────────────── */
+.tp-course-card__actions {
+  display: flex;
+  gap: 4px;
+}
+
+/* ── Icon action button (edit) ─────────────────────────────────── */
+.tp-icon-btn {
+  color: var(--gray-500);
+  padding: 4px;
+}
+
+.tp-icon-btn--danger {
+  color: var(--danger);
+  padding: 4px;
+}
+
+/* ── Stats row ─────────────────────────────────────────────────── */
+.tp-course-card__stats {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+  font-size: 0.85rem;
+  color: var(--gray-500);
+}
+
+.tp-course-card__stat {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ── Add Course card ───────────────────────────────────────────── */
+.tp-add-course-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.4);
+  border: 2px dashed var(--gray-300);
+  min-height: 140px;
+  margin: 0;
+  transition: all 0.2s ease;
+  box-shadow: none;
+}
+
+.tp-add-course-card:hover {
+  border-color: var(--primary);
+  background: var(--primary-bg);
+  transform: translateY(-2px);
+}
+
+.tp-add-course-card:hover .tp-add-course-icon {
+  background: var(--primary-bg);
+  color: var(--primary);
+}
+
+/* ── Add course icon circle ────────────────────────────────────── */
+.tp-add-course-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--gray-100);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gray-500);
+  transition: all 0.2s ease;
+}
+
+/* ── Add course text ───────────────────────────────────────────── */
+.tp-add-course-text {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--gray-500);
+}
+
+/* ── Course view toolbar ───────────────────────────────────────── */
+.tp-toolbar-mb {
+  margin-bottom: 0.5rem;
+}
+
+/* ── Course view title (h2) ────────────────────────────────────── */
+.tp-course-view-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.1rem;
+}
+
+.tp-course-subtitle {
+  color: var(--gray-500);
+  font-weight: 500;
+}
+
+.tp-course-name {
+  color: var(--primary);
+  font-weight: 800;
+}
+
+/* ── Tabs bar ──────────────────────────────────────────────────── */
+.tp-tabs-bar {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--gray-200);
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(10px);
+  padding: 0 1rem;
+  gap: 1rem;
+}
+
+/* ── Back button (inside tabs bar, has right border) ───────────── */
+.tp-back-btn--tabs {
+  color: var(--gray-600);
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px;
+  border-right: 1px solid var(--gray-200);
+  border-radius: 12px;
+  height: 100%;
+}
+
+/* ── Tabs inline (no border/padding) ──────────────────────────── */
+.tp-tabs-inline {
+  border-bottom: none !important;
+  padding: 0 !important;
+  gap: 1.5rem !important;
+}
+
+/* ── Individual tab button ─────────────────────────────────────── */
+.tp-tab-btn {
+  padding: 12px 0;
+}
+
+/* ── page-body full width ──────────────────────────────────────── */
+.tp-page-body-full {
+  width: 100%;
+}
+
+/* ── No session card ───────────────────────────────────────────── */
+.tp-no-session-card {
+  max-width: 480px;
+  margin: 0 auto;
+  text-align: center;
+  padding: 3rem 1.5rem;
+  border: 2px dashed var(--gray-200);
+  background: var(--gray-50);
+  border-radius: 24px;
+}
+
+.tp-no-session-icon {
+  margin: 0 auto 1.5rem;
+  color: var(--primary);
+  opacity: 0.5;
+}
+
+.tp-no-session-title {
+  justify-content: center;
+  font-size: 1.2rem;
+}
+
+.tp-no-session-body {
+  font-size: 0.95rem;
+  color: var(--gray-500);
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
+.tp-btn-go-classes {
+  margin: 0 auto;
+  width: auto;
+  padding: 0.8rem 2.5rem;
+  font-size: 0.9rem;
+}
+
+.tp-btn-icon-mr {
+  margin-right: 8px;
+}
+
+/* ── Live chip row ─────────────────────────────────────────────── */
+.tp-live-chip-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ── Alumnos card ──────────────────────────────────────────────── */
+.tp-alumnos-card {
+  max-width: 1000px;
+  margin: 1.5rem auto;
+  padding: 20px;
+}
+
+.tp-alumnos-header {
+  margin-bottom: 1.5rem;
+}
+
+.tp-alumnos-subtitle {
+  margin: 0;
+}
+
+.tp-card-subtitle-mt {
+  margin-top: 4px;
+  margin-bottom: 1rem;
+}
+
+/* ── Add alumno primary button ─────────────────────────────────── */
+.tp-btn-add-alumno {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  padding: 10px;
+  border-radius: 8px;
+  width: 100%;
+}
+
+/* ── Nuevo alumno modal — search status boxes ──────────────────── */
+.tp-alumno-found-wrap {
+  margin-top: 6px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tp-alumno-found-wrap--warn {
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+}
+
+.tp-alumno-found-wrap--ok {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+}
+
+.tp-alumno-found-title--warn {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #92400e;
+}
+
+.tp-alumno-found-sub--warn {
+  font-size: 0.75rem;
+  color: #a16207;
+}
+
+.tp-alumno-found-title--ok {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #15803d;
+}
+
+.tp-alumno-found-sub--ok {
+  font-size: 0.75rem;
+  color: #166534;
+}
+
+.tp-alumno-hint {
+  font-size: 0.72rem;
+  color: var(--gray-400);
+  margin-top: 4px;
+}
+
+/* ── Spinner inline (for search) ───────────────────────────────── */
+.tp-spinner-search {
+  position: absolute;
+  right: 10px;
+  top: 62%;
+  transform: translateY(-50%);
+}
+
+.tp-spinner-sm {
+  width: 14px;
+  height: 14px;
+}
+
+/* ── Alumnos table ─────────────────────────────────────────────── */
+.tp-table-wrap {
+  overflow-x: auto;
+}
+
+.tp-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.tp-table thead tr {
+  border-bottom: 2px solid var(--gray-200);
+  text-align: left;
+}
+
+.tp-table th {
+  padding: 10px 12px;
+  color: var(--gray-500);
+  font-weight: 600;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.tp-table th--center {
+  text-align: center;
+  width: 100px;
+}
+
+.tp-table tbody tr {
+  border-bottom: 1px solid var(--gray-100);
+  transition: background 0.15s;
+}
+
+.tp-table tbody tr:hover {
+  background: var(--gray-50);
+}
+
+.tp-table td--num {
+  padding: 10px 12px;
+  color: var(--gray-400);
+  font-weight: 500;
+  width: 40px;
+}
+
+.tp-table td--name {
+  padding: 10px 12px;
+  font-weight: 600;
+  color: var(--gray-800);
+}
+
+.tp-table td--code {
+  padding: 10px 12px;
+  color: var(--gray-500);
+  font-family: monospace;
+  font-weight: 500;
+}
+
+.tp-table td--center {
+  padding: 10px 12px;
+  text-align: center;
+}
+
+.tp-table td--actions {
+  padding: 10px 12px;
+  text-align: center;
+}
+
+.tp-table-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.tp-table td--empty {
+  padding: 2rem;
+  text-align: center;
+  color: var(--gray-400);
+}
+
+/* ── Edit / Delete action buttons ──────────────────────────────── */
+.tp-btn-edit {
+  padding: 6px;
+  color: var(--primary);
+  border: 1px solid var(--primary-bg);
+  background: var(--primary-bg);
+}
+
+.tp-btn-delete {
+  padding: 6px;
+  color: var(--error);
+  border: 1px solid #fee2e2;
+  background: #fef2f2;
+}
+
+/* ── Clases section header row ─────────────────────────────────── */
+.tp-clases-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+/* ── Nueva sesión whitespace ───────────────────────────────────── */
+.tp-nowrap {
+  white-space: nowrap;
+}
+
+/* ── Session type selector buttons ────────────────────────────── */
+.tp-session-type-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* ── Session type pill button (dynamic border/bg based on active) ─ */
+/* Colors driven by state, kept partly inline - base styles here */
+.tp-session-type-btn {
+  flex: 1;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 2px solid;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+/* ── Grid for form fields (name + datetime) ────────────────────── */
+.tp-form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+/* ── Grid for time limits (3 columns) ─────────────────────────── */
+.tp-form-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.5rem;
+}
+
+/* ── Visible checkbox label ────────────────────────────────────── */
+.tp-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--gray-600);
+  cursor: pointer;
+}
+
+/* ── Limits panel (clase) ──────────────────────────────────────── */
+.tp-limits-panel {
+  padding: 12px;
+  background: rgba(59, 130, 246, 0.06);
+  border-radius: 8px;
+  border: 1px solid rgba(59, 130, 246, 0.15);
+}
+
+.tp-limits-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  font-weight: bold;
+  color: var(--gray-700);
+  cursor: pointer;
+  margin-bottom: 8px;
+}
+
+/* ── Time input compact ────────────────────────────────────────── */
+.tp-time-input {
+  padding: 4px 8px;
+}
+
+.tp-time-input--sm {
+  padding: 4px 8px;
+  font-size: 0.85rem;
+}
+
+/* ── Info panels (evento / puntos type) ────────────────────────── */
+.tp-info-panel--evento {
+  padding: 12px;
+  background: rgba(34, 197, 94, 0.08);
+  border-radius: 8px;
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  font-size: 0.8rem;
+  color: #15803d;
+}
+
+.tp-info-panel--puntos {
+  padding: 12px;
+  background: rgba(245, 158, 11, 0.08);
+  border-radius: 8px;
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  font-size: 0.8rem;
+  color: #92400e;
+}
+
+/* ── Edit sesion: visible label ────────────────────────────────── */
+.tp-visible-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--gray-600);
+  cursor: pointer;
+  padding: 8px 12px;
+  background: #f0f9ff;
+  border-radius: 6px;
+  border: 1px solid #bfdbfe;
+}
+
+/* ── Edit sesion: limits label (block) ─────────────────────────── */
+.tp-limits-label-block {
+  font-size: 0.8rem;
+  color: var(--gray-700);
+  font-weight: bold;
+  margin-bottom: 8px;
+  display: block;
+}
+
+/* ── Edit sesion: edit panel (blue) ───────────────────────────── */
+.tp-edit-limits-panel {
+  padding: 12px;
+  background: rgba(59, 130, 246, 0.06);
+  border-radius: 8px;
+  border: 1px solid rgba(59, 130, 246, 0.15);
+  margin-top: 4px;
+}
+
+/* ── Session card in list ──────────────────────────────────────── */
+/* Background/border are dynamic (s.activa, s.tipo) — kept inline */
+.tp-session-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  margin-bottom: 0.75rem;
+  transition: all 0.2s ease;
+}
+
+.tp-session-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.tp-session-name {
+  font-size: 0.95rem;
+  color: var(--gray-900);
+}
+
+.tp-session-meta {
+  font-size: 0.75rem;
+  color: var(--gray-500);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Session type chip (dynamic colors kept inline) */
+.tp-session-type-chip {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.tp-session-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+/* ── Session badges ────────────────────────────────────────────── */
+.tp-badge-live {
+  background: var(--success);
+  color: white;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.tp-badge-done {
+  background: var(--gray-300);
+  color: var(--gray-700);
+  font-weight: 600;
+  font-size: 0.7rem;
+}
+
+.tp-badge-manual {
+  background: rgba(245, 158, 11, 0.12);
+  color: #92400e;
+  font-weight: 600;
+  font-size: 0.68rem;
+}
+
+.tp-btn-iniciar {
+  border-radius: 8px;
+}
+
+.tp-btn-edit-small {
+  color: var(--gray-600);
+  padding: 4px;
+}
+
+.tp-btn-delete-small {
+  color: #ef4444;
+  padding: 4px;
+}
+
+/* ── Sesiones list ─────────────────────────────────────────────── */
+.tp-sessions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* ── Historial / Matrix ────────────────────────────────────────── */
+.tp-historial-card {
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.tp-historial-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.tp-historial-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: nowrap;
+}
+
+.tp-search-wrap-sm {
+  position: relative;
+  width: 100%;
+  max-width: 280px;
+}
+
+.tp-search-icon-abs {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--gray-400);
+}
+
+.tp-search-input-sm {
+  padding-left: 38px;
+  padding-right: 30px;
+  height: 38px;
+  font-size: 0.85rem;
+}
+
+.tp-clear-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: var(--gray-400);
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Excel export button ───────────────────────────────────────── */
+.tp-btn-excel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  font-size: 0.78rem;
+  white-space: nowrap;
+  padding: 0 12px;
+  background: white;
+  color: #1d6f42;
+  border: 1px solid #1d6f42;
+  border-radius: 8px;
+  font-weight: 600;
+  width: auto;
+  cursor: pointer;
+}
+
+.tp-btn-excel:hover {
+  background: #f0fdf4;
+}
+
+/* ── Historial table ───────────────────────────────────────────── */
+.tp-historial-table {
+  margin-top: 1rem;
+}
+
+.tp-hist-th {
+  padding: 8px;
+  border-bottom: 2px solid var(--gray-200);
+  text-align: center;
+  vertical-align: bottom;
+}
+
+.tp-hist-th-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0 auto;
+  gap: 2px;
+}
+
+.tp-hist-th-label {
+  font-size: 0.75rem;
+  color: var(--gray-800);
+  font-weight: 700;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.tp-hist-th-sub {
+  font-size: 0.65rem;
+  color: var(--gray-500);
+  font-style: italic;
+  text-align: center;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: center;
+  margin-top: 2px;
+}
+
+/* Type badge inside table header */
+.tp-hist-type-badge {
+  font-size: 0.55rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 8px;
+  text-transform: uppercase;
+  font-style: normal;
+}
+
+.tp-hist-th-right {
+  padding: 12px;
+  border-bottom: 2px solid var(--gray-200);
+  color: var(--primary-dark);
+  min-width: 60px;
+  text-align: center;
+}
+
+.tp-hist-tr {
+  /* background is dynamic (i % 2) — kept inline */
+}
+
+.tp-hist-student-cell {
+  display: flex;
+  flex-direction: column;
+}
+
+.tp-hist-student-name {
+  font-weight: 600;
+  color: var(--gray-800);
+  font-size: 0.85rem;
+}
+
+.tp-hist-student-code {
+  font-size: 0.72rem;
+  color: var(--gray-400);
+  font-family: monospace;
+}
+
+.tp-hist-td-right {
+  font-weight: bold;
+  color: var(--primary-dark);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+/* ── Legend strip ──────────────────────────────────────────────── */
+.tp-legend {
+  padding: 10px 12px;
+  font-size: 0.75rem;
+  color: var(--gray-500);
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.tp-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Legend color swatch (bg/border driven by DB — kept inline) */
+.tp-legend-dot {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+}
+
+/* ── Config / Estados ──────────────────────────────────────────── */
+.tp-config-card {
+  max-width: 700px;
+  margin: 1.5rem auto;
+  padding: 20px;
+}
+
+.tp-config-header {
+  margin-bottom: 1.5rem;
+}
+
+.tp-btn-new-estado {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  padding: 10px;
+  border-radius: 8px;
+  width: 100%;
+}
+
+/* ── Estados table ─────────────────────────────────────────────── */
+.tp-estados-table-wrap {
+  overflow-x: auto;
+}
+
+.tp-estados-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.9rem;
+}
+
+.tp-estados-table thead tr {
+  border-bottom: 2px solid var(--gray-200);
+  color: var(--gray-500);
+}
+
+.tp-estados-th {
+  padding: 12px;
+  font-weight: 600;
+}
+
+.tp-estados-th--color {
+  padding: 12px;
+  font-weight: 600;
+  width: 60px;
+}
+
+.tp-estados-th--center {
+  padding: 12px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.tp-estados-th--actions {
+  padding: 12px;
+  font-weight: 600;
+  text-align: center;
+  width: 120px;
+}
+
+.tp-estados-tr {
+  border-bottom: 1px solid var(--gray-100);
+  transition: background 0.2s;
+}
+
+.tp-estados-tr:hover {
+  background: var(--gray-50);
+}
+
+.tp-estado-color-dot {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  /* bg/border driven by DB color — kept inline */
+}
+
+.tp-estado-td {
+  padding: 12px;
+}
+
+.tp-estado-td--name {
+  padding: 12px;
+  font-weight: 500;
+  color: var(--gray-800);
+}
+
+.tp-estado-td--center {
+  padding: 12px;
+  text-align: center;
+}
+
+.tp-estado-punt-badge {
+  background: var(--gray-100);
+  color: var(--gray-700);
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.tp-estado-actions {
+  padding: 12px;
+  text-align: center;
+}
+
+.tp-estado-actions-row {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.tp-estado-td--empty {
+  padding: 24px;
+  text-align: center;
+  color: var(--gray-400);
+  font-style: italic;
+}
+
+/* ── Estado Modal ──────────────────────────────────────────────── */
+.tp-estado-modal-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.tp-estado-label {
+  font-size: 0.85rem;
+  color: var(--gray-600);
+  margin-bottom: 6px;
+}
+
+.tp-estado-input--h42 {
+  height: 42px;
+}
+
+.tp-estado-input--h42-center {
+  height: 42px;
+  text-align: center;
+}
+
+.tp-color-row {
+  display: flex;
+  gap: 1rem;
+}
+
+.tp-color-flex {
+  flex: 1;
+}
+
+.tp-color-picker-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tp-color-input {
+  width: 42px;
+  height: 42px;
+  border: 1px solid var(--gray-200);
+  border-radius: 8px;
+  cursor: pointer;
+  padding: 2px;
+  background: white;
+}
+
+.tp-color-hex {
+  font-size: 0.9rem;
+  color: var(--gray-500);
+  font-family: monospace;
+}
+
+.tp-punt-group {
+  width: 100px;
+}
+
+/* ================================================================
+   UsersView — uv- prefix
+   ================================================================ */
+
+/* ── UsersView wrapper ─────────────────────────────────────────── */
+.uv-wrapper {
+  padding: 1rem;
+}
+
+/* ── UsersView header ──────────────────────────────────────────── */
+.uv-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.uv-header__left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.uv-back-btn {
+  padding: 6px 10px;
+  background: white;
+  border: 1px solid var(--gray-200);
+}
+
+.uv-title {
+  font-size: 1.2rem;
+  margin: 0;
+  color: var(--gray-800);
+}
+
+.uv-title-icon {
+  vertical-align: middle;
+  margin-right: 6px;
+}
+
+/* ── UsersView filters bar ─────────────────────────────────────── */
+.uv-filters {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  align-items: center;
+  flex: 1;
+  justify-content: flex-end;
+}
+
+/* Segmented control */
+.uv-role-control {
+  display: flex;
+  background: #f1f5f9;
+  padding: 4px;
+  border-radius: 10px;
+  gap: 2px;
+  border: 1px solid #e2e8f0;
+  overflow-x: auto;
+  max-width: 100%;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.uv-role-control::-webkit-scrollbar {
+  display: none;
+}
+
+/* Role filter button - active/inactive driven by state (kept inline for dynamic) */
+.uv-role-btn {
+  border: none;
+  font-size: 0.82rem;
+  padding: 6px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+/* ── UsersView search ──────────────────────────────────────────── */
+.uv-search-wrap {
+  position: relative;
+  flex: 1 1 200px;
+  max-width: 100%;
+}
+
+.uv-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--gray-400);
+  z-index: 1;
+}
+
+.uv-search-input {
+  padding-left: 38px;
+  padding-right: 34px;
+  height: 42px;
+  font-size: 0.85rem;
+  border-radius: 10px;
+  border: 1px solid var(--gray-200);
+  background: var(--white);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.uv-clear-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: var(--gray-400);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+}
+
+/* ── Add user button ───────────────────────────────────────────── */
+.uv-btn-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 42px;
+  width: auto;
+  padding: 0 20px;
+  border-radius: 10px;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(0, 65, 130, 0.2);
+}
+
+/* ── Loading spinner center ────────────────────────────────────── */
+.uv-loading {
+  text-align: center;
+  padding: 3rem;
+}
+
+.uv-spinner {
+  border-top-color: var(--primary);
+  width: 32px;
+  height: 32px;
+  margin: 0 auto;
+}
+
+/* ── Users list card ───────────────────────────────────────────── */
+.uv-list-card {
+  padding: 0;
+  overflow: hidden;
+}
+
+.uv-table-wrap {
+  overflow-x: auto;
+}
+
+.uv-table {
+  width: 100%;
+  min-width: 800px;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.uv-table thead tr {
+  border-bottom: 2px solid var(--gray-200);
+  text-align: left;
+  background: var(--gray-50);
+}
+
+.uv-table th {
+  padding: 12px 16px;
+  color: var(--gray-500);
+  font-weight: 600;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.uv-table th--num { width: 40px; }
+.uv-table th--actions { text-align: center; width: 100px; }
+
+.uv-table tbody tr {
+  border-bottom: 1px solid var(--gray-100);
+  transition: background 0.15s;
+}
+
+.uv-table tbody tr:hover {
+  background: var(--gray-50);
+}
+
+.uv-table td {
+  padding: 12px 16px;
+}
+
+.uv-table td--num { color: var(--gray-400); font-weight: 500; }
+
+.uv-user-name { font-weight: 600; color: var(--gray-800); }
+
+.uv-badge-admin {
+  margin-left: 6px;
+  background: var(--primary);
+  color: white;
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 0.65rem;
+  font-weight: 600;
+}
+
+.uv-badge-prof {
+  margin-left: 6px;
+  background: var(--gray-200);
+  color: var(--gray-700);
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 0.65rem;
+  font-weight: 600;
+}
+
+.uv-code-cell {
+  color: var(--gray-500);
+  font-family: monospace;
+  font-weight: 500;
+}
+
+.uv-courses-cell {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.uv-course-tag--prof {
+  display: inline-block;
+  background: #e0f2fe;
+  color: #0369a1;
+  border: 1px solid #bae6fd;
+  border-radius: 12px;
+  padding: 2px 8px;
+  font-size: 0.68rem;
+  font-weight: 600;
+}
+
+.uv-course-tag--student {
+  display: inline-block;
+  background: var(--primary-bg);
+  color: var(--primary-dark);
+  border: 1px solid var(--primary-light, #c7d2fe);
+  border-radius: 12px;
+  padding: 2px 8px;
+  font-size: 0.68rem;
+  font-weight: 600;
+}
+
+.uv-no-courses {
+  font-size: 0.68rem;
+  color: var(--gray-400);
+  font-style: italic;
+}
+
+.uv-table td--actions { text-align: center; }
+
+.uv-td-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.uv-empty {
+  text-align: center;
+  padding: 3rem;
+  color: var(--gray-400);
+}
+
+/* ── Edit User Modal ───────────────────────────────────────────── */
+.uv-modal-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.uv-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  align-items: end;
+}
+
+.uv-form-group-0 {
+  margin: 0;
+}
+
+.uv-courses-section {
+  /* container */
+}
+
+.uv-courses-label {
+  font-size: 0.8rem;
+  color: var(--gray-500);
+  margin-bottom: 8px;
+  display: block;
+}
+
+/* Professor courses grid */
+.uv-prof-courses-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 8px;
+  max-height: 260px;
+  overflow-y: auto;
+  padding: 2px;
+  padding-right: 6px;
+}
+
+/* Course ownership item (dynamic border/bg based on isOwner) */
+.uv-course-owner-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-radius: 8px;
+  transition: all 0.15s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+.uv-course-owner-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.uv-course-owner-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--gray-800);
+}
+
+.uv-course-owner-sub {
+  font-size: 0.72rem;
+  color: var(--gray-400);
+}
+
+/* Radio circle (dynamic border/bg) */
+.uv-radio-circle {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Student enrollment items */
+.uv-enroll-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Enrollment item (dynamic border/bg based on enrolled) */
+.uv-enroll-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+/* Checkbox square (dynamic) */
+.uv-checkbox-sq {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.uv-no-courses-msg {
+  font-size: 0.8rem;
+  color: var(--gray-400);
+  font-style: italic;
+}
+
+.uv-modal-btn-h36 {
+  height: 36px;
+}
+
+@media (max-width: 767px) {
+  .responsive-filters {
+    flex-direction: column;
+    align-items: stretch !important;
+    width: 100%;
+  }
+  .responsive-filters > div,
+  .responsive-filters > button {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: unset !important;
+  }
+  .btn-add-user {
+    justify-content: center;
+  }
+}

@@ -1,0 +1,341 @@
+/* ============================================================
+   student.css — Extracted styles for StudentPage (sp- prefix)
+   ============================================================ */
+
+/* ── Header ─────────────────────────────────────────────── */
+.sp-header {
+  justify-content: space-between;
+}
+
+.sp-header__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.sp-header__logo {
+  width: 32px;
+  height: auto;
+}
+
+.sp-header__title {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+
+.sp-header__actions {
+  display: flex;
+  align-items: center;
+}
+
+/* ── Page body ───────────────────────────────────────────── */
+.sp-body {
+  width: 100%;
+  padding: 1rem;
+}
+
+/* ── Back wrap (perfil view) ─────────────────────────────── */
+.sp-back-wrap {
+  margin-bottom: 1rem;
+}
+
+.sp-back-btn {
+  color: var(--gray-600);
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px;
+  border: 1px solid var(--gray-200);
+  border-radius: 12px;
+  background: white;
+}
+
+/* ── Dashboard ───────────────────────────────────────────── */
+.sp-dashboard__header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.sp-dashboard__icon {
+  color: var(--primary);
+}
+
+.sp-dashboard__title {
+  font-size: 1.2rem;
+  margin: 0;
+  color: var(--gray-800);
+}
+
+.sp-courses-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.sp-course-card {
+  cursor: pointer;
+  margin-top: 0;
+  height: 100%;
+}
+
+.sp-course-card__tag {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--primary);
+  margin-bottom: 0.5rem;
+}
+
+.sp-course-card__label {
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.sp-course-card__name {
+  font-size: 1.1rem;
+  margin: 0;
+  color: var(--gray-800);
+}
+
+/* ── Course detail view ──────────────────────────────────── */
+.sp-course-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.sp-course-detail__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.sp-course-detail__header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.sp-course-back-btn {
+  padding: 6px 10px;
+  background: white;
+}
+
+.sp-course-detail__title {
+  font-size: 1.1rem;
+  margin: 0;
+  color: var(--gray-800);
+}
+
+.tabs--inline {
+  margin: 0;
+}
+
+/* ── Marcar tab grid ─────────────────────────────────────── */
+.sp-marcar-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1.5rem;
+}
+
+/* ── Scheduled sessions column ───────────────────────────── */
+.sp-sessions-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.sp-section-label {
+  font-size: 0.7rem;
+  color: var(--gray-500);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sp-section-label__bar {
+  width: 4px;
+  height: 12px;
+  background: var(--primary);
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+/* ── Session card ────────────────────────────────────────── */
+.sp-session-card {
+  padding: 10px 14px;
+  border-radius: 10px;
+  box-shadow: none;
+  margin-bottom: 2px;
+  border-left: 1px solid var(--gray-200);
+  background: white;
+}
+
+.sp-session-card--today {
+  border-left: 3px solid var(--primary);
+  background: var(--primary-bg);
+}
+
+.sp-session-card__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sp-session-card__name {
+  font-weight: 800;
+  font-size: 0.8rem;
+  color: var(--gray-800);
+  line-height: 1.2;
+}
+
+.sp-session-card__date {
+  font-size: 0.65rem;
+  color: var(--gray-500);
+  margin-top: 2px;
+}
+
+.sp-badge-today {
+  background: var(--primary);
+  color: white;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 0.6rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+/* ── Mark panel column ───────────────────────────────────── */
+.sp-mark-col {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.sp-alert-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sp-time-display {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sp-time-text {
+  font-size: 0.75rem;
+}
+
+.badge-status--sm {
+  padding: 0.2rem 0.6rem;
+  font-size: 0.7rem;
+  min-width: auto;
+}
+
+.sp-registered-time {
+  font-size: 0.8rem;
+  color: var(--gray-500);
+}
+
+.sp-scan-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.sp-qr-reader {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.sp-or-divider {
+  text-align: center;
+  font-size: 0.7rem;
+  color: var(--gray-400);
+  margin: 0.25rem 0;
+}
+
+.sp-code-input {
+  text-align: center;
+  letter-spacing: 1px;
+  font-weight: bold;
+}
+
+.w-full {
+  width: 100%;
+}
+
+/* ── Historial tab ───────────────────────────────────────── */
+.sp-historial-title {
+  margin-bottom: 1rem;
+  font-size: var(--text-md);
+  color: var(--gray-700);
+}
+
+.sp-historial-item {
+  max-width: 400px;
+  margin: 0 auto;
+  align-items: center;
+  width: 100%;
+}
+
+.sp-historial-badge {
+  padding: 4px 16px;
+  border-radius: 20px;
+  font-weight: 800;
+  text-align: center;
+  width: 100%;
+}
+
+.sp-historial-item__meta {
+  flex-direction: row;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--gray-100);
+}
+
+.sp-historial-item__date-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.sp-historial-item__date {
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.sp-historial-item__class-name {
+  font-size: 0.72rem;
+  color: var(--gray-500);
+  font-style: italic;
+}
+
+.fw-600 {
+  font-weight: 600;
+}
+
+.fw-700 {
+  font-weight: 700;
+}
+
+/* ── Econometrics tab wrapper ────────────────────────────── */
+.sp-eco-wrapper {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: none;
+}

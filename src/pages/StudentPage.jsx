@@ -20,6 +20,7 @@ import UserMenu from "../components/UserMenu";
 import ProfileView from "../components/ProfileView";
 import Footer from "../components/Footer";
 import EconometricsPage from "./EconometricsPage";
+import '../styles/student.css';
 
 const STEPS = { SELECT: "select", SCANNING: "scanning", DONE: "done" };
 
@@ -219,19 +220,19 @@ export default function StudentPage({ user, onLogout, onUpdateUser }) {
 
   return (
     <div className="app-shell">
-      <div className="page-header" style={{ justifyContent: "space-between" }}>
+      <div className="page-header sp-header">
         {/* Left Side: Logo & App Name */}
-        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-          <img src={appLogo} alt="Logo" style={{ width: '32px', height: 'auto' }} />
+        <div className="sp-header__brand">
+          <img src={appLogo} alt="Logo" className="sp-header__logo" />
           <div>
             <div style={{ padding: 0 }}>
-              <h1 style={{ margin: 0, fontSize: "1.2rem", fontWeight: 800 }}>Adese</h1>
+              <h1 className="sp-header__title">Adese</h1>
             </div>
           </div>
         </div>
 
         {/* Right Side: User Menu Dropdown */}
-        <div style={{ display: "flex", alignItems: "center" }}>
+        <div className="sp-header__actions">
           <UserMenu 
             user={user} 
             roleLabel="Estudiante" 
@@ -265,26 +266,14 @@ export default function StudentPage({ user, onLogout, onUpdateUser }) {
         </div>
       </div>
 
-      <div className="page-body" style={{ width: "100%", padding: "1rem" }}>
+      <div className="page-body sp-body">
         {viewMode === "perfil" ? (
           <div>
-            <div style={{ marginBottom: "1rem" }}>
+            <div className="sp-back-wrap">
               <button
                 type="button"
-                className="btn btn-sm btn-ghost"
+                className="btn btn-sm btn-ghost sp-back-btn"
                 onClick={() => setViewMode("dashboard")}
-                style={{
-                  color: "var(--gray-600)",
-                  fontSize: "0.8rem",
-                  fontWeight: 600,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "4px",
-                  padding: "8px 12px",
-                  border: "1px solid var(--gray-200)",
-                  borderRadius: "12px",
-                  background: "white"
-                }}
               >
                 « Volver al Panel
               </button>
@@ -300,15 +289,9 @@ export default function StudentPage({ user, onLogout, onUpdateUser }) {
           <EconometricsPage onBack={() => setViewMode("dashboard")} />
         ) : viewMode === "dashboard" ? (
           <div>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1.5rem" }}>
-              <Library size={24} style={{ color: "var(--primary)" }} />
-              <h2
-                style={{
-                  fontSize: "1.2rem",
-                  margin: 0,
-                  color: "var(--gray-800)",
-                }}
-              >
+            <div className="sp-dashboard__header">
+              <Library size={24} className="sp-dashboard__icon" />
+              <h2 className="sp-dashboard__title">
                 Mis Cursos Matriculados
               </h2>
             </div>
@@ -317,44 +300,23 @@ export default function StudentPage({ user, onLogout, onUpdateUser }) {
                 No estás matriculado en ningún curso aún.
               </div>
             ) : (
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-                  gap: "1rem",
-                }}
-              >
+              <div className="sp-courses-grid">
                 {cursos.map((c) => (
                   <div
                     key={c.id}
-                    className="card"
+                    className="card sp-course-card"
                     onClick={() => {
                       setCursoActivo(c);
                       setViewMode("curso");
                     }}
-                    style={{ cursor: "pointer", marginTop: 0, height: '100%' }}
                   >
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "0.5rem",
-                        color: "var(--primary)",
-                        marginBottom: "0.5rem",
-                      }}
-                    >
+                    <div className="sp-course-card__tag">
                       <ClipboardList size={18} />{" "}
-                      <span style={{ fontWeight: 600, fontSize: "0.85rem" }}>
+                      <span className="sp-course-card__label">
                         Curso
                       </span>
                     </div>
-                    <h3
-                      style={{
-                        fontSize: "1.1rem",
-                        margin: 0,
-                        color: "var(--gray-800)",
-                      }}
-                    >
+                    <h3 className="sp-course-card__name">
                       {c.nombre}
                     </h3>
                   </div>
@@ -365,44 +327,25 @@ export default function StudentPage({ user, onLogout, onUpdateUser }) {
             {/* Econometrics Tool Card Removed */}
           </div>
         ) : (
-          <div
-            style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}
-          >
+          <div className="sp-course-detail">
             {/* Header & Tabs */}
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                flexWrap: "wrap",
-                gap: "1rem",
-              }}
-            >
-              <div
-                style={{ display: "flex", alignItems: "center", gap: "1rem" }}
-              >
+            <div className="sp-course-detail__header">
+              <div className="sp-course-detail__header-left">
                 <button
-                  className="btn btn-sm btn-ghost"
+                  className="btn btn-sm btn-ghost sp-course-back-btn"
                   onClick={() => {
                     setViewMode("dashboard");
                     setRegistered(null);
                     setInputCode("");
                   }}
-                  style={{ padding: "6px 10px", background: "white" }}
                 >
                   « Volver
                 </button>
-                <h2
-                  style={{
-                    fontSize: "1.1rem",
-                    margin: 0,
-                    color: "var(--gray-800)",
-                  }}
-                >
+                <h2 className="sp-course-detail__title">
                   {cursoActivo?.nombre}
                 </h2>
               </div>
-              <div className="tabs" style={{ margin: 0 }}>
+              <div className="tabs tabs--inline">
                 <button
                   className={`tab ${activeTab === "marcar" ? "active" : ""}`}
                   onClick={() => setActiveTab("marcar")}
@@ -427,18 +370,12 @@ export default function StudentPage({ user, onLogout, onUpdateUser }) {
             </div>
 
             {activeTab === "econometria" ? (
-              <div style={{ background: 'white', padding: '1.5rem', borderRadius: '12px', boxShadow: 'none' }}>
+              <div className="sp-eco-wrapper">
                 <EconometricsPage onBack={() => setActiveTab("marcar")} />
               </div>
             ) : activeTab === "historial" ? (
               <div className="attendance-list">
-                <h3
-                  style={{
-                    marginBottom: "1rem",
-                    fontSize: "var(--text-md)",
-                    color: "var(--gray-700)",
-                  }}
-                >
+                <h3 className="sp-historial-title">
                   Historial
                 </h3>
                 {historial.filter((h) => h.curso_id === cursoActivo.id)
@@ -452,42 +389,28 @@ export default function StudentPage({ user, onLogout, onUpdateUser }) {
                     .map((h) => (
                       <div 
                         key={h.id} 
-                        className="attendance-item"
-                        style={{ maxWidth: '400px', margin: '0 auto', alignItems: 'center', width: '100%' }}
+                        className="attendance-item sp-historial-item"
                       >
                         <span
-                          className={`badge-status`}
+                          className="badge-status sp-historial-badge"
                           style={{
                             background: h.color ? `color-mix(in srgb, ${h.color} 15%, transparent)` : "#f1f5f9",
                             border: `1px solid ${h.color || '#cbd5e1'}`,
                             color: h.color || "#64748b",
-                            padding: '4px 16px',
-                            borderRadius: '20px',
-                            fontWeight: '800',
-                            textAlign: 'center',
-                            width: '100%'
                           }}
                         >
                           {h.tipo === 'puntos' ? `${h.valor >= 0 ? '+' : ''}${h.valor ?? 0}` : h.estado}
                         </span>
                         <div
-                          className="attendance-item-info"
-                          style={{
-                            flexDirection: "row",
-                            justifyContent: "space-between",
-                            width: "100%",
-                            marginTop: "8px",
-                            paddingTop: "8px",
-                            borderTop: "1px solid var(--gray-100)"
-                          }}
+                          className="attendance-item-info sp-historial-item__meta"
                         >
                           {h.tipo === 'clase' ? (
-                            <div style={{display: 'flex', flexDirection: 'column'}}>
-                              <span style={{fontWeight: 600, fontSize: '0.85rem'}}>{fmtFecha(h.fecha_hora)}</span>
-                              <span style={{fontSize: '0.72rem', color: 'var(--gray-500)', fontStyle: 'italic'}}>{h.nombre_clase}</span>
+                            <div className="sp-historial-item__date-group">
+                              <span className="sp-historial-item__date">{fmtFecha(h.fecha_hora)}</span>
+                              <span className="sp-historial-item__class-name">{h.nombre_clase}</span>
                             </div>
                           ) : (
-                            <span style={{fontWeight: 600}}>{h.nombre_clase}</span>
+                            <span className="fw-600">{h.nombre_clase}</span>
                           )}
                           {h.tipo === 'clase' && (
                             <span className="attendance-item-time">{fmtHora(h.fecha_hora)}</span>
@@ -498,32 +421,11 @@ export default function StudentPage({ user, onLogout, onUpdateUser }) {
                 )}
               </div>
             ) : (
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-                  gap: "1.5rem",
-                }}
-              >
+              <div className="sp-marcar-grid">
                 {/* Scheduled Sessions */}
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "0.75rem",
-                  }}
-                >
-                  <h3 style={{ 
-                    fontSize: '0.7rem', 
-                    color: 'var(--gray-500)', 
-                    fontWeight: 800, 
-                    textTransform: 'uppercase', 
-                    letterSpacing: '0.05em',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px'
-                  }}>
-                    <div style={{ width: '4px', height: '12px', background: 'var(--primary)', borderRadius: '2px' }}></div>
+                <div className="sp-sessions-col">
+                  <h3 className="sp-section-label">
+                    <div className="sp-section-label__bar"></div>
                     Clases Programadas
                   </h3>
                   {sesionesCurso.length === 0 ? (
@@ -538,31 +440,15 @@ export default function StudentPage({ user, onLogout, onUpdateUser }) {
                       return (
                          <div
                            key={s.id}
-                           className="card"
-                           style={{ 
-                              padding: '10px 14px',
-                              borderLeft: isToday ? '3px solid var(--primary)' : '1px solid var(--gray-200)',
-                              background: isToday ? 'var(--primary-bg)' : 'white',
-                              borderRadius: '10px',
-                              boxShadow: 'none',
-                              marginBottom: '2px'
-                           }}
+                           className={`card sp-session-card${isToday ? ' sp-session-card--today' : ''}`}
                          >
-                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                           <div className="sp-session-card__row">
                              <div>
-                               <div style={{ fontWeight: 800, fontSize: "0.8rem", color: 'var(--gray-800)', lineHeight: 1.2 }}>{s.nombre_clase}</div>
-                               <div style={{ fontSize: "0.65rem", color: "var(--gray-500)", marginTop: '2px' }}>{fmtFecha(sDate)} • {fmtHora(sDate)}</div>
+                               <div className="sp-session-card__name">{s.nombre_clase}</div>
+                               <div className="sp-session-card__date">{fmtFecha(sDate)} • {fmtHora(sDate)}</div>
                              </div>
                              {isToday && (
-                               <span style={{ 
-                                 background: 'var(--primary)', 
-                                 color: 'white', 
-                                 padding: '2px 8px', 
-                                 borderRadius: '6px', 
-                                 fontSize: '0.6rem', 
-                                 fontWeight: 900,
-                                 textTransform: 'uppercase'
-                               }}>
+                               <span className="sp-badge-today">
                                  Hoy
                                </span>
                              )}
@@ -574,37 +460,22 @@ export default function StudentPage({ user, onLogout, onUpdateUser }) {
                 </div>
 
                 {/* Mark Panel */}
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "1rem",
-                  }}
-                >
-                  <h3 style={{ 
-                    fontSize: '0.7rem', 
-                    color: 'var(--gray-500)', 
-                    fontWeight: 800, 
-                    textTransform: 'uppercase', 
-                    letterSpacing: '0.05em',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px'
-                  }}>
-                    <div style={{ width: '4px', height: '12px', background: 'var(--primary)', borderRadius: '2px' }}></div>
+                <div className="sp-mark-col">
+                  <h3 className="sp-section-label">
+                    <div className="sp-section-label__bar"></div>
                     Registro
                   </h3>
 
-                  <div className="alert alert-info" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                  <div className="alert alert-info sp-alert-row">
+                    <div className="sp-time-display">
                       <Clock size={16} />
-                      <div style={{ fontSize: "0.75rem" }}>
+                      <div className="sp-time-text">
                         Hora:{" "}
                         <strong>{currentTime.toLocaleTimeString("es-MX")}</strong>
                       </div>
                     </div>
                     {estado && (
-                      <span className={`badge-status ${estado.toLowerCase()}`} style={{ padding: "0.2rem 0.6rem", fontSize: "0.7rem", minWidth: "auto" }}>
+                      <span className={`badge-status badge-status--sm ${estado.toLowerCase()}`}>
                         {estado}
                       </span>
                     )}
@@ -625,18 +496,16 @@ export default function StudentPage({ user, onLogout, onUpdateUser }) {
                   )}
 
                   {registered ? (
-                    <div className="card" style={{ textAlign: "center" }}>
+                    <div className="card text-center">
                       <CheckCircle
                         size={48}
                         color="var(--success)"
                         style={{ margin: "1rem auto" }}
                       />
-                      <div style={{ fontWeight: 700 }}>
+                      <div className="fw-700">
                         Asistencia Registrada
                       </div>
-                      <div
-                        style={{ fontSize: "0.8rem", color: "var(--gray-500)" }}
-                      >
+                      <div className="sp-registered-time">
                         {registered.hora} - {registered.estado}
                       </div>
                     </div>
@@ -655,32 +524,21 @@ export default function StudentPage({ user, onLogout, onUpdateUser }) {
                             <div>
                               <div
                                 id="qr-reader"
-                                style={{
-                                  borderRadius: "8px",
-                                  overflow: "hidden",
-                                }}
+                                className="sp-qr-reader"
                               />
                               <button
-                                className="btn btn-ghost mt-2 btn-sm"
+                                className="btn btn-ghost mt-2 btn-sm w-full"
                                 onClick={stopScanner}
-                                style={{ width: "100%" }}
                               >
                                 Cancelar Escaneo
                               </button>
                             </div>
                           ) : (
-                            <div
-                              style={{
-                                display: "flex",
-                                flexDirection: "column",
-                                gap: "0.75rem",
-                              }}
-                            >
+                            <div className="sp-scan-actions">
                               <button
-                                className="btn btn-black"
+                                className="btn btn-black w-full"
                                 onClick={startScanner}
                                 disabled={loading || !estado}
-                                style={{ width: "100%" }}
                               >
                                 <QrCode
                                   size={16}
@@ -689,39 +547,26 @@ export default function StudentPage({ user, onLogout, onUpdateUser }) {
                                 Escanear QR
                               </button>
 
-                              <div
-                                style={{
-                                  textAlign: "center",
-                                  fontSize: "0.7rem",
-                                  color: "var(--gray-400)",
-                                  margin: "0.25rem 0",
-                                }}
-                              >
+                              <div className="sp-or-divider">
                                 O USA EL CÓDIGO
                               </div>
 
                               <input
                                 placeholder="16 DIGITOS"
-                                className="form-input"
+                                className="form-input sp-code-input"
                                 value={inputCode}
                                 onChange={(e) =>
                                   setInputCode(e.target.value.toUpperCase())
                                 }
-                                style={{
-                                  textAlign: "center",
-                                  letterSpacing: "1px",
-                                  fontWeight: "bold",
-                                }}
                                 maxLength={16}
                               />
                               <button
-                                className={`btn btn-sm ${inputCode.length === 16 ? 'btn-success' : 'btn-ghost'}`}
+                                className={`btn btn-sm w-full ${inputCode.length === 16 ? 'btn-success' : 'btn-ghost'}`}
                                 onClick={() => handleQrScan(inputCode)}
                                 disabled={
                                   loading || !estado || inputCode.length !== 16
                                 }
                                 style={{
-                                  width: "100%",
                                   border: inputCode.length === 16 ? "none" : "1px solid var(--gray-200)",
                                 }}
                               >
