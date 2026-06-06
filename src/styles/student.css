@@ -77,6 +77,10 @@
   gap: 1rem;
 }
 
+.sp-courses-grid > .card {
+  margin: 0 !important;
+}
+
 .sp-course-card {
   cursor: pointer;
   margin-top: 0;

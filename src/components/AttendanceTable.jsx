@@ -12,7 +12,7 @@ const BADGE = {
 const fmt = (iso) =>
   new Date(iso).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
 
-export default function AttendanceTable({ sesionId, asistencias = [], setAsistencias }) {
+export default function AttendanceTable({ sesionId, asistencias = [], setAsistencias, estadosUI = {} }) {
   // Ref para rastrear la cantidad anterior de alumnos y evitar bucles
   const prevCountRef = useRef(asistencias?.length || 0);
 
@@ -69,12 +69,23 @@ export default function AttendanceTable({ sesionId, asistencias = [], setAsisten
   }, [fetchAsistencias]);
 
   return (
-    <div>
-      <div className="section-header">
-        <span className="section-title">
-          <span className="live-dot" /> En vivo
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        background: 'linear-gradient(to right, #eff6ff, #ffffff)',
+        padding: '0.75rem 1rem',
+        borderRadius: '12px',
+        border: '1px solid #bfdbfe'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 700, color: '#1e3a8a' }}>
+          <span className="live-dot" style={{ width: '10px', height: '10px' }} />
+          En vivo
+        </div>
+        <span className="badge-status presente" style={{ padding: '0.4rem 1rem', fontSize: '0.8rem', borderRadius: '20px', background: '#3b82f6', color: 'white', border: 'none' }}>
+          {asistencias.length} registros
         </span>
-        <span className="badge badge-presente">{asistencias.length} registros</span>
       </div>
 
       {asistencias.length === 0 ? (
@@ -84,16 +95,24 @@ export default function AttendanceTable({ sesionId, asistencias = [], setAsisten
         </div>
       ) : (
         <div className="attendance-list">
-          {asistencias.map((a) => (
-            <div key={a.id} className="attendance-item">
-              <div className="attendance-item-info">
-                <span className="attendance-item-name">{a.nombre_completo}</span>
-                <span className="attendance-item-code">{a.codigo}</span>
-                <span className="attendance-item-time">{fmt(a.fecha_hora)}</span>
+          {asistencias.map((a) => {
+            const ui = estadosUI[a.estado] || {};
+            const badgeStyle = {
+              background: ui.bg || 'var(--gray-100)',
+              color: ui.color || 'var(--gray-700)',
+              border: ui.border ? `1px solid ${ui.border}` : '1px solid var(--gray-300)'
+            };
+
+            return (
+              <div key={a.id} className="attendance-item">
+                <div className="attendance-item-info">
+                  <span className="attendance-item-name">{a.nombre_completo}</span>
+                  <span className="attendance-item-time">{fmt(a.fecha_hora)}</span>
+                </div>
+                <span className={`badge-status`} style={badgeStyle}>{a.estado}</span>
               </div>
-              <span className={`badge-status ${a.estado.toLowerCase()}`}>{a.estado}</span>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

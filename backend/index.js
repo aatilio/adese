@@ -152,15 +152,23 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
-// GET /api/sesiones/activa — solo devuelve sesiones de tipo 'clase' o 'evento'
+// GET /api/sesiones/activa — solo devuelve sesiones de tipo 'clase' o 'evento'. Requiere ?curso_id=X
 app.get('/api/sesiones/activa', async (req, res) => {
+  const { curso_id } = req.query;
   try {
-    const r = await pool.query(`
+    let query = `
       SELECT * FROM sesiones 
       WHERE activa = true 
         AND (tipo = 'clase' OR tipo = 'evento' OR tipo IS NULL)
-      LIMIT 1
-    `);
+    `;
+    const params = [];
+    if (curso_id) {
+      params.push(curso_id);
+      query += ` AND curso_id = $1`;
+    }
+    query += ` LIMIT 1`;
+    
+    const r = await pool.query(query, params);
     if (r.rows.length === 0) return res.status(404).json({ error: 'No hay sesión activa' });
     res.json({ sesion: r.rows[0] });
   } catch (err) {
@@ -174,8 +182,8 @@ app.post('/api/sesiones', async (req, res) => {
   const tipoFinal           = tipo           ?? 'clase';
   const visibleAlumnosFinal = visible_alumnos ?? true;
   try {
-    // Deactivate any other active session
-    await pool.query('UPDATE sesiones SET activa = false WHERE activa = true');
+    // Deactivate any other active session FOR THIS COURSE
+    await pool.query('UPDATE sesiones SET activa = false WHERE activa = true AND curso_id = $1', [curso_id]);
     const token = generateRandomCode();
     const r = await pool.query(
       `INSERT INTO sesiones (nombre_clase, token_qr, activa, curso_id, fecha_inicio, tipo, visible_alumnos)
@@ -238,8 +246,13 @@ app.put('/api/sesiones/:id', async (req, res) => {
 // PUT /api/sesiones/:id/activar  (start a scheduled session)
 app.put('/api/sesiones/:id/activar', async (req, res) => {
   try {
-    // Deactivate any other active session
-    await pool.query('UPDATE sesiones SET activa = false WHERE activa = true');
+    // Find course of this session
+    const sesRes = await pool.query('SELECT curso_id FROM sesiones WHERE id = $1', [req.params.id]);
+    if (sesRes.rows.length === 0) return res.status(404).json({ error: 'Sesión no encontrada' });
+    const cursoId = sesRes.rows[0].curso_id;
+
+    // Deactivate any other active session FOR THIS COURSE
+    await pool.query('UPDATE sesiones SET activa = false WHERE activa = true AND curso_id = $1', [cursoId]);
     const token = generateRandomCode();
     const r = await pool.query(
       'UPDATE sesiones SET activa = true, token_qr = $1, fecha_inicio = NOW() WHERE id = $2 RETURNING *',

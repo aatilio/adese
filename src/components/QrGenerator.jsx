@@ -1,5 +1,5 @@
 import { useCallback, useState, useEffect } from 'react';
-import { Copy } from 'lucide-react';
+import { Copy, RefreshCw } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { toast } from './Toast';
 
@@ -25,7 +25,7 @@ async function copyToClipboard(text) {
   }
 }
 
-export default function QrGenerator({ sesion }) {
+export default function QrGenerator({ sesion, onRefresh }) {
   const token = sesion?.token_qr || '';
   const [timeLeft, setTimeLeft] = useState(60);
 
@@ -56,6 +56,35 @@ export default function QrGenerator({ sesion }) {
     <div className="qr-box" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', padding: '1.5rem 2rem' }}>
       {token ? (
         <div style={{ position: 'relative' }}>
+          {onRefresh && (
+            <button
+              type="button"
+              onClick={onRefresh}
+              title="Renovar código QR manualmente"
+              style={{
+                position: 'absolute',
+                top: '-24px',
+                right: '-24px',
+                background: 'var(--success)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '50%',
+                width: '36px',
+                height: '36px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
+                zIndex: 10,
+                transition: 'transform 0.2s ease, background 0.2s ease'
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.transform = 'rotate(30deg) scale(1.1)'; e.currentTarget.style.background = '#059669'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = 'rotate(0deg) scale(1)'; e.currentTarget.style.background = 'var(--success)'; }}
+            >
+              <RefreshCw size={16} />
+            </button>
+          )}
           <QRCodeSVG
             value={token}
             size={240}

@@ -735,6 +735,12 @@
 }
 
 /* ── Clases section ──────────────────────────────────────── */
+.tp-clases-card {
+  max-width: 1000px;
+  margin: 0 auto 1.5rem auto;
+}
+
+/* ── Clases section ──────────────────────────────────────── */
 .tp-clases-header {
   display: flex;
   justify-content: space-between;
@@ -846,12 +852,21 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0.75rem;
+  align-items: flex-end; /* Align inputs correctly */
 }
 
 .tp-form-grid-3 {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   gap: 0.5rem;
+  align-items: flex-end; /* Align inputs correctly */
+}
+
+@media (max-width: 600px) {
+  .tp-form-grid-2,
+  .tp-form-grid-3 {
+    grid-template-columns: 1fr; /* Stack on mobile */
+  }
 }
 
 .tp-limits-section {
@@ -1564,6 +1579,11 @@
 
 /* ── Responsive tweaks ───────────────────────────────────── */
 @media (max-width: 767px) {
+  .tp-clases-header {
+    flex-wrap: wrap;
+    gap: 0.8rem;
+  }
+  
   .tp-users-filters {
     flex-direction: column;
     align-items: stretch;
@@ -1789,7 +1809,7 @@
   display: flex;
   align-items: center;
   border-bottom: 1px solid var(--gray-200);
-  background: rgba(255, 255, 255, 0.3);
+  background: transparent;
   backdrop-filter: blur(10px);
   padding: 0 1rem;
   gap: 1rem;

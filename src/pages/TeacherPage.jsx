@@ -213,11 +213,15 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
 
   // ── Load active session ─────────────────────────────────
   useEffect(() => {
+    if (!cursoActivo?.id) {
+      setSesion(null);
+      return;
+    }
     api
-      .getSesionActiva()
+      .getSesionActiva(cursoActivo.id)
       .then((res) => setSesion(res.sesion))
-      .catch(() => {});
-  }, []);
+      .catch(() => setSesion(null));
+  }, [cursoActivo?.id]);
 
   // ── Fetch tab data when tab or course changes ───────────
   useEffect(() => {
@@ -582,6 +586,19 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
     }
   };
 
+  const handleRefreshQR = async () => {
+    if (!sesion?.id) return;
+    try {
+      const res = await api.refrescarToken(sesion.id);
+      if (res?.sesion) {
+        setSesion(res.sesion);
+        toast.success("Código QR renovado manualmente");
+      }
+    } catch (err) {
+      toast.error("Error al renovar código: " + err.message);
+    }
+  };
+
   const updateAsistenciaEstado = async (id, estado) => {
     const ast = historialGen.find((a) => a.id === id);
     if (!ast || ast.estado === estado) return;
@@ -854,13 +871,13 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
           viewMode === "curso"
             ? [
                 {
-                  label: "Monitor en Vivo",
+                  label: "Monitor",
                   icon: Radio,
                   onClick: () => setActiveTab("vivo"),
                   active: activeTab === "vivo",
                 },
                 {
-                  label: "Gestión de Clases",
+                  label: "Programación",
                   icon: Calendar,
                   onClick: () => setActiveTab("clases"),
                   active: activeTab === "clases",
@@ -872,13 +889,13 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                   active: activeTab === "alumnos",
                 },
                 {
-                  label: "Historial y Exportar",
+                  label: "Historial",
                   icon: History,
                   onClick: () => setActiveTab("historial"),
                   active: activeTab === "historial",
                 },
                 {
-                  label: "Ajustes del Curso",
+                  label: "Ajustes",
                   icon: Settings,
                   onClick: () => setActiveTab("config"),
                   active: activeTab === "config",
@@ -897,7 +914,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
               className="btn btn-sm btn-ghost tp-back-btn"
               onClick={() => setViewMode("dashboard")}
             >
-              « Volver al Panel
+              « Volver
             </button>
           </div>
           <ProfileView 
@@ -974,7 +991,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                         autoFocus
                         value={newCursoName}
                         onChange={(e) => setNewCursoName(e.target.value)}
-                        placeholder="Ej: Programación III"
+                        placeholder="Ej: Programación I"
                         required
                       />
                     </div>
@@ -1109,7 +1126,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
             <h2
               className="teacher-course-title tp-course-view-title"
             >
-              <span className="tp-course-subtitle">Asistencias del curso de:</span>
+              <span className="tp-course-subtitle">Curso</span>
               <span
                 className="teacher-course-title-text tp-course-name"
               >
@@ -1134,7 +1151,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
               onChange={setActiveTab}
               tabs={[
                 { id: "vivo", label: "Monitor", icon: Radio },
-                { id: "clases", label: "Clases", icon: Calendar },
+                { id: "clases", label: "Programación", icon: Calendar },
                 { id: "alumnos", label: "Alumnos", icon: Users },
                 { id: "historial", label: "Historial", icon: History },
               ]}
@@ -1189,7 +1206,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                       </button>
                     </div>
                     <div className="card teacher-qr-card">
-                      <QrGenerator sesion={sesion} />
+                      <QrGenerator sesion={sesion} onRefresh={handleRefreshQR} />
                     </div>
                   </div>
                   <div className="card teacher-attendance-card">
@@ -1197,6 +1214,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                       sesionId={sesion?.id}
                       asistencias={asistencias}
                       setAsistencias={setAsistencias}
+                      estadosUI={ESTADOS_UI}
                     />
                   </div>
                 </div>
@@ -1416,21 +1434,18 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
 
             {/* ─── CLASES PROGRAMADAS ─────────────────── */}
             {activeTab === "clases" && (
-              <div className="card">
+              <div className="card tp-clases-card">
                 <div className="tp-clases-header">
                   <div>
                     <div className="card-title tp-clases-title">
-                      <Calendar size={18} /> Sesiones Programadas
-                    </div>
-                    <div className="card-subtitle tp-alumnos-subtitle">
-                      Gestiona sesiones de clase, eventos y registros de puntos.
+                      <Calendar size={18} /> Cronograma
                     </div>
                   </div>
                   <button
                     className="btn btn-primary btn-sm"
                     onClick={() => setShowAddSesion(true)}
                   >
-                    <Plus size={14} /> Nueva Sesión
+                    <Plus size={14} /> Programar
                   </button>
                 </div>
 
@@ -1440,7 +1455,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                     <div className="tp-modal-box--xl" onClick={(e) => e.stopPropagation()}>
                       <div className="tp-modal-header">
                         <h3 className="tp-modal-header__title">
-                          <Plus size={18} className="tp-modal-header__icon" /> Nueva Sesión
+                          <Plus size={18} className="tp-modal-header__icon" /> Programar
                         </h3>
                         <button onClick={() => setShowAddSesion(false)} className="tp-modal-close-btn">
                           <X size={20} />
@@ -1452,7 +1467,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                           <div className="form-group tp-form-group-0">
                             <label className="form-label tp-form-label-sm">Tipo de Sesión</label>
                             <div className="tp-tipo-selector">
-                              {[{v:'clase',l:'Clase'},{v:'evento',l:'Evento'},{v:'puntos',l:'Puntos'}].map(({v,l}) => (
+                              {[{v:'clase',l:'Sesión de clase'},{v:'evento',l:'Evento'},{v:'puntos',l:'Puntos'}].map(({v,l}) => (
                                 <button key={v} type="button"
                                   onClick={() => setNewClaseTipo(v)}
                                   className={`tp-tipo-btn ${newClaseTipo === v ? 'is-active' : ''}`}
@@ -1463,7 +1478,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
 
                           <div className="tp-form-grid-2">
                             <div className="form-group tp-form-group-0">
-                              <label className="form-label tp-form-label-sm">Nombre de la Clase</label>
+                              <label className="form-label tp-form-label-sm">Nombre</label>
                               <input className="form-input" value={newClaseName} onChange={(e) => setNewClaseName(e.target.value)} placeholder="Ej: Sesión 1" required />
                             </div>
                             <div className="form-group tp-form-group-0">
@@ -1519,7 +1534,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                     <div className="tp-modal-box--xl" onClick={(e) => e.stopPropagation()}>
                       <div className="tp-modal-header">
                         <h3 className="tp-modal-header__title">
-                          <Edit size={18} className="tp-modal-header__icon" /> Editar Sesión
+                          <Edit size={18} className="tp-modal-header__icon" /> Modificar
                         </h3>
                         <button onClick={() => setEditingSesion(null)} className="tp-modal-close-btn">
                           <X size={20} />
@@ -1659,7 +1674,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
 
                 {/* Session list */}
                 {sesionesProgr.length === 0 ? (
-                  <p className="text-muted">No hay clases programadas aún.</p>
+                  <p className="text-muted">No hay actividades programadas aún.</p>
                 ) : (
                   <div className="tp-sesiones-list">
                     {sesionesProgr.map((s) => (
@@ -1695,15 +1710,15 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                           <div className="tp-session-row__actions">
                             {s.activa ? (
                               <span className="badge tp-badge-live">
-                                EN VIVO
+                                En vivo
                               </span>
                             ) : s.faltas_procesadas ? (
                               <span className="badge tp-badge-done">
-                                FINALIZADA
+                                Finalizada
                               </span>
                             ) : s.tipo === 'puntos' ? (
                               <span className="badge tp-badge-manual">
-                                MANUAL
+                                Listo
                               </span>
                             ) : (
                               <button

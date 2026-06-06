@@ -79,15 +79,19 @@ export default function StudentPage({ user, onLogout, onUpdateUser }) {
   // Check for active session
   useEffect(() => {
     const checkSesion = () => {
+      if (!cursoActivo?.id) {
+        setSesionActiva(null);
+        return;
+      }
       api
-        .getSesionActiva()
+        .getSesionActiva(cursoActivo.id)
         .then((res) => setSesionActiva(res.sesion))
         .catch(() => setSesionActiva(null));
     };
     checkSesion();
     const interval = setInterval(checkSesion, 10000); // Check every 10s
     return () => clearInterval(interval);
-  }, []);
+  }, [cursoActivo?.id]);
 
   // Fetch Historial & Sesiones
   useEffect(() => {
