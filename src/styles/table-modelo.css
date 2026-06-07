@@ -4,7 +4,6 @@
   background: white;
   border-radius: 12px;
   border: 1px solid var(--gray-200);
-  padding: 8px;
 }
 
 @media (max-width: 640px) {
@@ -51,6 +50,16 @@
   padding: 6px 12px;
   vertical-align: middle;
   color: var(--gray-800);
+}
+
+.table-modelo th:first-child,
+.table-modelo td:first-child {
+  padding-left: 20px;
+}
+
+.table-modelo th:last-child,
+.table-modelo td:last-child {
+  padding-right: 20px;
 }
 
 /* Sticky column support for Historial (Left) */
