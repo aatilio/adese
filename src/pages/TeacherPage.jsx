@@ -1188,9 +1188,10 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
             <button
               type="button"
               className="btn btn-sm btn-ghost tp-back-btn--tabs"
+              style={{ whiteSpace: "nowrap" }}
               onClick={() => setViewMode("dashboard")}
             >
-              « Volver a Cursos
+              « Cursos
             </button>
 
             <Tabs
