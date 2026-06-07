@@ -2,7 +2,7 @@
 
 Una aplicación web moderna diseñada para registrar, controlar y gestionar de manera interactiva y centralizada la asistencia y el rendimiento de estudiantes en tiempo real. 
 
-**ADESE** (Asistencia Digital Estratégica para el Sector Educativo) cuenta con una arquitectura robusta multi-rol y multi-curso. Fue estructurado bajo un enfoque *Mobile-First* pensando en la facilidad para que los alumnos confirmen su presencia escaneando un código QR dinámico. Todo el sistema está orquestado mediante **Docker**, aislando de forma segura la Base de Datos, el API Backend y el Frontend.
+**Adese** (Asistencia Digital Estratégica para el Sector Educativo) cuenta con una arquitectura robusta multi-rol y multi-curso. Fue estructurado bajo un enfoque *Mobile-First* pensando en la facilidad para que los alumnos confirmen su presencia escaneando un código QR dinámico. Todo el sistema está orquestado mediante **Docker**, aislando de forma segura la Base de Datos, el API Backend y el Frontend.
 
 ## 🚀 Características y Funcionalidades Principales
 
