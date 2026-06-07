@@ -828,7 +828,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
       {/* ── Modal Confirmar Eliminar Sesión ──────────── */}
       {confirmDeleteId && (
         <div className="tp-modal-overlay">
-          <div className="tp-confirm-box">
+          <div className="tp-modal-box" style={{ textAlign: "center" }}>
             <div className="tp-modal-icon">🗑️</div>
             <h3 className="tp-modal-title">¿Eliminar esta clase?</h3>
             <p className="tp-modal-body">
