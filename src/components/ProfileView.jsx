@@ -66,18 +66,6 @@ export default function ProfileView({ user, roleLabel, onUpdateUser, onCancel })
           </div>
           <div>
             <h2 className="profile-view__title">Datos Generales</h2>
-            <div className="profile-view__meta">
-              <div className="profile-view__chip">
-                <span className="profile-view__chip-label">Código:</span>
-                <span className="profile-view__chip-val">{user.codigo || "N/A"}</span>
-              </div>
-              <div className="profile-view__chip">
-                <span className="profile-view__chip-label">Rol:</span>
-                <span className="profile-view__chip-val profile-view__chip-val--role">
-                  {roleLabel || "Usuario"}
-                </span>
-              </div>
-            </div>
           </div>
         </div>
 
@@ -92,6 +80,18 @@ export default function ProfileView({ user, roleLabel, onUpdateUser, onCancel })
               placeholder={user.nombre_completo}
               required
             />
+            <div className="profile-view__meta" style={{ marginTop: "10px", padding: "0 4px", justifyContent: "space-between" }}>
+              <div className="profile-view__chip">
+                <span className="profile-view__chip-val" style={{ background: "transparent", padding: 0, opacity: 0.7 }}>
+                  {user.codigo || "N/A"}
+                </span>
+              </div>
+              <div className="profile-view__chip">
+                <span className="profile-view__chip-val profile-view__chip-val--role" style={{ fontSize: "0.75rem", padding: "2px 6px" }}>
+                  {roleLabel || "Usuario"}
+                </span>
+              </div>
+            </div>
           </div>
 
           <hr className="profile-view__divider" />

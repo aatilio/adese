@@ -1,4 +1,4 @@
-# ADESE 🎓 `v2.0.0`
+# ADESE 🎓 `v3.0.0`
 
 Una aplicación web moderna diseñada para registrar, controlar y gestionar de manera interactiva y centralizada la asistencia y el rendimiento de estudiantes en tiempo real. 
 

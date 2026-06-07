@@ -123,3 +123,19 @@
 .eye-btn:hover {
   color: var(--primary);
 }
+
+@media (max-width: 600px) {
+  .profile-view {
+    padding: 0.5rem 0;
+  }
+  .profile-view .card {
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 1.5rem 1rem;
+    background: transparent;
+  }
+  .profile-view__header {
+    margin-bottom: 1rem;
+  }
+}
