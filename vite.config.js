@@ -9,6 +9,8 @@ export default defineConfig({
   build: {
     // Split vendor chunks to improve cache efficiency
     rollupOptions: {
+      // Excluir paquetes del servidor del bundle del cliente
+      external: ['express', 'cors', 'pg', 'jsonwebtoken'],
       output: {
         manualChunks: {
           'qr-vendor':     ['qrcode.react', 'html5-qrcode'],
