@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import {
   Plus,
   StopCircle,
@@ -157,6 +157,14 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
   });
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const [searchHistorial, setSearchHistorial] = useState("");
+
+  // ── Ref para auto-scroll al cargar historial (última columna visible) ──
+  const tableWrapRef = useRef(null);
+  useEffect(() => {
+    if (historialGen.length > 0 && tableWrapRef.current) {
+      tableWrapRef.current.scrollLeft = tableWrapRef.current.scrollWidth;
+    }
+  }, [historialGen]);
 
   // ── Nuevo Alumno modal state ─────────────────────────────
   const [showNuevoAlumno, setShowNuevoAlumno] = useState(false);
@@ -498,10 +506,10 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
     try {
       const { sesion: s } = await api.activarSesion(sesionId);
       setSesion(s);
-      // SOLO para CLASE mostrar el monitor QR; EVENTO ya está activo, PUNTOS no lo necesita
-      if (tipo === 'clase') {
+      // Para CLASE y EVENTO mostrar el monitor QR; PUNTOS no lo necesita
+      if (tipo === 'clase' || tipo === 'evento') {
         setActiveTab("vivo");
-        toast.success("¡Sesión iniciada! QR activo.");
+        toast.success("¡Sesión iniciada! Monitor activo.");
       } else if (tipo === 'puntos') {
         toast.success("¡Puntos activados!");
       }
@@ -1095,7 +1103,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                   actions={
                     <>
                       <button
-                        className="btn btn-sm btn-ghost tp-icon-btn"
+                        className="btn btn-sm tp-btn-edit"
                         onClick={(e) => {
                           e.stopPropagation();
                           setNewCursoName(c.nombre);
@@ -1117,7 +1125,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                         <Edit size={16} />
                       </button>
                       <button
-                        className="btn btn-sm btn-ghost tp-icon-btn--danger"
+                        className="btn btn-sm tp-btn-delete"
                         onClick={(e) => {
                           e.stopPropagation();
                           eliminarCurso(c.id);
@@ -1538,14 +1546,14 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                           </div>
 
                           <label className="tp-visible-label">
-                            <input type="checkbox" checked={newClaseVisible} onChange={e => setNewClaseVisible(e.target.checked)} />
+                            <input type="checkbox" className="tp-checkbox" checked={newClaseVisible} onChange={e => setNewClaseVisible(e.target.checked)} />
                             Visible para alumnos en su historial
                           </label>
 
                           {newClaseTipo === 'clase' && (
                             <div className="tp-limits-section">
                               <label className="tp-limits-label">
-                                <input type="checkbox" checked={showLimits} onChange={(e) => setShowLimits(e.target.checked)} />
+                                <input type="checkbox" className="tp-checkbox" checked={showLimits} onChange={(e) => setShowLimits(e.target.checked)} />
                                 Horario límite personalizado
                               </label>
 
@@ -1686,6 +1694,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
 
                           <label className="tp-visible-label--card">
                             <input
+                              className="tp-checkbox"
                               type="checkbox"
                               checked={editSesionData.visible_alumnos}
                               onChange={(e) =>
@@ -1857,7 +1866,9 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                     No hay clases o registros aún para este curso.
                   </p>
                 ) : (
+                  <>
                   <div
+                    ref={tableWrapRef}
                     className="table-modelo-wrapper tp-historial-table-wrap"
                   >
                     <table className="table-modelo tp-historial-table">
@@ -2047,31 +2058,33 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                           })}
                       </tbody>
                     </table>
-                    <div className="tp-legend">
-                      {Object.keys(ESTADOS_UI).map((k) => (
-                        <div
-                          key={k}
-                          className="tp-legend__item"
-                        >
-                          <span
-                            className="tp-legend__dot"
-                            style={{
-                              background: ESTADOS_UI[k].bg,
-                              border: `1px solid ${ESTADOS_UI[k].border}`
-                            }}
-                          />
-                          <span
-                            style={{
-                              fontWeight: 500,
-                              color: ESTADOS_UI[k].color,
-                            }}
-                          >
-                            {k}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
                   </div>
+
+                  <div className="tp-legend">
+                    {Object.keys(ESTADOS_UI).map((k) => (
+                      <div
+                        key={k}
+                        className="tp-legend__item"
+                      >
+                        <span
+                          className="tp-legend__dot"
+                          style={{
+                            background: ESTADOS_UI[k].bg,
+                            border: `1px solid ${ESTADOS_UI[k].border}`
+                          }}
+                        />
+                        <span
+                          style={{
+                            fontWeight: 500,
+                            color: ESTADOS_UI[k].color,
+                          }}
+                        >
+                          {k} <span style={{ opacity: 0.7, fontSize: '0.85em', marginLeft: '2px' }}>({ESTADOS_UI[k].puntuacion})</span>
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  </>
                 )}
               </div>
             )}

@@ -170,8 +170,8 @@ app.get('/api/sesiones/activa', async (req, res) => {
     query += ` LIMIT 1`;
     
     const r = await pool.query(query, params);
-    if (r.rows.length === 0) return res.status(404).json({ error: 'No hay sesión activa' });
-    res.json({ sesion: r.rows[0] });
+    // Devolver 200 con sesion: null en lugar de 404 — "sin sesión activa" es un estado válido, no un error
+    res.json({ sesion: r.rows.length > 0 ? r.rows[0] : null });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
