@@ -2532,13 +2532,24 @@
     padding-right: 0 !important;
     padding-top: 10px !important;
   }
+  .tp-clases-card,
+  .tp-alumnos-card,
+  .teacher-qr-card,
+  .teacher-attendance-card,
+  .tp-no-session-card,
+  .tp-config-card {
+    margin-left: 16px !important;
+    margin-right: 16px !important;
+    width: calc(100% - 32px) !important;
+    box-sizing: border-box;
+  }
   .tp-historial-card {
     border-radius: 8px !important;
     padding-left: 0 !important;
     padding-right: 0 !important;
-    margin-left: 8px !important;
-    margin-right: 8px !important;
-    width: calc(100% - 16px) !important;
+    margin-left: 16px !important;
+    margin-right: 16px !important;
+    width: calc(100% - 32px) !important;
     box-sizing: border-box;
   }
   .tp-historial-header {
@@ -2549,12 +2560,12 @@
     gap: 12px;
   }
   .tp-historial-actions {
-    flex-direction: column;
+    flex-direction: column-reverse;
     width: 100%;
-    align-items: center !important;
+    align-items: stretch !important;
   }
   .tp-historial-search-wrap {
-    width: 260px !important;
+    width: 100% !important;
   }
   .tp-historial-search-input {
     width: 100% !important;

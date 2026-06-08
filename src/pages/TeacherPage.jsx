@@ -1988,9 +1988,6 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                                     <span className="tp-student-cell__name">
                                       {est.nombre_completo}
                                     </span>
-                                    <span className="tp-student-cell__code">
-                                      {est.codigo}
-                                    </span>
                                   </div>
                                 </td>
                                 {clasesColumns.map((c) => {
@@ -2174,7 +2171,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                           })}
                           {/* ── Resumen por Sesión ── */}
                           <tr className="tp-session-summary-row">
-                            <td className="sticky-col" style={{ background: 'var(--gray-50)', fontWeight: 600, textAlign: 'right', paddingRight: '1rem', color: 'var(--gray-500)' }}>
+                            <td className="sticky-col" style={{ background: 'var(--gray-50)', fontWeight: 600, textAlign: 'center', verticalAlign: 'middle', padding: '0.5rem', color: 'var(--gray-500)' }}>
                               Resumen
                             </td>
                             {clasesColumns.map((c) => {
@@ -2195,6 +2192,9 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                               return (
                                 <td key={c.id} style={{ background: 'var(--gray-50)', verticalAlign: 'top', padding: '8px', borderLeft: '1px solid var(--gray-100)' }}>
                                   <div className="tp-session-summary-box">
+                                    <div style={{ fontSize: '0.65rem', color: 'var(--gray-500)', marginBottom: '6px', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', borderBottom: '1px dashed var(--gray-200)', paddingBottom: '4px' }} title={c.name}>
+                                      {c.name}
+                                    </div>
                                     {Object.keys(ESTADOS_UI).map(k => {
                                       if (!counts[k]) return null;
                                       return (
