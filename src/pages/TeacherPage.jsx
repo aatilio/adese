@@ -27,6 +27,8 @@ import {
   Info,
   Eye,
   EyeOff,
+  Lock,
+  Unlock,
 } from "lucide-react";
 import * as XLSX from "xlsx";
 import { api } from "../api/client";
@@ -1084,7 +1086,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                       Cancelar
                     </button>
                     <button type="submit" className="btn btn-primary">
-                      {editingCurso ? "Guardar Cambios" : "Crear Curso"}
+                      {editingCurso ? "Guardar" : "Crear Curso"}
                     </button>
                   </div>
                 </form>
@@ -1746,7 +1748,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                           form="edit-clase-form"
                           className="btn btn-primary tp-btn-height"
                         >
-                          Guardar Cambios
+                          Guardar
                         </button>
                       </div>
                     </div>
@@ -1775,12 +1777,17 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                             border: `1px solid ${s.activa ? "var(--success)" : s.tipo === 'evento' ? 'rgba(34, 197, 94, 0.2)' : s.tipo === 'puntos' ? 'rgba(245, 158, 11, 0.2)' : 'rgba(59, 130, 246, 0.15)'}`,
                           }}
                         >
-                          <span
-                            className={`tp-tipo-pill tp-tipo-pill--${s.tipo || 'clase'}`}
-                            style={{ position: 'absolute', top: '8px', right: '8px', fontSize: '0.65rem' }}
-                          >
-                            {s.tipo || 'clase'}
-                          </span>
+                          <div style={{ position: 'absolute', top: '8px', right: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <span style={{ color: s.visible_alumnos ? 'var(--primary)' : 'var(--gray-400)', display: 'flex', alignItems: 'center' }} title={s.visible_alumnos ? 'Público para alumnos' : 'Oculto para alumnos'}>
+                              {s.visible_alumnos ? <Unlock size={12} /> : <Lock size={12} />}
+                            </span>
+                            <span
+                              className={`tp-tipo-pill tp-tipo-pill--${s.tipo || 'clase'}`}
+                              style={{ fontSize: '0.65rem', margin: 0 }}
+                            >
+                              {s.tipo || 'clase'}
+                            </span>
+                          </div>
 
                           <div className="tp-session-row" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', paddingRight: '50px' }}>
                             <strong className="tp-session-row__name" style={{ fontSize: '0.9rem', lineHeight: '1.2' }}>
@@ -1819,19 +1826,18 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                           </div>
                           <div className="tp-session-row__actions" style={{ position: 'absolute', bottom: '10px', right: '10px', display: 'flex', gap: '6px' }}>
                             <button
-                              className="btn btn-sm"
+                              className="tp-btn-edit"
                               onClick={() => openEditForm(s)}
                               title="Editar clase"
-                              style={{ background: '#eff6ff', color: '#2563eb', border: '1px solid #bfdbfe', padding: '6px', minWidth: 'auto', minHeight: 'auto', height: 'auto' }}
                             >
-                              <Edit size={14} />
+                              <Edit size={16} />
                             </button>
                             <button
-                              className="btn btn-sm"
+                              className="tp-btn-delete"
                               onClick={() => eliminarSesionProgramada(s.id)}
-                              style={{ background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca', padding: '6px', minWidth: 'auto', minHeight: 'auto', height: 'auto' }}
+                              title="Eliminar clase"
                             >
-                              <Trash2 size={14} />
+                              <Trash2 size={16} />
                             </button>
                           </div>
                         </div>
@@ -2390,7 +2396,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                         Cancelar
                       </button>
                       <button type="submit" className="btn btn-primary">
-                        Guardar Cambios
+                        Guardar
                       </button>
                     </div>
                   </form>
@@ -2925,7 +2931,7 @@ function UsersView({ onBack, cursos, onCursosUpdated, onProfesoresUpdated }) {
                 onClick={saveEdit}
                 style={{ height: "36px" }}
               >
-                Guardar Cambios
+                Guardar
               </button>
             </div>
           </div>

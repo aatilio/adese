@@ -885,9 +885,14 @@
 }
 
 @media (max-width: 600px) {
-  .tp-form-grid-2,
+  .tp-form-grid-2 {
+    grid-template-columns: 1fr;
+  }
   .tp-form-grid-3 {
-    grid-template-columns: 1fr; /* Stack on mobile */
+    grid-template-columns: 1fr 1fr;
+  }
+  .tp-form-grid-3 > div:first-child {
+    grid-column: span 2;
   }
 }
 
@@ -925,12 +930,15 @@
 }
 
 .tp-time-input {
-  padding: 4px 8px;
+  padding: 4px 8px !important;
+  font-size: 0.85rem !important;
+  height: 36px !important;
 }
 
 .tp-time-input--sm {
-  padding: 4px 8px;
-  font-size: 0.85rem;
+  padding: 4px 8px !important;
+  font-size: 0.85rem !important;
+  height: 36px !important;
 }
 
 .tp-checkbox {
@@ -1717,8 +1725,10 @@
 }
 
 /* Form group with no top margin */
+.form-group.tp-form-group-0,
 .tp-form-group-0 {
-  margin-top: 0;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
 }
 
 /* Flex 1 utility */
@@ -2547,10 +2557,10 @@
     width: 260px !important;
   }
   .tp-historial-search-input {
-    width: 260px !important;
+    width: 100% !important;
   }
   .tp-excel-btn {
-    width: 260px !important;
+    width: 100% !important;
     justify-content: center;
   }
   .tp-historial-table-wrap.table-modelo-wrapper {
