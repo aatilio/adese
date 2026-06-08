@@ -24,6 +24,9 @@ import {
   Pencil,
   AlertTriangle,
   ChevronDown,
+  Info,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import * as XLSX from "xlsx";
 import { api } from "../api/client";
@@ -157,6 +160,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
   });
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const [searchHistorial, setSearchHistorial] = useState("");
+  const [openSummaryId, setOpenSummaryId] = useState(null);
 
   // ── Ref para auto-scroll al cargar historial (última columna visible) ──
   const tableWrapRef = useRef(null);
@@ -492,6 +496,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
         limite_tarde: editSesionData.limite_tarde,
         permitir_falto: editSesionData.permitir_falto,
         visible_alumnos: editSesionData.visible_alumnos,
+        tipo: editSesionData.tipo,
       });
       const res = await api.getCursoSesiones(cursoActivo.id);
       setSesionesProgr(res.sesiones);
@@ -1235,16 +1240,15 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                   <p
                     className="tp-no-session-body"
                   >
-                    Para generar el código QR y recibir asistencias, debes
-                    iniciar una clase programada desde la pestaña de{" "}
-                    <strong>Clases</strong>.
+                    Para generar el código QR y registrarlas, debes
+                    activar una sesion o evento programada
                   </p>
                   <button
                     className="btn btn-primary tp-btn-go-classes"
                     onClick={() => setActiveTab("clases")}
                   >
                     <Calendar size={16} className="tp-btn-icon-mr" /> Ir a
-                    Mis Clases
+                    Ir a Programación
                   </button>
                 </div>
               ) : (
@@ -1601,6 +1605,26 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
 
                       <form onSubmit={saveEditedSesion} id="edit-clase-form">
                         <div className="tp-modal-body">
+                          {editSesionData.tipo !== 'puntos' ? (
+                            <div className="form-group tp-form-group-0" style={{ marginBottom: '16px' }}>
+                              <label className="form-label tp-form-label-sm">Tipo de Sesión</label>
+                              <div className="tp-tipo-selector">
+                                {[{v:'clase',l:'Sesión de clase'},{v:'evento',l:'Evento'}].map(({v,l}) => (
+                                  <button key={v} type="button"
+                                    onClick={() => setEditSesionData({...editSesionData, tipo: v})}
+                                    className={`tp-tipo-btn ${editSesionData.tipo === v ? 'is-active' : ''}`}
+                                  >{l}</button>
+                                ))}
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="form-group tp-form-group-0" style={{ marginBottom: '16px' }}>
+                              <label className="form-label tp-form-label-sm">Tipo de Sesión</label>
+                              <div className="tp-tipo-selector">
+                                <button type="button" disabled className="tp-tipo-btn is-active" style={{ opacity: 0.7, cursor: 'not-allowed' }}>Puntos</button>
+                              </div>
+                            </div>
+                          )}
                           <div className="tp-form-grid-2">
                             <div className="form-group tp-form-group-0">
                               <label className="form-label tp-form-label-sm">Nombre</label>
@@ -1739,6 +1763,8 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                         <div
                           className="tp-session-item"
                           style={{
+                            position: "relative",
+                            padding: "10px",
                             background: s.activa
                               ? "var(--success-bg)"
                               : s.tipo === 'evento'
@@ -1749,52 +1775,65 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                             border: `1px solid ${s.activa ? "var(--success)" : s.tipo === 'evento' ? 'rgba(34, 197, 94, 0.2)' : s.tipo === 'puntos' ? 'rgba(245, 158, 11, 0.2)' : 'rgba(59, 130, 246, 0.15)'}`,
                           }}
                         >
-                          <div className="tp-session-row">
-                            <strong className="tp-session-row__name">
+                          <span
+                            className={`tp-tipo-pill tp-tipo-pill--${s.tipo || 'clase'}`}
+                            style={{ position: 'absolute', top: '8px', right: '8px', fontSize: '0.65rem' }}
+                          >
+                            {s.tipo || 'clase'}
+                          </span>
+
+                          <div className="tp-session-row" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', paddingRight: '50px' }}>
+                            <strong className="tp-session-row__name" style={{ fontSize: '0.9rem', lineHeight: '1.2' }}>
                               {s.nombre_clase}
                             </strong>
-                            <span className="tp-session-row__meta">
+                            <span className="tp-session-row__meta" style={{ fontSize: '0.75rem', marginTop: '4px' }}>
                               {s.fecha_programada
                                 ? fmtFecha(s.fecha_programada)
                                 : fmtFecha(s.fecha_inicio)}
                               {s.total_asistencias > 0 &&
                                 ` • ${s.total_asistencias} asistencias`}
-                              <span
-                                className={`tp-tipo-pill tp-tipo-pill--${s.tipo || 'clase'}`}
-                              >{s.tipo || 'clase'}</span>
+                              <span style={{ marginLeft: '6px', display: 'inline-flex', alignItems: 'center', gap: '4px', color: s.visible_alumnos ? 'var(--primary)' : 'var(--gray-400)' }}>
+                                {s.visible_alumnos ? <Eye size={12} /> : <EyeOff size={12} />}
+                                {s.visible_alumnos ? 'Público' : 'Oculto'}
+                              </span>
                             </span>
+                            <div style={{ marginTop: '8px' }}>
+                              {s.activa ? (
+                                <span className="badge tp-badge-live" style={{ fontSize: '0.65rem', padding: '2px 8px' }}>
+                                  En vivo
+                                </span>
+                              ) : s.faltas_procesadas ? (
+                                <span className="badge tp-badge-done" style={{ fontSize: '0.65rem', padding: '2px 8px', background: 'transparent', border: '1px solid var(--gray-300)', color: 'var(--gray-500)' }}>
+                                  Finalizada
+                                </span>
+                              ) : s.tipo === 'puntos' ? (
+                                <span className="badge tp-badge-manual" style={{ fontSize: '0.65rem', padding: '2px 8px' }}>
+                                  Listo
+                                </span>
+                              ) : (
+                                <button
+                                  className="btn btn-sm btn-primary tp-btn-start"
+                                  onClick={() => activarSesion(s.id, s.tipo)}
+                                  style={{ fontSize: '0.75rem', padding: '4px 10px', minHeight: '26px', height: '26px' }}
+                                >
+                                  <Play size={10} fill="currentColor" style={{ marginRight: '4px' }} /> Iniciar
+                                </button>
+                              )}
+                            </div>
                           </div>
-                          <div className="tp-session-row__actions">
-                            {s.activa ? (
-                              <span className="badge tp-badge-live">
-                                En vivo
-                              </span>
-                            ) : s.faltas_procesadas ? (
-                              <span className="badge tp-badge-done">
-                                Finalizada
-                              </span>
-                            ) : s.tipo === 'puntos' ? (
-                              <span className="badge tp-badge-manual">
-                                Listo
-                              </span>
-                            ) : (
-                              <button
-                                className="btn btn-sm btn-primary tp-btn-start"
-                                onClick={() => activarSesion(s.id, s.tipo)}
-                              >
-                                <Play size={12} fill="currentColor" /> Iniciar
-                              </button>
-                            )}
+                          <div className="tp-session-row__actions" style={{ position: 'absolute', bottom: '10px', right: '10px', display: 'flex', gap: '6px' }}>
                             <button
-                              className="btn btn-sm btn-ghost tp-btn-edit-sm"
+                              className="btn btn-sm"
                               onClick={() => openEditForm(s)}
                               title="Editar clase"
+                              style={{ background: '#eff6ff', color: '#2563eb', border: '1px solid #bfdbfe', padding: '6px', minWidth: 'auto', minHeight: 'auto', height: 'auto' }}
                             >
                               <Edit size={14} />
                             </button>
                             <button
-                              className="btn btn-sm btn-ghost tp-btn-delete-sm"
+                              className="btn btn-sm"
                               onClick={() => eliminarSesionProgramada(s.id)}
+                              style={{ background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca', padding: '6px', minWidth: 'auto', minHeight: 'auto', height: 'auto' }}
                             >
                               <Trash2 size={14} />
                             </button>
@@ -2016,7 +2055,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                                   return (
                                     <td key={c.id} style={{ borderLeft: '1px solid var(--gray-100)', background: 'transparent', verticalAlign: 'middle', textAlign: 'center' }}>
                                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '38px' }}>
-                                        <div style={{ background: bgColor, border: ui ? `1px solid ${borderColor}` : 'none', borderRadius: '20px', padding: status ? '0px 10px' : '0px', display: 'flex', justifyContent: 'center', minWidth: '95px', color: textColor }}>
+                                        <div className={`tp-status-pill ${status ? 'has-status' : ''}`} style={{ background: bgColor, border: ui ? `1px solid ${borderColor}` : '1px solid transparent', color: textColor }}>
                                           {true ? (
                                             <select
                                               value={status}
@@ -2050,12 +2089,125 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                                 })}
                                 <td
                                   className="sticky-col-right tp-score-cell"
+                                  style={{ position: 'relative', zIndex: openSummaryId === est.id ? 60 : undefined }}
                                 >
-                                  {Math.round(points)}
+                                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '38px' }}>
+                                    {Math.round(points)}
+                                  </div>
+                                  <button 
+                                    className="tp-summary-btn"
+                                    onClick={() => setOpenSummaryId(openSummaryId === est.id ? null : est.id)}
+                                    title="Ver resumen"
+                                    style={{ position: 'absolute', top: '2px', right: '2px' }}
+                                  >
+                                    <Info size={12} />
+                                  </button>
+                                  {openSummaryId === est.id && (
+                                    <>
+                                      <div 
+                                        style={{ position: 'fixed', inset: 0, zIndex: 40 }} 
+                                        onClick={(e) => { e.stopPropagation(); setOpenSummaryId(null); }} 
+                                      />
+                                      <div className="tp-student-summary-popover">
+                                      <div className="tp-popover-header">
+                                        <span style={{fontWeight: 600, fontSize: '0.8rem'}}>Resumen</span>
+                                        <button onClick={() => setOpenSummaryId(null)}><X size={12}/></button>
+                                      </div>
+                                      <div className="tp-popover-body">
+                                        {(() => {
+                                          const claseRecs = recs.filter(r => (!r.tipo || r.tipo === 'clase'));
+                                          const claseTotal = claseRecs.filter(r => r.estado).length;
+                                          const eventoRecs = recs.filter(r => r.tipo === 'evento');
+                                          const eventoTotal = eventoRecs.filter(r => r.estado).length;
+
+                                          return (
+                                            <>
+                                              {claseTotal > 0 && (
+                                                <div className="tp-summary-section">
+                                                  <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', color: 'var(--gray-400)', fontWeight: 700, marginBottom: '4px' }}>Clases</div>
+                                                  {Object.keys(ESTADOS_UI).map(k => {
+                                                    const count = claseRecs.filter(r => r.estado === k).length;
+                                                    if (count === 0) return null;
+                                                    const pct = Math.round((count / claseTotal) * 100);
+                                                    return (
+                                                      <div key={k} className="tp-summary-stat">
+                                                        <span className="tp-summary-stat-label" style={{ color: ESTADOS_UI[k].color }}>{k}</span>
+                                                        <span className="tp-summary-stat-val">{count} <span className="tp-summary-stat-pct">({pct}%)</span></span>
+                                                      </div>
+                                                    )
+                                                  })}
+                                                </div>
+                                              )}
+                                              
+                                              {eventoTotal > 0 && (
+                                                <div className="tp-summary-section" style={{ marginTop: claseTotal > 0 ? '8px' : '0', paddingTop: claseTotal > 0 ? '8px' : '0', borderTop: claseTotal > 0 ? '1px dashed var(--gray-200)' : 'none' }}>
+                                                  <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', color: 'var(--gray-400)', fontWeight: 700, marginBottom: '4px' }}>Eventos</div>
+                                                  {Object.keys(ESTADOS_UI).map(k => {
+                                                    const count = eventoRecs.filter(r => r.estado === k).length;
+                                                    if (count === 0) return null;
+                                                    const pct = Math.round((count / eventoTotal) * 100);
+                                                    return (
+                                                      <div key={k} className="tp-summary-stat">
+                                                        <span className="tp-summary-stat-label" style={{ color: ESTADOS_UI[k].color }}>{k}</span>
+                                                        <span className="tp-summary-stat-val">{count} <span className="tp-summary-stat-pct">({pct}%)</span></span>
+                                                      </div>
+                                                    )
+                                                  })}
+                                                </div>
+                                              )}
+
+                                              {claseTotal === 0 && eventoTotal === 0 && (
+                                                <div style={{ fontSize: '0.75rem', color: 'var(--gray-400)', textAlign: 'center', padding: '10px 0' }}>Sin registros</div>
+                                              )}
+                                            </>
+                                          );
+                                        })()}
+                                      </div>
+                                      </div>
+                                    </>
+                                  )}
                                 </td>
                               </tr>
                             );
                           })}
+                          {/* ── Resumen por Sesión ── */}
+                          <tr className="tp-session-summary-row">
+                            <td className="sticky-col" style={{ background: 'var(--gray-50)', fontWeight: 600, textAlign: 'right', paddingRight: '1rem', color: 'var(--gray-500)' }}>
+                              Resumen
+                            </td>
+                            {clasesColumns.map((c) => {
+                              if (c.tipo === 'puntos') {
+                                return <td key={c.id} style={{ background: 'var(--gray-50)', borderLeft: '1px solid var(--gray-100)' }}></td>;
+                              }
+                              
+                              const sessionRecs = historialGen.filter(h => h.sesion_id === c.id && h.estado);
+                              if (sessionRecs.length === 0) {
+                                return <td key={c.id} style={{ background: 'var(--gray-50)', borderLeft: '1px solid var(--gray-100)' }}></td>;
+                              }
+
+                              const counts = {};
+                              sessionRecs.forEach(r => {
+                                counts[r.estado] = (counts[r.estado] || 0) + 1;
+                              });
+
+                              return (
+                                <td key={c.id} style={{ background: 'var(--gray-50)', verticalAlign: 'top', padding: '8px', borderLeft: '1px solid var(--gray-100)' }}>
+                                  <div className="tp-session-summary-box">
+                                    {Object.keys(ESTADOS_UI).map(k => {
+                                      if (!counts[k]) return null;
+                                      return (
+                                        <div key={k} className="tp-session-stat">
+                                          <span className="tp-session-stat-label" style={{ color: ESTADOS_UI[k].color }}>{k}:</span>
+                                          <span className="tp-session-stat-val">{counts[k]}</span>
+                                        </div>
+                                      )
+                                    })}
+                                  </div>
+                                </td>
+                              );
+                            })}
+                            <td className="sticky-col-right" style={{ background: 'var(--gray-50)' }}></td>
+                          </tr>
                       </tbody>
                     </table>
                   </div>
