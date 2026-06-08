@@ -30,12 +30,24 @@ export function mapRolToUiRole(rol) {
 
 /**
  * Normaliza la sesión del usuario para localStorage.
+ * Retorna null si el objeto no es válido o le faltan campos obligatorios.
  */
 export function normalizeSessionUser(raw) {
   if (!raw || typeof raw !== 'object') return null;
+
+  // Campos mínimos requeridos para considerar una sesión válida
+  if (!raw.id || !raw.codigo) return null;
+
   const r = Number(raw.rol);
   const uiRole = mapRolToUiRole(r) || raw.role;
   if (!uiRole) return null;
-  const rolNorm = r || (uiRole === UI_ROLE.ADMIN ? ROL.ADMIN : uiRole === UI_ROLE.PROFESOR ? ROL.PROFESOR : ROL.ALUMNO);
+
+  const rolNorm = r || (
+    uiRole === UI_ROLE.ADMIN    ? ROL.ADMIN    :
+    uiRole === UI_ROLE.PROFESOR ? ROL.PROFESOR :
+    ROL.ALUMNO
+  );
+
   return { ...raw, rol: rolNorm, role: uiRole };
 }
+

@@ -65,14 +65,13 @@ export default function EconometricsPage({ onBack }) {
       const targetUrl = isLocal ? "http://localhost:8000/api/calculate" : `${API_URL}/api/calculate`;
 
       const res = await fetch(targetUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-      const text = await res.text();
       let data;
-      try { data = JSON.parse(text); } catch { throw new Error("Respuesta inválida del servidor"); }
-      if (!res.ok) throw new Error(data?.detail || "Error del servidor");
+      try { data = await res.json(); } catch { throw new Error('Respuesta inválida del servidor'); }
+      if (!res.ok) throw new Error(data?.detail || 'Error del servidor');
       setResults(data);
       setActiveStep(2);
     } catch (e) {

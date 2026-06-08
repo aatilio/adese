@@ -1598,7 +1598,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                               <label className="form-label tp-form-label-sm">Nombre</label>
                               <input
                                 type="text"
-                                className="form-input"
+                                className="form-input tp-input--sm"
                                 value={editSesionData.nombre_clase}
                                 onChange={(e) =>
                                   setEditSesionData({
@@ -1606,7 +1606,6 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                                     nombre_clase: e.target.value,
                                   })
                                 }
-                                className="form-input tp-input--sm"
                                 required
                               />
                             </div>
@@ -1614,7 +1613,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                               <label className="form-label tp-form-label-sm">Fecha y Hora</label>
                               <input
                                 type="datetime-local"
-                                className="form-input"
+                                className="form-input tp-input--sm"
                                 value={editSesionData.fecha_programada}
                                 onChange={(e) =>
                                   setEditSesionData({
@@ -1622,7 +1621,6 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                                     fecha_programada: e.target.value,
                                   })
                                 }
-                                className="form-input tp-input--sm"
                                 required
                               />
                             </div>

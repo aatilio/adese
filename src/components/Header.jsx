@@ -1,4 +1,3 @@
-import React from 'react';
 import appLogo from "../assets/ac-d.svg";
 import UserMenu from "./UserMenu";
 import "../styles/components/header.css";
