@@ -1240,7 +1240,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                   <p
                     className="tp-no-session-body"
                   >
-                    Para generar el código QR y registrarlas, debes
+                    Para generar el código QR y registrar asistencias, debes
                     activar una sesion o evento programada
                   </p>
                   <button
@@ -1292,7 +1292,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                     Alumnos de {cursoActivo.nombre}
                   </div>
                   <div className="card-subtitle tp-card-subtitle-mt">
-                    {estudiantesCurso.length} matriculados. Añade o remueve alumnos de este curso.
+                    {estudiantesCurso.length} matriculados.
                   </div>
                   <button
                     className="btn btn-primary tp-add-alumno-btn"
@@ -1316,7 +1316,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                       <form onSubmit={crearYAgregarAlumno}>
                         <div className="tp-modal-body">
                           <div className="form-group" style={{ marginTop: 0, position: 'relative' }}>
-                            <label className="form-label tp-form-label-sm">CUI / Código</label>
+                            <label className="form-label tp-form-label-sm">CUI</label>
                             <input
                               className="form-input"
                               autoFocus
@@ -1396,7 +1396,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                       </div>
                       <div className="tp-modal-body">
                         <div className="form-group tp-form-group-0">
-                          <label className="form-label tp-form-label-sm">CUI / Código</label>
+                          <label className="form-label tp-form-label-sm">CUI</label>
                           <input
                             className="form-input"
                             value={editingAlumnoData.codigo}
@@ -1449,8 +1449,8 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                     <thead>
                       <tr>
                         <th>#</th>
-                        <th>Nombre</th>
                         <th>CUI</th>
+                        <th>Nombre</th>
                         <th className="th--center">Acciones</th>
                       </tr>
                     </thead>
@@ -1461,8 +1461,8 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                           onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                         >
                           <td className="tp-table__td--num">{idx + 1}</td>
-                          <td className="tp-table__td--name">{est.nombre_completo}</td>
                           <td className="tp-table__td--code">{est.codigo}</td>
+                          <td className="tp-table__td--name">{est.nombre_completo}</td>
                           <td className="tp-table__td--center">
                             <div className="tp-table-cell-actions">
                               <button
@@ -1792,10 +1792,6 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                                 : fmtFecha(s.fecha_inicio)}
                               {s.total_asistencias > 0 &&
                                 ` • ${s.total_asistencias} asistencias`}
-                              <span style={{ marginLeft: '6px', display: 'inline-flex', alignItems: 'center', gap: '4px', color: s.visible_alumnos ? 'var(--primary)' : 'var(--gray-400)' }}>
-                                {s.visible_alumnos ? <Eye size={12} /> : <EyeOff size={12} />}
-                                {s.visible_alumnos ? 'Público' : 'Oculto'}
-                              </span>
                             </span>
                             <div style={{ marginTop: '8px' }}>
                               {s.activa ? (
