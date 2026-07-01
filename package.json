@@ -10,11 +10,14 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "cheerio": "^1.2.0",
     "cors": "^2.8.6",
     "express": "^5.2.1",
     "html5-qrcode": "^2.3.8",
     "jsonwebtoken": "^9.0.3",
+    "katex": "^0.17.0",
     "lucide-react": "^1.8.0",
+    "node-fetch": "^3.3.2",
     "pg": "^8.21.0",
     "qrcode.react": "^4.2.0",
     "react": "^19.1.1",

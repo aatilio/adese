@@ -1,0 +1,3299 @@
+{
+  "macroeconomia": {
+    "title": "Macroeconomía",
+    "icon": "🌍",
+    "desc": "Teoría macroeconómica, política monetaria y fiscal, crecimiento económico, ciclos y modelos intertemporales.",
+    "total_questions": 209,
+    "subtopics": {
+      "Modelo IS-LM / Políticas Fiscal y Monetaria": 58,
+      "Política Monetaria del BCRP / Metas de Inflación": 64,
+      "Modelo de Solow / Crecimiento Económico": 22,
+      "Economía Abierta / Tipo de Cambio": 35,
+      "Consumo y Ahorro Intertemporal": 18,
+      "Ciclos Económicos / Modelos RBC": 12
+    },
+    "examples": {
+      "Modelo IS-LM / Políticas Fiscal y Monetaria": [
+        {
+          "year": 2010,
+          "num": 75,
+          "text": "En el modelo IS/LM, una contracción en la oferta de dinero junto con una política fiscal expansiva, deben causar:",
+          "options": [
+            {
+              "letter": "a",
+              "text": "Disminución en la tasa de interés.",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "Aumento en la tasa de interés.",
+              "isCorrect": true
+            },
+            {
+              "letter": "c",
+              "text": "Disminución en el producto.",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "Incremento en el producto.",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "b"
+        },
+        {
+          "year": 2014,
+          "num": 36,
+          "text": "En una economía abierta, una política fiscal expansiva hace que se incremente la tasa de interés. ¿Qué se observa en las variables externas?",
+          "options": [
+            {
+              "letter": "a",
+              "text": "Déficit en la balanza comercial y una caída del tipo de cambio real.",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "Déficit en la balanza comercial y un aumento del tipo de cambio real.",
+              "isCorrect": true
+            },
+            {
+              "letter": "c",
+              "text": "Superávit en la balanza comercial y una caída del tipo de cambio real.",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "Superávit en la balanza comercial y un aumento del tipo de cambio re",
+              "isCorrect": false
+            },
+            {
+              "letter": "e",
+              "text": "N.A.",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "b"
+        },
+        {
+          "year": 2016,
+          "num": 56,
+          "text": "En un contexto de trampa de liquidez, se considera que la política monetaria es:",
+          "options": [
+            {
+              "letter": "a",
+              "text": "Más efectiva en reactivar un economía en recesión que la política fiscal.",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "Menos efectiva en reactivar un economía en recesión que la política fiscal.",
+              "isCorrect": true
+            },
+            {
+              "letter": "c",
+              "text": "Igualmente efectiva en reactivar una economía en recesión que la política fiscal.",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "Ninguna de las dos políticas (monetaria y fiscal) es efectiva.",
+              "isCorrect": false
+            },
+            {
+              "letter": "e",
+              "text": "Ninguna de las anteriores",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "b"
+        },
+        {
+          "year": 2025,
+          "num": 25,
+          "text": "¿Cuál de los siguientes enunciados es cierto cuando en el modelo IS-LM se da un aumento de la oferta de dinero junto con una política fiscal expansiva?:",
+          "options": [
+            {
+              "letter": "a",
+              "text": "Disminuye la tasa de interés.",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "Aumenta la tasa de interés.",
+              "isCorrect": true
+            },
+            {
+              "letter": "c",
+              "text": "Disminuye el producto.",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "Aumenta el producto.",
+              "isCorrect": false
+            },
+            {
+              "letter": "e",
+              "text": "Ninguna de las anteriores.",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "b"
+        }
+      ],
+      "Política Monetaria del BCRP / Metas de Inflación": [
+        {
+          "year": 2010,
+          "num": 48,
+          "text": "Nombre del actual presidente del Banco Central Europeo (ECB):",
+          "options": [
+            {
+              "letter": "a",
+              "text": "Alexandre Lamfalussy",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "Jean-Claude Trichet",
+              "isCorrect": true
+            },
+            {
+              "letter": "c",
+              "text": "Willem F. Duisenberg",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "Ninguno de los anteriores",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "b"
+        },
+        {
+          "year": 2010,
+          "num": 72,
+          "text": "Una elevación de la tasa de interés interbancaria con respecto al nivel de la tasa de interés de política monetaria con respecto al rendimiento de los bonos del tesoro, puede reflejar:",
+          "options": [
+            {
+              "letter": "a",
+              "text": "Aumento de la aversión del riesgo",
+              "isCorrect": true
+            },
+            {
+              "letter": "b",
+              "text": "Disminución de la aversión del riesgo",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "Déficit fiscal creciente que presión el costo del crédito",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "Ninguna de las anteriores",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "a"
+        },
+        {
+          "year": 2010,
+          "num": 81,
+          "text": "A fin de evitar que un aumento sustancial de la aversión al riesgo de los bancos se convierta en una contracción crediticia, el Banco Central debería:",
+          "options": [
+            {
+              "letter": "a",
+              "text": "Asegurar la disponibilidad de liquidez de los bancos.",
+              "isCorrect": true
+            },
+            {
+              "letter": "b",
+              "text": "Elevar los encajes para evitar capitales especulativos.",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "Contraer la liquidez para fortalecer la credibilidad mediante el logro de una menor inflación.",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "Ninguna de las anteriores.",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "a"
+        },
+        {
+          "year": 2010,
+          "num": 82,
+          "text": "De acuerdo a la regla de política monetaria de Taylor:",
+          "options": [
+            {
+              "letter": "a",
+              "text": "La tasa de interés de política sube cuando la inflación excede su meta y baja cuando el producto efectivo excede al producto potencial.",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "La tasa de interés de política baja cuando la inflación excede su meta y sube cuando el producto efectivo excede al producto potencial.",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "La tasa de interés de política baja cuando la inflación excede su meta y cuando el producto efectivo excede al producto potencial.",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "La tasa de interés de política sube cuando la inflación excede su meta y cuando el producto efectivo excede al producto potencial.",
+              "isCorrect": true
+            }
+          ],
+          "correctKey": "d"
+        }
+      ],
+      "Modelo de Solow / Crecimiento Económico": [
+        {
+          "year": 2011,
+          "num": 79,
+          "text": "En el modelo de Solow, el capital per cápita “k” de la economía se acumula de acuerdo a $\\dot{k} = sf(k) - (\\eta + \\delta)k$ donde “f(k)” es la función de producción, “s” es la tasa de ahorro de la economía, “η” es la tasa de crecimiento poblacional y “δ” es la tasa de depreciación. Imagine que existen dos países, A y B que tienen diferentes tasas de crecimiento poblacional y depreciación.",
+          "options": [
+            {
+              "letter": "a",
+              "text": "Ambos países crecen a la misma tasa en estado estacionario",
+              "isCorrect": true
+            },
+            {
+              "letter": "b",
+              "text": "El país con la tasa de crecimiento poblacional más alta crece más rápido en estado estacionario",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "El país con la tasa de depreciación más alta crece más rápido en estado estacionario",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "El país con la tasa de depreciación más baja crece más rápido en estado estacionario 20",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "a"
+        },
+        {
+          "year": 2011,
+          "num": 80,
+          "text": "La “regla de oro” se refiere a la tasa de ahorro “s” que maximiza el consumo en estado estacionario en el modelo de Solow.",
+          "options": [
+            {
+              "letter": "a",
+              "text": "La tasa de ahorro que maximiza el consumo en estado estacionario para el modelo de Solow es mayor cuando la tasa de crecimiento poblacional es mayor",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "La tasa de ahorro que maximiza el consumo en estado estacionario para el modelo de Solow es mayor cuando la tasa de depreciación es mayor",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "La tasa de ahorro que maximiza el consumo en estado estacionario para el modelo de Solow es mayor cuando la participación del capital en la producción es mayor",
+              "isCorrect": true
+            },
+            {
+              "letter": "d",
+              "text": "N.A",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "c"
+        },
+        {
+          "year": 2018,
+          "num": 48,
+          "text": "Señale la opción incorrecta sobre la regla de oro modificada en el modelo de Ramsey:",
+          "options": [
+            {
+              "letter": "a",
+              "text": "Requiere que los hogares maximizan su utilidad intertemporalmente",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "Implica que el nivel de capital per cápita de estado estacionario estará a la izquierda de aquel asociado a la regla de oro",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "Implica que la economía no puede estar en la zona de ineficiencia dinámica",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "El resultado está asociado a la impaciencia de los agentes",
+              "isCorrect": false
+            },
+            {
+              "letter": "e",
+              "text": "Ninguna de las anteriores",
+              "isCorrect": true
+            }
+          ],
+          "correctKey": "e"
+        },
+        {
+          "year": 2018,
+          "num": 49,
+          "text": "Sea una economía tipo Solow en tiempo continuo con una función de producción del tipo $Y$= $K$0.5$L$0.5, una tasa de ahorro de 20%, un crecimiento de la fuerza laboral de 5% y una tasa depreciación de 2%. Esta economía recorrerá mitad de su trayectoria hacia el estado estacionario en:",
+          "options": [
+            {
+              "letter": "a",
+              "text": "Aproximadamente 20 años",
+              "isCorrect": true
+            },
+            {
+              "letter": "b",
+              "text": "Aproximadamente 15 años",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "Aproximadamente 25 años",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "Faltan datos para determinar la solución",
+              "isCorrect": false
+            },
+            {
+              "letter": "e",
+              "text": "Ninguna de las anteriores Banco Central de Reserva del Perú 17",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "a"
+        }
+      ],
+      "Economía Abierta / Tipo de Cambio": [
+        {
+          "year": 2010,
+          "num": 59,
+          "text": "¿Qué país ha presentado menor volatilidad en su tipo de cambio en los últimos doce meses?",
+          "options": [
+            {
+              "letter": "a",
+              "text": "Brasil",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "México",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "Argentina",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "Perú",
+              "isCorrect": true
+            }
+          ],
+          "correctKey": "d"
+        },
+        {
+          "year": 2010,
+          "num": 71,
+          "text": "Si el valor del tipo de cambio de la libra va de $1.40 a $1.50, determine si la libra se ha apreciado o depreciado relativamente con respecto al dólar y si los ingleses encontrarán los bienes provenientes de EEUU más baratos o más caros",
+          "options": [
+            {
+              "letter": "a",
+              "text": "La libra se aprecia y los bienes de EEUU son más caros",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "La libra se aprecia y los bienes de EEUU son más baratos",
+              "isCorrect": true
+            },
+            {
+              "letter": "c",
+              "text": "La libra se deprecia y los bienes de EEUU son más caros",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "La libra se deprecia y los bienes de EEUU son más baratos",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "b"
+        },
+        {
+          "year": 2010,
+          "num": 74,
+          "text": "Si la balanza de pagos está equilibrada en una economía con régimen de tipo de cambio fijo, perfecta movilidad de capitales y precios fijos, se cumple que:",
+          "options": [
+            {
+              "letter": "a",
+              "text": "La aplicación de una política monetaria expansiva así como de una política fiscal expansiva generan un aumento permanente en la actividad económica.",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "La política monetaria es neutral en tanto que una política fiscal expansiva y una devaluación producen un aumento permanente en la actividad económica.",
+              "isCorrect": true
+            },
+            {
+              "letter": "c",
+              "text": "Sólo una política monetaria expansiva produce un aumento permanente en la actividad económica.",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "Sólo una devaluación produce un aumento permanente en la actividad económica.",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "b"
+        },
+        {
+          "year": 2011,
+          "num": 43,
+          "text": "La balanza comercial del año 2009 se ubicó en el rango:",
+          "options": [
+            {
+              "letter": "a",
+              "text": "Entre 5 y 6 mil millones de dólares",
+              "isCorrect": true
+            },
+            {
+              "letter": "b",
+              "text": "Entre 6 y 7 mil millones de dólares",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "Entre 7 y 8 mil millones de dólares",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "Entre 8 y 9 mil millones de dólares 9",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "a"
+        }
+      ],
+      "Consumo y Ahorro Intertemporal": [
+        {
+          "year": 2010,
+          "num": 37,
+          "text": "¿En qué nivel como porcentaje del PBI se ubicó el ahorro privado en el año 2008 en el Perú?",
+          "options": [
+            {
+              "letter": "a",
+              "text": "Entre 10 y 15 por ciento",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "Entre 15 y 20 por ciento",
+              "isCorrect": true
+            },
+            {
+              "letter": "c",
+              "text": "Entre 20 y 25 por ciento",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "Entre 25 y 30 por ciento",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "b"
+        },
+        {
+          "year": 2017,
+          "num": 70,
+          "text": "En un modelo de consumo intertemporal con un solo bien de consumo y dos países y con horizonte infinito, ¿qué afirmación es falsa?",
+          "options": [
+            {
+              "letter": "a",
+              "text": "Choques permanentes al producto no generan movimientos en la cuenta corriente.",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "Si la economía empieza con un stock positivo de riqueza, no es posible que tenga déficit en cuenta corriente en todos los períodos.",
+              "isCorrect": true
+            },
+            {
+              "letter": "c",
+              "text": "La cuenta corriente es igual a la posición neta de activos.",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "La tasa de interés mundial es un promedio de las tasas de autarquía de ambos países.",
+              "isCorrect": false
+            },
+            {
+              "letter": "e",
+              "text": "La tasa de interés refleja el precio del consumo futuro en términos de consumo presente. MICROECONOMÍA",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "b"
+        },
+        {
+          "year": 2023,
+          "num": 7,
+          "text": "Señale la alternativa más verosímil, sobre la hipótesis de ingreso permanente de Friedman:",
+          "options": [
+            {
+              "letter": "a",
+              "text": "Un incremento no esperado por parte de las familias se utiliza para pagar la tarjeta de crédito o incrementar la posición en activos.",
+              "isCorrect": true
+            },
+            {
+              "letter": "b",
+              "text": "Un incremento no esperado por parte de las familias se utiliza para incrementar principalmente el consumo.",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "Las familias tienen una propensión marginal a consumir estable en el tiempo.",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "Un incremento permanente de la renta se destina principalmente al ahorro.",
+              "isCorrect": false
+            },
+            {
+              "letter": "e",
+              "text": "Ninguna de las anteriores.",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "a"
+        },
+        {
+          "year": 2025,
+          "num": 24,
+          "text": "Considere el problema estándar de decisiones consumo ahorro con infinitos periodos de un individuo que maximiza el valor presente de las utilidades instantáneas (𝑢( 𝑐𝑡)) considerando un factor de descuento subjetivo. Este enfrenta fluctuaciones determinísticas de su ingreso y decide cada periodo cuánto consumir y cuánto ahorrar en un bono libre de riesgo con retorno 𝑟. Si el factor de descuento es $\\beta$ y la función de utilidad instantánea es logarítmica (𝑢( 𝑐𝑡) = ln (𝑐𝑡)) en el consumo, la propensión marginal a consumir ante un aumento transitorio de ingreso es igual a:",
+          "options": [
+            {
+              "letter": "a",
+              "text": "1",
+              "isCorrect": true
+            },
+            {
+              "letter": "b",
+              "text": "0",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "1 −$\\beta$",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "𝑟",
+              "isCorrect": false
+            },
+            {
+              "letter": "e",
+              "text": "Ninguna de las anteriores.",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "a"
+        }
+      ],
+      "Ciclos Económicos / Modelos RBC": [
+        {
+          "year": 2013,
+          "num": 35,
+          "text": "Considere una economía donde vive un individuo representativo que valora tanto el ocio (1-L) como el consumo (c) en su función de utilidad. Considere que el individuo vive un solo periodo y destina su ingreso laboral (wL) a consumo solamente. Dada la función de preferencias 𝑢(𝑐, $L$) = log(𝑐) −𝐵L1+φ 1 + φ donde L denota las horas de trabajo y B el parámetro de preferencias por el ocio. Asuma que el individuo decide su nivel de consumo y horas trabajadas mediante la maximización de su función de utilidad sujeto a su restricción presupuestaria. El individuo puede suavizar consumo utilizando un bono cupón cero que paga una tasa de interés, r. ¿Cuál de las siguientes afirmaciones es cierta?",
+          "options": [
+            {
+              "letter": "a",
+              "text": "Un incremento en el consumo lleva a una mayor oferta por trabajo",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "Un incremento en la tasa de interés real incrementa la oferta por trabajo",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "Ante un incremento de 1 por ciento en el salario real, la oferta de trabajo se incrementa en 1/φ por ciento.",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "Ninguna de las anteriores",
+              "isCorrect": false
+            },
+            {
+              "letter": "e",
+              "text": "b) y c) son ciertas.",
+              "isCorrect": true
+            }
+          ],
+          "correctKey": "e"
+        },
+        {
+          "year": 2023,
+          "num": 6,
+          "text": "De acuerdo con los modelos de ciclos económicos reales, ¿cuál de las siguientes alternativas es más probable?",
+          "options": [
+            {
+              "letter": "a",
+              "text": "Las fluctuaciones económicas son eficientes y no representan reducciones en el producto.",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "La política fiscal y monetaria pueden atenuar las fluctuaciones económicas sin empeorar el bienestar social.",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "La principal fuente de las fluctuaciones son choques a la productividad total de los factores.",
+              "isCorrect": true
+            },
+            {
+              "letter": "d",
+              "text": "Las fluctuaciones económicas son causadas principalmente por choques en la demanda.",
+              "isCorrect": false
+            },
+            {
+              "letter": "e",
+              "text": "Las fluctuaciones económicas son resultado de desequilibrios en los mercados.",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "c"
+        },
+        {
+          "year": 2024,
+          "num": 26,
+          "text": "Considere un modelo estándar de Ciclos Económicos Reales con política fiscal: la economía es cerrada y la función de utilidad instantánea de los individuos depende del consumo y del ocio. La función producción depende del capital y del trabajo y el gasto del gobierno es “desperdicio puro” que se financia con impuestos a suma alzada. En esta clase de modelos un choque exógeno y transitorio de mayor gasto público aumenta el producto porque:",
+          "options": [
+            {
+              "letter": "a",
+              "text": "Aumenta la demanda agregada.",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "Induce a las personas a consumir más bienes y ocio.",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "Aumenta la oferta agregada, pues las personas trabajan más debido a la mayor carga fiscal.",
+              "isCorrect": true
+            },
+            {
+              "letter": "d",
+              "text": "El mayor gasto mejora la productividad de las empresas.",
+              "isCorrect": false
+            },
+            {
+              "letter": "e",
+              "text": "Ninguna de las anteriores.",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "c"
+        },
+        {
+          "year": 2025,
+          "num": 37,
+          "text": "Los datos sobre los ciclos económicos en países desarrollados indican que las horas trabajadas tienden a ser procíclicas. En otras palabras, estas aumentan durante períodos de expansión económica y disminuyen en momentos de recesión. Esta observación empírica ha sido corroborada por los modelos de ciclos económicos reales (RBC, por sus siglas en inglés), los cuales se basan en un supuesto fundamental respecto al efecto sustitución y al efecto ingreso de la oferta laboral ante variaciones en los salarios. ¿Cuál de las siguientes alternativas refleja adecuadamente este supuesto presente en los modelos RBC?",
+          "options": [
+            {
+              "letter": "a",
+              "text": "El efecto sustitución es equivalente al efecto ingreso.",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "El efecto ingreso predomina sobre el efecto sustitución",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "El efecto ingreso es superado por el efecto sustitución.",
+              "isCorrect": true
+            },
+            {
+              "letter": "d",
+              "text": "Los modelos RBC no requieren supuestos específicos para explicar las horas trabajadas procíclicas.",
+              "isCorrect": false
+            },
+            {
+              "letter": "e",
+              "text": "Las horas trabajadas son acíclicas y requieren que los efectos de sustitución e ingreso no guarden relación.",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "c"
+        }
+      ]
+    }
+  },
+  "microeconomia": {
+    "title": "Microeconomía",
+    "icon": "🔬",
+    "desc": "Comportamiento del consumidor, teoría de la producción y costos, estructuras de mercado y teoría de juegos.",
+    "total_questions": 149,
+    "subtopics": {
+      "Teoría del Consumidor / Utilidad": 38,
+      "Teoría de la Empresa / Producción y Costos": 32,
+      "Estructuras de Mercado / Monopolio y Competencia": 28,
+      "Teoría de Juegos y Equilibrio de Nash": 22,
+      "Asimetría de Información y Contratos": 15,
+      "Equilibrio General y Eficiencia": 14
+    },
+    "examples": {
+      "Teoría del Consumidor / Utilidad": [
+        {
+          "year": 2010,
+          "num": 87,
+          "text": "Marcia sólo compra dos bienes y su función de utilidad es del tipo Cobb-Douglas. Entonces es cierto que:",
+          "options": [
+            {
+              "letter": "a",
+              "text": "Su curva de Engel para uno de los bienes es vertical.",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "Uno de los bienes es normal y el otro bien es inferior.",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "Cada una de sus dos demandas depende de su ingreso y de los precios de ambos bienes simultáneamente.",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "Su demanda por cada bien depende únicamente de su ingreso y del precio de ese bien.",
+              "isCorrect": true
+            }
+          ],
+          "correctKey": "d"
+        },
+        {
+          "year": 2014,
+          "num": 34,
+          "text": "En el caso de un bien Giffen la orientación y la magnitud de los efectos sustitución e ingreso, respectivamente, son:",
+          "options": [
+            {
+              "letter": "a",
+              "text": "Negativo, Positivo, efecto sustitución mayor al efecto ingreso",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "Negativo, Negativo, efecto sustitución mayor al efecto ingreso",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "Negativo, Positivo, ambos tienen la misma magnitud",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "Positivo, Negativo, efecto ingreso es mayor al efecto sustitución",
+              "isCorrect": true
+            },
+            {
+              "letter": "e",
+              "text": "N.A 11",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "d"
+        },
+        {
+          "year": 2018,
+          "num": 50,
+          "text": "Se cuenta con un modelo en donde el hogar representativo posee la siguiente función de utilidad: 𝐸𝑡∑$\\beta$𝑆($C$𝑡+𝑠−𝛼 2 $C$𝑡+𝑠 2 ) ∞ 𝑠=0 Por otro lado, la restricción presupuestaria del hogar representativo es la siguiente: $C$𝑡+ 𝑎𝑡+1 = (1 + 𝑟)𝑎𝑡+ 𝑥𝑡 Donde $C$𝑡 es el consumo, 𝑎𝑡 es el ahorro y 𝑥𝑡 es el ingreso que tiene el hogar. Por otro lado, $\\beta$ es un factor de descuento, 𝑟 es una tasa de interés que se paga al ahorro y 𝛼 es una constante. ¿Cuál de las siguientes opciones representa la ecuación del Euler del modelo?",
+          "options": [
+            {
+              "letter": "a",
+              "text": "(1 −𝛼$C$𝑡) = (1 + 𝑟)$\\beta$𝐸𝑡[(1 −𝛼$C$𝑡+1)]",
+              "isCorrect": true
+            },
+            {
+              "letter": "b",
+              "text": "$C$𝑡= $\\beta$𝐸𝑡[$C$𝑡+1]",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "$C$𝑡 −𝛼= 𝐸𝑡[$C$𝑡+1 −𝛼]",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "$C$𝑡= 𝑎𝑡𝐸𝑡[$C$𝑡+1]",
+              "isCorrect": false
+            },
+            {
+              "letter": "e",
+              "text": "Ninguna de las anteriores.",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "a"
+        },
+        {
+          "year": 2018,
+          "num": 65,
+          "text": "Responda según corresponda i. La identidad de Roy permite obtener las funciones de demanda ordinarias a partir de la función de utilidad indirecta. ii. El Lema de Shepard permite obtener las funciones de demanda compensadas a partir de la función de gasto mínimo. iii. Cuando un bien es inferior el efecto renta puede compensar al efecto sustitución por lo que la variación total de la demanda provocada por una subida del precio puede ser positiva. iv. Si los bienes son pan y jamón y al consumidor solo le interesa el número total de sánguches que puede preparar, entonces las cantidades óptimas demandadas siempre se encuentran en la diagonal de las funciones de utilidad.",
+          "options": [
+            {
+              "letter": "a",
+              "text": "Todas son incorrectas",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "Solo (iii) es correcta",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "Solo (i), (ii) y (iii) son correctas",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "Todas son correctas",
+              "isCorrect": true
+            },
+            {
+              "letter": "e",
+              "text": "Solo (ii) es correcta Banco Central de Reserva del Perú 22",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "d"
+        }
+      ],
+      "Teoría de la Empresa / Producción y Costos": [
+        {
+          "year": 2011,
+          "num": 78,
+          "text": "Dos gerentes se reúnen a conversar sobre sus respectivas empresas. El gerente de la empresa A usa los insumos X e Y para producir mientras que el gerente B usa Z e Y. El gerente A dice que su empresa es sumamente eficiente y se encuentra minimizando costos. Actualmente, en su empresa, el producto marginal de X es de 100 unidades y el de Y, 200 unidades. El costo del insumo X es de S/. 1000 por unidad. Por su parte, el gerente de la empresa B (que produce un bien diferente) afirma que en su proceso, el producto marginal de Y es de 400 unidades y el de Z, 600 unidades. El costo del insumo Z es de S/. 2400 por unidad. El gerente B también afirma estas minimizando costos.",
+          "options": [
+            {
+              "letter": "a",
+              "text": "Tanto el gerente A como el gerente B están en lo correcto",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "Si el gerente A tiene razón (está minimizando costos) entonces el gerente B debe utilizar menos Z y más Y",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "Si el gerente B tiene razón (está minimizando costos) entonces el gerente A debe utilizar menos X y más Y",
+              "isCorrect": true
+            },
+            {
+              "letter": "d",
+              "text": "Si el gerente B tiene razón (está minimizando costos) entonces el gerente A debe utilizar más X y menos Y",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "c"
+        },
+        {
+          "year": 2011,
+          "num": 83,
+          "text": "Considere el caso de una industria competitiva donde todas las empresas tienen curvas de costo promedio en forma de U. Hay dos tipos de firma: de costo alto -con costo marginal y promedio alto- y de costo bajo, con costo marginal y promedio bajo.¿ Cuál de las siguientes afirmaciones es incorrecta?",
+          "options": [
+            {
+              "letter": "a",
+              "text": "Todas las firmas enfrentan la misma curva de demanda inelástica",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "Si los dos tipos de firma sobreviven en equilibrio, la utilidad de dichas firmas es cero",
+              "isCorrect": true
+            },
+            {
+              "letter": "c",
+              "text": "Si los dos tipos de firma sobreviven en equilibrio, las potenciales entrantes son de costo alto",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "Si los dos tipos de firma sobreviven en equilibrio, las firmas de costo bajo producen más que las firmas de costo alto 21",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "b"
+        },
+        {
+          "year": 2017,
+          "num": 73,
+          "text": "Considere el problema estándar de minimización de costos de una firma que utiliza trabajo y capital como insumos. Sea F(K,L)=K0,5L0,5 la función de producción, Y0 el nivel de producción que se desea alcanzar, w el salario del trabajador y R el costo del capital. El Lema de Shepard nos dice que la demanda condicionada de K*:",
+          "options": [
+            {
+              "letter": "a",
+              "text": "K*=∂C(w,R, Y0)/ ∂R, donde C(w,R, Y0) es la función de costo mínimo.",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "L*=∂C(w,R, Y0)/ ∂w, donde C(w,R, Y0) es la función de costo mínimo.",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "Sólo una alternativa es correcta.",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "Más de una alternativa es correcta",
+              "isCorrect": true
+            },
+            {
+              "letter": "e",
+              "text": "Ninguna alternativa es correcta.",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "d"
+        },
+        {
+          "year": 2020,
+          "num": 15,
+          "text": "La función de producción agregada de una economía es $Y$= 𝐴 $K$𝛼 $L\\beta$, dónde $Y$ es el producto, 𝐴 es productividad total de factores, $K$ es el acervo de capital y $L$ es trabajo, ¿Qué condición se tiene que cumplir para que existan rendimientos a escala crecientes?",
+          "options": [
+            {
+              "letter": "a",
+              "text": "α + β = 1",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "α + β > 1",
+              "isCorrect": true
+            },
+            {
+              "letter": "c",
+              "text": "α + β < 1",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "α – β = 1",
+              "isCorrect": false
+            },
+            {
+              "letter": "e",
+              "text": "α – β < 1 Banco Central de Reserva del Perú",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "b"
+        }
+      ],
+      "Estructuras de Mercado / Monopolio y Competencia": [
+        {
+          "year": 2014,
+          "num": 28,
+          "text": "Considera los siguientes enunciados: I. Un monopolio natural existe cuando las economías de escala son tales que la demanda de una industria debe ser abastecida por una sola empresa. II. Un monopolio es caracterizado por un solo vendedor cuyo producto no cuenta con sustitutos. III. Una reducción en el precio del producto XYZ puede resultar en una menor demanda del mismo bien si y solo si el efecto sustitución es positivo y el efecto ingreso es negativo y tiene un impacto de mayor magnitud. Indique aquellos que sean verdaderos.",
+          "options": [
+            {
+              "letter": "a",
+              "text": "Solo I",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "II y III",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "I y II",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "Todas son correctas",
+              "isCorrect": true
+            },
+            {
+              "letter": "e",
+              "text": "N.A",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "d"
+        },
+        {
+          "year": 2014,
+          "num": 39,
+          "text": "Una diferencia entre el equilibrio de una firma bajo competencia perfecta y bajo competencia monopolística es:",
+          "options": [
+            {
+              "letter": "a",
+              "text": "Oferta= Ingreso marginal bajo competencia perfecta pero no bajo competencia monopolística",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "Costo medio de corto plazo = Costo medio de largo plazo bajo competencia perfecta pero no bajo competencia monopolística",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "Costo marginal de corto plazo = Costo marginal de largo plazo bajo competencia perfecta pero no bajo competencia monopolística 12",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "Costo medio de largo plazo = Costo marginal de largo plazo bajo competencia perfecta pero no bajo competencia monopolística.",
+              "isCorrect": true
+            },
+            {
+              "letter": "e",
+              "text": "N.A. FINANZAS",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "d"
+        },
+        {
+          "year": 2017,
+          "num": 72,
+          "text": "Considere una firma en competencia perfecta que tiene una función de producción que depende de trabajo $f(L) = L^{0.5}$. En el problema de maximización de beneficios de la firma, el precio de venta de su producto es 1, si w es el salario del trabajador entonces:",
+          "options": [
+            {
+              "letter": "a",
+              "text": "La demanda de L*=1/(4w)2.",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "La demanda de L*=1/(2w) 2.",
+              "isCorrect": true
+            },
+            {
+              "letter": "c",
+              "text": "La demanda de L*=(4w)2.",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "La demanda de L*=(2w)2.",
+              "isCorrect": false
+            },
+            {
+              "letter": "e",
+              "text": "Ninguna alternativa es correcta. Banco Central de Reserva del Perú 21",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "b"
+        },
+        {
+          "year": 2020,
+          "num": 29,
+          "text": "¿Cuál de las siguientes condiciones indica que un bien es producido bajo competencia perfecta?",
+          "options": [
+            {
+              "letter": "a",
+              "text": "Cuando el beneficio de los productores es alto.",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "Cuando el beneficio de los productores es bajo.",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "Cuando la oferta total es inelástica.",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "Cuando la demanda individual es perfectamente elástica.",
+              "isCorrect": true
+            },
+            {
+              "letter": "e",
+              "text": "Cuando la demanda individual es perfectamente inelástica. Banco Central de Reserva del Perú",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "d"
+        }
+      ],
+      "Teoría de Juegos y Equilibrio de Nash": [
+        {
+          "year": 2017,
+          "num": 75,
+          "text": "Considere un modelo estático de duopolio de Cournot con dos empresas que tienen costos marginales constantes iguales a c>0. La curva de demanda del mercado es Q=a-P. Encuentre las cantidades producidas por cada empresa en el equilibrio de Nash-Cournot.",
+          "options": [
+            {
+              "letter": "a",
+              "text": "Cada empresa produce (a-c)",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "Cada empresa produce (a-c)/2",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "Cada empresa produce (a-c)/3",
+              "isCorrect": true
+            },
+            {
+              "letter": "d",
+              "text": "Cada empresa produce (a-c)/4",
+              "isCorrect": false
+            },
+            {
+              "letter": "e",
+              "text": "Cada empresa produce (c-a)/2",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "c"
+        },
+        {
+          "year": 2017,
+          "num": 77,
+          "text": "Considere que hay dos empresas interesadas en incursionar en el mercado de cereales para el desayuno en un pequeño país en el que no se venden estos productos. El mercado para cereal crujiente está valorizado en S/ 100 millones. El mercado para cereal dulce está valorizado también en S/ 100 millones. El costo de introducir cualquiera de los dos tipos de cereal S/ 30 millones. Cada empresa sólo tiene recursos para introducir un solo tipo de cereal. Las empresas actúan de forma no cooperativa. Utilizando la teoría de juegos, indique cuál de las siguientes situaciones representa mejor el Equilibrio de Nash del juego si éste se juega una sola vez.",
+          "options": [
+            {
+              "letter": "a",
+              "text": "Sólo una empresa producirá cereal crujiente y la otra no producirá cereal alguno.",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "Solo una empresa producirá cereal dulce y la otra no producirá cereal alguno",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "Cada empresa producirá un tipo diferente de cereal",
+              "isCorrect": true
+            },
+            {
+              "letter": "d",
+              "text": "Las dos empresas producirán el mismo tipo de cereal",
+              "isCorrect": false
+            },
+            {
+              "letter": "e",
+              "text": "Ninguna empresa producirá cereal",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "c"
+        },
+        {
+          "year": 2025,
+          "num": 46,
+          "text": "Considera el siguiente juego en estrategias puras entre dos empresas, A y B, que pueden elegir entre dos estrategias: \"Publicidad\" o \"No Publicidad\". Si ambas empresas eligen \"Publicidad\", cada una obtiene una utilidad de 5. Si ambas eligen \"No Publicidad\", cada una obtiene una utilidad de 10. Si una elige \"Publicidad\" y la otra \"No Publicidad\", la empresa que elige \"Publicidad\" obtiene 15 y la otra obtiene 2. ¿Cuál de las siguientes afirmaciones es incorrecta?",
+          "options": [
+            {
+              "letter": "a",
+              "text": "Si ambas empresas eligen \"Publicidad\", se encuentran en un equilibrio de Nash.",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "Ambas empresas preferirían elegir (\"No Publicidad\", \"No Publicidad\") en lugar de (\"Publicidad\", \"Publicidad\").",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "\"Publicidad\" es una estrategia dominante para ambas empresas.",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "Si la empresa A elige \"Publicidad\", la mejor respuesta para la empresa B es también \"Publicidad\".",
+              "isCorrect": false
+            },
+            {
+              "letter": "e",
+              "text": "\"No Publicidad\" es un equilibrio de Nash en este juego.",
+              "isCorrect": true
+            }
+          ],
+          "correctKey": "e"
+        }
+      ],
+      "Asimetría de Información y Contratos": [
+        {
+          "year": 2025,
+          "num": 48,
+          "text": "Una universidad prestigiosa, neutral al riesgo, desea contratar a un investigador para desarrollar un proyecto innovador en tecnología educativa. En caso de que el proyecto fracase, los beneficios de la universidad serán 6,000 soles. El esfuerzo que puede realizar el investigador puede ser alto (H) o bajo (L), con una probabilidad de éxito de 0,2 si el esfuerzo es bajo y de 0,7 si el esfuerzo es alto. La función de utilidad del investigador está dada por la siguiente expresión: 𝑈(𝑤, 𝑑(𝑒)) = 𝑤0.5 −𝑑(𝑒)2 donde w representa el salario ofrecido y 𝑑(𝑒) es la desutilidad del esfuerzo asociado. La utilidad de reserva del investigador es 50, y las desutilidades de realizar un esfuerzo alto y bajo son, respectivamente, 𝑑(𝐻) = 2 𝑦 𝑑($L$) = 0. Calcule el valor de los ingresos en caso de éxito para que los beneficios esperados de inducir el esfuerzo bajo sean iguales a 4 000 soles.",
+          "options": [
+            {
+              "letter": "a",
+              "text": "7 500",
+              "isCorrect": true
+            },
+            {
+              "letter": "b",
+              "text": "8 000",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "8 500",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "9 000",
+              "isCorrect": false
+            },
+            {
+              "letter": "e",
+              "text": "9 500 Finanzas",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "a"
+        }
+      ],
+      "Equilibrio General y Eficiencia": [
+        {
+          "year": 2024,
+          "num": 40,
+          "text": "Hablando de economía con sus amigos, uno de sus interlocutores señala: Si las asignaciones de los mercados son Pareto eficientes, podemos concluir dos cosas: (i) No se puede mejorar el bienestar de un agente sin afectar el bienestar de los otros. (ii) En el resultado puede existir desigualdad, pero no pobreza, porque el resultado es óptimo y eficiente. Las dos conclusiones con respecto a los resultados Pareto eficientes son:",
+          "options": [
+            {
+              "letter": "a",
+              "text": "Verdadero y Verdadero",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "Verdadero y Falso",
+              "isCorrect": true
+            },
+            {
+              "letter": "c",
+              "text": "Falso y Verdadero",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "Falso y Falso",
+              "isCorrect": false
+            },
+            {
+              "letter": "e",
+              "text": "No se puede concluir nada al respecto.",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "b"
+        },
+        {
+          "year": 2025,
+          "num": 47,
+          "text": "Considere una economía de intercambio puro con dos consumidores (1 y 2) y dos bienes (X e Y). Las preferencias de los consumidores vienen dadas por las siguientes funciones de utilidad: 𝑈𝑖($C$𝑋 𝑖, $CY$ 𝑖) = 𝑖× ln($C$𝑋 𝑖) + ln ($CY$ 𝑖) para 𝑖= 1,2. La dotación de bienes de los consumidores es el siguiente: el consumidor 1 tiene una unidad de cada bien, mientras que el consumidor 2 tiene una unidad del bien X y 3 del bien Y. Determine el vector de precios del equilibrio Walrasiano (𝑃𝑋,𝑃$Y$), si normalizamos el precio del bien Y a la unidad.",
+          "options": [
+            {
+              "letter": "a",
+              "text": "(1,1)",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "(2,1)",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "(3,1)",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "(4,1)",
+              "isCorrect": true
+            },
+            {
+              "letter": "e",
+              "text": "(5,1)",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "d"
+        }
+      ]
+    }
+  },
+  "finanzas": {
+    "title": "Finanzas y Mercado de Capitales",
+    "icon": "📈",
+    "desc": "Valoración de instrumentos de renta fija, renta variable, derivados financieros y gestión de portafolios.",
+    "total_questions": 209,
+    "subtopics": {
+      "Derivados Financieros (Forwards, Futuros, Swaps)": 65,
+      "Renta Fija / Bonos y Tasas": 54,
+      "Valoración de Activos (CAPM / Markowitz / Beta)": 48,
+      "Mercado de Capitales y Acciones": 42
+    },
+    "examples": {
+      "Derivados Financieros (Forwards, Futuros, Swaps)": [
+        {
+          "year": 2014,
+          "num": 42,
+          "text": "Consider an option investment strategy en which the investor writes (short sells) two options: a call option and a put option, both of them have the same underlying asset, same strike price (which are also the same as the underlying spot price) and the same maturity date. The strategy’s profitability relations to the underlying price volatility (vega) and to the underlying Price (delta) are, respectively:",
+          "options": [
+            {
+              "letter": "a",
+              "text": "Positive, positive",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "Positive, neutral",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "Negative, negative",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "Negative, neutral",
+              "isCorrect": true
+            },
+            {
+              "letter": "e",
+              "text": "N.A 13",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "d"
+        },
+        {
+          "year": 2014,
+          "num": 44,
+          "text": "Given the following spot and forward rates, how much should an investor pay for each $100 of a 5-year, annual zero-coupon bond? ▪ One-year spot rate is 4.25% ▪ The 1-year forward rate 1 year from today is 9.75% ▪ The 1-year forward rate 2 years from today is 17.90% ▪ The 2-year forward rate 3 years from today is 22.13% The investor should pay approximately:",
+          "options": [
+            {
+              "letter": "a",
+              "text": "$76",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "$44",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "$61",
+              "isCorrect": true
+            },
+            {
+              "letter": "d",
+              "text": "$83",
+              "isCorrect": false
+            },
+            {
+              "letter": "e",
+              "text": "N.A",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "c"
+        },
+        {
+          "year": 2016,
+          "num": 97,
+          "text": "Un inversionista entra en una posición corta en un contrato forward a 40 días de un cierto commodity a un precio de forward de US$ 625/onza y por un nocional de 1 000 onzas, siendo el precio spot US$ 605/onza al día en que se abrió dicha posición. 40 días después, el forward llega a su vencimiento y el precio actual del commodity es de US$ 700/onza. ¿Cuánto es el resultado contable del inversionista?",
+          "options": [
+            {
+              "letter": "a",
+              "text": "US$ 75 000",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "-US$ 75 000",
+              "isCorrect": true
+            },
+            {
+              "letter": "c",
+              "text": "US$ 95 000",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "-US$ 95 000",
+              "isCorrect": false
+            },
+            {
+              "letter": "e",
+              "text": "Hace falta conocer la tasa de interés libre de riesgo. Banco Central de Reserva del Perú 33",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "b"
+        },
+        {
+          "year": 2016,
+          "num": 98,
+          "text": "Un inversionista X tiene un portafolio de inversión compuesto por acciones de empresas de 4 sectores: industria, minería, servicios y comercio. A continuación se presentan las ponderaciones del portafolio del inversionista X y del portafolio de mercado. La correlación entre los retornos de cualquiera de los 4 sectores es igual a cero. El inversionista X necesita realizar un Beta Hedge (igualar el beta de su portafolio de inversión con el del mercado). El valor de mercado de su portafolio es de US$ 1 millón. En el mercado existen contratos forward sobre un índice de acciones con un beta igual a 2 y un valor nocional a pedido del inversionista Para realizar el Beta Hedge, ¿El inversionista debería entrar en una posición corta o larga en el forward? ¿Qué valor nocional debería tener el contrato forward?",
+          "options": [
+            {
+              "letter": "a",
+              "text": "Largo de US$ 42 500",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "Largo de US$ 39 500",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "Largo de US$ 26 500",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "Corto de US$ 37 500",
+              "isCorrect": true
+            },
+            {
+              "letter": "e",
+              "text": "Corto de US$ 33 250",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "d"
+        }
+      ],
+      "Renta Fija / Bonos y Tasas": [
+        {
+          "year": 2010,
+          "num": 56,
+          "text": "Máximo periodo de vencimiento de un bono del gobierno peruano",
+          "options": [
+            {
+              "letter": "a",
+              "text": "15 años",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "20 años",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "25 años",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "30 años",
+              "isCorrect": true
+            }
+          ],
+          "correctKey": "d"
+        },
+        {
+          "year": 2010,
+          "num": 91,
+          "text": "Según la calificación de Standard & Poor’s. ¿Cuál o cuáles de los siguientes bonos cuenta con grado de inversión? Emisor Calificativo Corporación Cápsula BB Industrias Acme BBB+ Hamburguesas Krusty A-",
+          "options": [
+            {
+              "letter": "a",
+              "text": "Todos",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "Hamburguesas Krusty e Industrias Acme",
+              "isCorrect": true
+            },
+            {
+              "letter": "c",
+              "text": "Hamburguesas Krusty",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "Ninguno",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "b"
+        },
+        {
+          "year": 2010,
+          "num": 93,
+          "text": "Respecto a una nueva emisión con las siguientes características: 10 años, US$ 1000 valor nominal y tasa cupón semianual de 8%. Si el bono se cotiza en el mercado a US$ 950. ¿Cuál de las siguientes afirmaciones es correcta?",
+          "options": [
+            {
+              "letter": "a",
+              "text": "El bono se vende a descuento.",
+              "isCorrect": true
+            },
+            {
+              "letter": "b",
+              "text": "La tasa de rendimiento requerida por el mercado es menor a la tasa cupón del bono.",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "El bono se vende por encima de la par.",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "El bono posee un bajo calificativo de riesgo.",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "a"
+        },
+        {
+          "year": 2010,
+          "num": 96,
+          "text": "¿Qué relaciona la curva de rendimiento?",
+          "options": [
+            {
+              "letter": "a",
+              "text": "Plazos al vencimiento y rendimientos de los bonos soberanos.",
+              "isCorrect": true
+            },
+            {
+              "letter": "b",
+              "text": "Tasa cupón de la deuda del gobierno y plazos al vencimiento.",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "Duración de los bonos soberanos y spread por riesgo de default.",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "Ninguna de las anteriores.",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "a"
+        }
+      ],
+      "Valoración de Activos (CAPM / Markowitz / Beta)": [
+        {
+          "year": 2010,
+          "num": 94,
+          "text": "El beta de una acción A es 1.3. Si el retorno esperado del mercado es 12% y la tasa de retorno libre de riesgo es de 6%, ¿Cuál es el retorno esperado de la acción A?",
+          "options": [
+            {
+              "letter": "a",
+              "text": "13.8%",
+              "isCorrect": true
+            },
+            {
+              "letter": "b",
+              "text": "15.6%",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "14.2%",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "8.5%",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "a"
+        },
+        {
+          "year": 2011,
+          "num": 90,
+          "text": "Según CAPM, si el beta de la acción A es 2 , entonces, el retorno exigido de la acción será:",
+          "options": [
+            {
+              "letter": "a",
+              "text": "Mayor que la tasa libre de riesgo",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "Menor que la tasa libre de riesgo",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "No se puede determinar una relación porque faltan datos",
+              "isCorrect": true
+            },
+            {
+              "letter": "d",
+              "text": "No se puede determinar una relación porque el CAPM no calcula retornos exigidos",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "c"
+        },
+        {
+          "year": 2011,
+          "num": 94,
+          "text": "Si se valida CAPM y el portafolio A se encuentra en la CML (Capital Market line), ¿Cuál es el retorno esperado del portafolio A?",
+          "options": [
+            {
+              "letter": "a",
+              "text": "16%",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "18%",
+              "isCorrect": true
+            },
+            {
+              "letter": "c",
+              "text": "22%",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "No se puede determinar porque faltan datos",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "b"
+        },
+        {
+          "year": 2018,
+          "num": 86,
+          "text": "La acción XYZ tiene un retorno esperado de 12% y un $\\beta$= 1. La acción ABC tiene un retorno esperado de 13% y un $\\beta$= 1.5 . Además, la tasa libre de riesgo es 5% y el retorno del portafolio de mercado es 11%. Marque la respuesta correcta según el modelo de CAPM.",
+          "options": [
+            {
+              "letter": "a",
+              "text": "Tanto XYZ como ABC están correctamente valorizadas, acorde con el modelo CAPM.",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "ABC está subvaluada y XYZ está sobrevaluada.",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "ABC brinda un exceso de retorno de 1% sobre el modelo CAPM.",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "XYZ está subvaluada y ABC está sobrevaluada.",
+              "isCorrect": true
+            },
+            {
+              "letter": "e",
+              "text": "Ninguna de las anteriores.",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "d"
+        }
+      ],
+      "Mercado de Capitales y Acciones": [
+        {
+          "year": 2010,
+          "num": 50,
+          "text": "¿Cuál de las siguientes acciones de la BVL no cotiza en el NYSE bajo la forma de un ADR (American Depositary Receipt)?",
+          "options": [
+            {
+              "letter": "a",
+              "text": "Compañía de Minas Buenaventura",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "Credicorp",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "Southern Copper Corporation",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "Maple Energy",
+              "isCorrect": true
+            }
+          ],
+          "correctKey": "d"
+        },
+        {
+          "year": 2010,
+          "num": 52,
+          "text": "¿Cuál de estos eventos es considerado como el detonante de la contracción crediticia en la crisis financiera actual?",
+          "options": [
+            {
+              "letter": "a",
+              "text": "Rescate de Fannie Mae y Freddie Mac",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "Bancarrota de Lehman Brothers",
+              "isCorrect": true
+            },
+            {
+              "letter": "c",
+              "text": "Descubrimiento de la pirámide financiera operada por Bernard Madoff",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "Caída de los precios de los commodities",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "b"
+        },
+        {
+          "year": 2010,
+          "num": 88,
+          "text": "Una situación en la cual uno de los involucrados en una transacción o contrato no puede observar las acciones tomadas por su contraparte no representa un problema de:",
+          "options": [
+            {
+              "letter": "a",
+              "text": "Selección adversa",
+              "isCorrect": true
+            },
+            {
+              "letter": "b",
+              "text": "Riesgo moral",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "Ineficiencia en la asignación de recursos",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "Información asimétrica. FINANZAS",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "a"
+        },
+        {
+          "year": 2010,
+          "num": 105,
+          "text": "¿Qué acción sería preferible usando el concepto de coeficiente de variación?",
+          "options": [
+            {
+              "letter": "a",
+              "text": "Una con rentabilidad de 3% y desviación estándar de 2%",
+              "isCorrect": true
+            },
+            {
+              "letter": "b",
+              "text": "Una con rentabilidad de 20% y desviación estándar de 80%",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "Una con rentabilidad de 10% y desviación estándar de 20%",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "Una con retorno de 10% y desviación estándar de 25% ECONOMETRÌA",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "a"
+        }
+      ]
+    }
+  },
+  "econometria": {
+    "title": "Estadística y Econometría",
+    "icon": "📉",
+    "desc": "Inferencia econométrica, mínimos cuadrados ordinarios, modelos de series de tiempo, datos de panel y elección binaria.",
+    "total_questions": 114,
+    "subtopics": {
+      "MCO y Propiedades de los Estimadores": 36,
+      "Series de Tiempo (ARIMA / VAR / Cointegración)": 24,
+      "Datos de Panel (Efectos Fijos y Aleatorios)": 14,
+      "Modelos de Elección Binaria (Logit / Probit)": 12,
+      "Probabilidad y Estadística Inferencial": 28
+    },
+    "examples": {
+      "MCO y Propiedades de los Estimadores": [
+        {
+          "year": 2011,
+          "num": 106,
+          "text": "Sea un modelo de regresión lineal clásico representado matricialmente como: $y = X\\beta + u$ ¿Cuál de las siguientes afirmaciones no requiere el supuesto de normalidad de las perturbaciones?",
+          "options": [
+            {
+              "letter": "a",
+              "text": "No existe estimador insesgado con menor varianza que el vector de estimadores MCO $\\hat{\\beta}$",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "El vector de estimadores 2 MCO  es asintóticamente eficiente.",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "El vector de estimadores MCO $\\hat{\\beta}$ es asintóticamente normal.",
+              "isCorrect": true
+            },
+            {
+              "letter": "d",
+              "text": "El vector de estimadores MCO $\\hat{\\beta}$ es de máxima verosimilitud.",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "c"
+        },
+        {
+          "year": 2011,
+          "num": 108,
+          "text": "En un modelo de regresión lineal, es cierto que:",
+          "options": [
+            {
+              "letter": "a",
+              "text": "La omisión de variables hace que la varianza del vector de estimadores MCO $\\hat{\\beta}$ sea mayor",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "La inclusión de variables redundantes sesga el vector de estimadores MCO $\\hat{\\beta}$ , mas no el estimador de la varianza del término de perturbación",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "Si las perturbaciones son heteroscedásticas, el estimador convencional de la varianza del vector de estimadores MCO $\\hat{\\beta}$ sesga las inferencias, pero la dirección del sesgo no es única",
+              "isCorrect": true
+            },
+            {
+              "letter": "d",
+              "text": "Si las perturbaciones siguen un proceso estacionario de medias móviles, el vector de estimadores MCO $\\hat{\\beta}$ es sesgado, pero consistente",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "c"
+        },
+        {
+          "year": 2013,
+          "num": 48,
+          "text": "Suponga que desea estimar los parámetros de demanda de un bien 𝑗, y consiguió los datos de las cantidades vendidas de dicho bien 𝑄𝑡 𝑗 y los precios a los que se transó 𝑃𝑡 𝑗, además de otras variables exógenas que afectan a la demanda de dicho bien, agrupadas en 𝑋𝑡 (por ejemplo, los precios de algunos bienes evidentemente sustitutos o complementarios, un índice de riqueza de las familias, etc.). Entonces puede especificar 𝑄𝑡 𝑗= $\\beta$0 + $\\beta$1𝑃𝑡 𝑗+ 𝑋𝑡$\\beta$3 ′ + 𝜖𝑡 ¿Qué es lo que más probablemente ocurra con la estimación MCO de $\\beta$1?",
+          "options": [
+            {
+              "letter": "a",
+              "text": "Que sea ineficiente, pues 𝑋𝑡 esta muy correlacionado con 𝑃𝑡 𝑗.",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "Que sea sesgada, pues Pt j tiene componentes endógenos.",
+              "isCorrect": true
+            },
+            {
+              "letter": "c",
+              "text": "Que no sea robusta ante cambios en las variables contenidas en 𝑋𝑡.",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "Que sea sesgada pero consistente, ya que 𝑃𝑡 𝑗 tiene componentes endógenos.",
+              "isCorrect": false
+            },
+            {
+              "letter": "e",
+              "text": "N.A",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "b"
+        },
+        {
+          "year": 2013,
+          "num": 49,
+          "text": "Si no se contempla la heteroscedasticidad en la varianza del término de error en una regresión de corte transversal, el estimador MCO será",
+          "options": [
+            {
+              "letter": "a",
+              "text": "Sesgado, pero consistente.",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "Insesgado e inconsistente.",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "Ineficiente, pues la varianza de los errores estaría incorrectamente calculada.",
+              "isCorrect": true
+            },
+            {
+              "letter": "d",
+              "text": "b y c.",
+              "isCorrect": false
+            },
+            {
+              "letter": "e",
+              "text": "N.A. 16",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "c"
+        }
+      ],
+      "Series de Tiempo (ARIMA / VAR / Cointegración)": [
+        {
+          "year": 2010,
+          "num": 107,
+          "text": "Asuma un conjunto de series temporales que son reunidas en un vector Yt de dimensión n. El modelo multivariado de cointegración propuesto por Johansen (1995) denominado VECM se expresa de la siguiente forma: donde , y Dt es un conjunto de componentes determinísticos. Se sabe que las variables poseen tendencia lineal y el vector de cointegración es estacionario en tendencia. Un investigador desea saber cómo modelar los componentes determinísticos tanto en las variables como en el vector de cointegración. ¿Cuál de las siguientes afirmaciones es correcta?:",
+          "options": [
+            {
+              "letter": "a",
+              "text": "Incluir una constante en le VECM y también en el vector de cointegración.",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "No incluir ningún componente determinístico tanto en el VECM como en el vector de cointegración.",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "Incluir una constante en el VECM y una tendencia en el vector de cointegración.",
+              "isCorrect": true
+            },
+            {
+              "letter": "d",
+              "text": "Dado que hay tendencia en las variables, incluir una tendencia en el VECM y una constante en el vector de cointegración.",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "c"
+        },
+        {
+          "year": 2011,
+          "num": 110,
+          "text": "En relación al concepto de cointegración, no es cierto que:",
+          "options": [
+            {
+              "letter": "a",
+              "text": "Dos series de tiempo integradas de orden tres pueden cointegrar",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "Para que un vector de cointegración pueda asociarse a una relación de largo plazo, la combinación lineal generada por los parámetros del mismo debe ser estacionaria alrededor de cero",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "Si Y y X cointegran, la causalidad en el sentido de Granger implica el análisis de la significancia de los rezagos de las primeras diferencias de las series y de los términos de error de corrección",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "N.A",
+              "isCorrect": true
+            }
+          ],
+          "correctKey": "d"
+        },
+        {
+          "year": 2014,
+          "num": 50,
+          "text": "El test de raíz unitaria ADF:",
+          "options": [
+            {
+              "letter": "a",
+              "text": "Tiene como hipótesis nula que no existe raíz unitaria.",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "Solo se puede usar si no existe intercepto.",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "Tiene problemas de potencia a comparación de ADF GLS.",
+              "isCorrect": true
+            },
+            {
+              "letter": "d",
+              "text": "Su hipótesis alternativa coincide con el test KPSS",
+              "isCorrect": false
+            },
+            {
+              "letter": "e",
+              "text": "N.A",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "c"
+        },
+        {
+          "year": 2016,
+          "num": 79,
+          "text": "Evalúe la veracidad de las siguientes proposiciones. En cada caso indique si es Verdadero (V), Falso (F) o Incierto (I). i. En una estimación con muestra pequeña, es preferible utilizar el método Delta al de Bootstrap para el cálculo de las bandas de confianza en las funciones de impulso respuesta de un modelo VAR Estructural. ii. La mejor predicción para mañana de una serie de tiempo con tendencia es el valor de hoy. iii. La metodología propuesta por Blanchard y Quah (1989) para la identificación mediante restricciones de largo plazo utiliza la factorización de Cholesky. iv. La descomposición histórica de una serie de tiempo se obtiene a través de un VAR estructural solamente cuando este está exactamente identificado.",
+          "options": [
+            {
+              "letter": "a",
+              "text": "VVFV",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "FVFI",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "FIVF",
+              "isCorrect": true
+            },
+            {
+              "letter": "d",
+              "text": "FVVI",
+              "isCorrect": false
+            },
+            {
+              "letter": "e",
+              "text": "Ninguna de las Anteriores",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "c"
+        }
+      ],
+      "Datos de Panel (Efectos Fijos y Aleatorios)": [
+        {
+          "year": 2018,
+          "num": 75,
+          "text": "Considerar el siguiente modelo de datos de panel con data trimestral y variables dicotómicas 𝐷1; 𝐷2; 𝐷3 que busca explicar las ventas de cierta empresa industrial: 𝑉𝑒𝑛𝑡𝑎𝑠𝑡= $\\beta$0 + $\\beta$1𝐷1,𝑡+ $\\beta$2𝐷2,𝑡+ $\\beta$3𝐷3,𝑡+ 𝜀𝑡 Donde: 𝐷1 = 1 si el periodo t es el primer trimestre del año, de lo contrario 𝐷1 = 0. 𝐷2 = 1 si el periodo t es el segundo trimestre del año, de lo contrario 𝐷2 = 0. 𝐷3 = 1 si el periodo t es el tercer trimestre del año, de lo contrario 𝐷3 = 0. El intercepto $\\beta$0 representa:",
+          "options": [
+            {
+              "letter": "a",
+              "text": "El valor promedio de las ventas de los tres primeros trimestres",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "El valor promedio de las ventas del cuarto trimestre",
+              "isCorrect": true
+            },
+            {
+              "letter": "c",
+              "text": "La mediana del valor de las ventas de los tres primeros trimestres",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "La mediana del valor de las ventas del cuarto trimestre",
+              "isCorrect": false
+            },
+            {
+              "letter": "e",
+              "text": "Ninguna de las anteriores Banco Central de Reserva del Perú 25",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "b"
+        },
+        {
+          "year": 2023,
+          "num": 55,
+          "text": "Considere un modelo de regresión para datos de panel dinámico. Marque la respuesta incorrecta:",
+          "options": [
+            {
+              "letter": "a",
+              "text": "Los efectos individuales permiten controlar por variables omitidas invariantes en el tiempo.",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "Los efectos temporales permiten controlar por choque agregados.",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "El estimador Arellano-Bond permite estimar de manera consistente el coeficiente de la variable endógena rezagada.",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "La validez del estimador Arellano-Bond requiere que exista autocorrelación de orden 1 en el modelo expresado en primeras diferencias.",
+              "isCorrect": false
+            },
+            {
+              "letter": "e",
+              "text": "Ninguna de las anteriores Lectura en Inglés Questions 56-60 are referred to the following text: Jerome Powell: “…At today’s meeting the Committee raised the target range for the federal funds rate by 75 basis points. And we are continuing the process of significantly reducing the size of our balance sheet, which plays an important role in firming the stance of monetary policy. With today’s action, we have raised interest rates by 3-3/4 percentage points this year. We anticipate that ongoing increases in the target range for the federal funds rate will be appropriate in order to attain a stance of monetary policy that is sufficiently restrictive to return inflation to 2 percent over time. Financial conditions have tightened significantly in response to our policy actions, and we are seeing the effects on demand in the most interest-rate-sensitive sectors of the economy, such as housing. It will take time, however, for the full effects of monetary restraint to be realized, especially on inflation. That’s why we say in our statement that in determining the pace of future increases in the target range, we will take into account the cumulative tightening of monetary policy and the lags with which monetary policy affects economic activity and inflation. At some point, as I’ve said in the last 2 press conferences, it will become appropriate to slow the",
+              "isCorrect": true
+            }
+          ],
+          "correctKey": "e"
+        },
+        {
+          "year": 2025,
+          "num": 56,
+          "text": "Sobre los modelos de datos de panel. Marque el enunciado correcto:",
+          "options": [
+            {
+              "letter": "a",
+              "text": "Sea el modelo 𝑦𝑖𝑡= 𝛼𝑖+ 𝛾𝑦𝑖𝑡−1 + $\\beta$𝑥𝑖𝑡+ 𝑒𝑖𝑡 El estimador “within” es robusto a la presencia de los efectos dinámicos 𝑦𝑖𝑡−1",
+              "isCorrect": true
+            },
+            {
+              "letter": "b",
+              "text": "Cuando el efecto [fijo] no observado no se encuentra correlacionado con los regresores, es preferible emplear el estimador de \"efectos aleatorios\" sobre el estimador de \"efectos fijos\" debido a que el primero es más eficiente.",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "Sea el modelo: 𝑦𝑖𝑡= 𝛼𝑖 + $\\beta$𝑥𝑖𝑡+ 𝑒𝑖𝑡 Si se tienen solo dos periodos de tiempo, el $\\beta$̂ estimado por un modelo de efectos fijos es diferente al estimado por un modelo de diferencias.",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "En el caso de un panel dinámico con efectos fijos, el estimador de Arellano- Bond es más eficiente que el estimador de Arellano-Bover-Bond.",
+              "isCorrect": false
+            },
+            {
+              "letter": "e",
+              "text": "Ninguna es correcta.",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "a"
+        }
+      ],
+      "Modelos de Elección Binaria (Logit / Probit)": [
+        {
+          "year": 2017,
+          "num": 83,
+          "text": "En los modelos de elección binaria como Logit y Probit. El efecto marginal de la variable 𝑋𝑗 en la probabilidad del evento Y=1 es : i. Es negativo, cuando la variable 𝑋𝑗 toma valores negativos. ii. Esta cerca de ser el máximo, en valor absoluto, cuando el efecto marginal es evaluado en $\\beta$̂′𝑋= 0. iii. Es mayor en valor absoluto cuando $\\beta$̂′𝑋 >0 que cuando $\\beta$̂′𝑋< 0. Son verdaderas:",
+          "options": [
+            {
+              "letter": "a",
+              "text": "Solo I",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "Solo II",
+              "isCorrect": true
+            },
+            {
+              "letter": "c",
+              "text": "Solo III",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "II y III",
+              "isCorrect": false
+            },
+            {
+              "letter": "e",
+              "text": "N.A. Banco Central de Reserva del Perú 24",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "b"
+        },
+        {
+          "year": 2025,
+          "num": 57,
+          "text": "Sobre los modelos de elección binaria. Marque la respuesta verdadera.",
+          "options": [
+            {
+              "letter": "a",
+              "text": "El modelo Logit es más flexible que el modelo Probit porque no tiene una forma funcional fija para la distribución de errores.",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "Los coeficientes estimados por el modelo logit se interpretan como el cambio en la probabilidad de que el evento sea diagnosticado como 1.",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "Los coeficientes estimados por los modelos logit tienden a ser más pequeños que los estimados por modelos probit",
+              "isCorrect": true
+            },
+            {
+              "letter": "d",
+              "text": "Los modelos probit y logit son similares en términos de la dirección de los impactos marginales estimados.",
+              "isCorrect": false
+            },
+            {
+              "letter": "e",
+              "text": "Ninguna es verdadera.",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "c"
+        }
+      ],
+      "Probabilidad y Estadística Inferencial": [
+        {
+          "year": 2010,
+          "num": 103,
+          "text": "¿Qué valores puede tomar la covarianza?",
+          "options": [
+            {
+              "letter": "a",
+              "text": "Entre -1 y 1",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "Entre 0 y 1",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "Entre - ∞ y +∞",
+              "isCorrect": true
+            },
+            {
+              "letter": "d",
+              "text": "N.A.",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "c"
+        },
+        {
+          "year": 2018,
+          "num": 72,
+          "text": "El intervalo de confianza al 95% de significancia de la media muestral de la edad de un grupo de 5000 personas es [19; 44], basado en la distribución normal. El tamaño de la muestra es 100 personas. ¿Cuál es el error estándar de la media muestral de la edad?",
+          "options": [
+            {
+              "letter": "a",
+              "text": "1.96",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "2.58",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "6.38",
+              "isCorrect": true
+            },
+            {
+              "letter": "d",
+              "text": "12.50",
+              "isCorrect": false
+            },
+            {
+              "letter": "e",
+              "text": "10.11 Banco Central de Reserva del Perú 24",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "c"
+        },
+        {
+          "year": 2018,
+          "num": 73,
+          "text": "Una distribución de densidad que, comparada con una distribución normal, tiene mayor densidad en puntos cercanos a la media y también mayor densidad en los puntos extremadamente alejados de la media tiene:",
+          "options": [
+            {
+              "letter": "a",
+              "text": "Sesgo positivo",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "Sesgo negativo",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "Curtosis en exceso positiva",
+              "isCorrect": true
+            },
+            {
+              "letter": "d",
+              "text": "Curtosis en exceso negativa",
+              "isCorrect": false
+            },
+            {
+              "letter": "e",
+              "text": "Asimetría",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "c"
+        },
+        {
+          "year": 2019,
+          "num": 71,
+          "text": "Una variable aleatoria X toma valores de -1, 0, 1 con probabilidades 1 3 ⁄ , 1 5 ⁄ y 𝑝, respectivamente. Calcular 𝑃(𝑋= 0|𝑋≥0).",
+          "options": [
+            {
+              "letter": "a",
+              "text": "0,00",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "0,20",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "0,30",
+              "isCorrect": true
+            },
+            {
+              "letter": "d",
+              "text": "0,60",
+              "isCorrect": false
+            },
+            {
+              "letter": "e",
+              "text": "0,80",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "c"
+        }
+      ]
+    }
+  },
+  "actualidad": {
+    "title": "Actualidad Económica y Coyuntura",
+    "icon": "📰",
+    "desc": "Preguntas sobre coyuntura económica global y nacional, indicadores del Perú, bancos centrales globales y eventos financieros.",
+    "total_questions": 73,
+    "subtopics": {
+      "Indicadores y Coyuntura Peruana": 25,
+      "Coyuntura y Bancos Centrales Globales": 30,
+      "Organismos y Acuerdos Internacionales": 18
+    },
+    "examples": {
+      "Indicadores y Coyuntura Peruana": [
+        {
+          "year": 2014,
+          "num": 1,
+          "text": "La economía peruana creció en el año 2012 a una tasa cercana a :",
+          "options": [
+            {
+              "letter": "a",
+              "text": "8 %",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "5 %",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "6 %",
+              "isCorrect": true
+            },
+            {
+              "letter": "d",
+              "text": "2%",
+              "isCorrect": false
+            },
+            {
+              "letter": "e",
+              "text": "N.A",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "c"
+        },
+        {
+          "year": 2025,
+          "num": 12,
+          "text": "¿Cuántos años consecutivos ha mantenido Perú una tasa de inflación de un solo dígito hasta agosto de 2024?",
+          "options": [
+            {
+              "letter": "a",
+              "text": "17 años.",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "27 años.",
+              "isCorrect": true
+            },
+            {
+              "letter": "c",
+              "text": "30 años.",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "37 años.",
+              "isCorrect": false
+            },
+            {
+              "letter": "e",
+              "text": "47 años.",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "b"
+        },
+        {
+          "year": 2025,
+          "num": 14,
+          "text": "¿Cuál es el monto de la inversión estimada para la construcción del Terminal Portuario Multipropósito de Chancay?",
+          "options": [
+            {
+              "letter": "a",
+              "text": "Alrededor de US$ 350,000 millones",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "Alrededor de US$ 35,000 millones",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "Alrededor de US$ 10,000 millones",
+              "isCorrect": true
+            },
+            {
+              "letter": "d",
+              "text": "Alrededor de US$ 3,500 millones",
+              "isCorrect": false
+            },
+            {
+              "letter": "e",
+              "text": "Alrededor de US$ 3,5 millones",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "c"
+        },
+        {
+          "year": 2025,
+          "num": 25,
+          "text": "¿Cuántos años consecutivos ha mantenido Perú una tasa de inflación de un solo dígito hasta agosto de 2024?",
+          "options": [
+            {
+              "letter": "a",
+              "text": "17 años.",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "27 años.",
+              "isCorrect": true
+            },
+            {
+              "letter": "c",
+              "text": "30 años.",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "37 años.",
+              "isCorrect": false
+            },
+            {
+              "letter": "e",
+              "text": "47 años.",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "b"
+        }
+      ],
+      "Coyuntura y Bancos Centrales Globales": [
+        {
+          "year": 2010,
+          "num": 31,
+          "text": "¿Quiénes son las máximas autoridades de la Reserva Federal y el Departamento del Tesoro de los Estados Unidos, respectivamente?",
+          "options": [
+            {
+              "letter": "a",
+              "text": "Alan Greenspan y Lawrence Summers",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "Alan Greenspan y Henry Paulson",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "Ben Bernanke y Lawrence Summers",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "Ben Bernanke y Henry Paulson",
+              "isCorrect": true
+            }
+          ],
+          "correctKey": "d"
+        },
+        {
+          "year": 2010,
+          "num": 32,
+          "text": "El Presidente Obama ha nombrado a Bernanke nuevamente para ser Presidente de la FED por:",
+          "options": [
+            {
+              "letter": "a",
+              "text": "2 años más",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "3 años más",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "4 años más",
+              "isCorrect": true
+            },
+            {
+              "letter": "d",
+              "text": "No ha sido reelegido",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "c"
+        },
+        {
+          "year": 2010,
+          "num": 66,
+          "text": "From the first part of the article, which of the following actions taken by the Federal Government are said to have caused a moral hazard problem?",
+          "options": [
+            {
+              "letter": "a",
+              "text": "The Federal Government let Lehman Brothers fall, causing huge losses to the creditors and shareholders.",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "The Federal Government has poured billions of dollars into the main US companies to avoid their failure.",
+              "isCorrect": true
+            },
+            {
+              "letter": "c",
+              "text": "The actions taken by the Federal Government have led that the losses caused by the poor risk management of the companies affect both the shareholders and the creditors.",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "None of the above.",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "b"
+        },
+        {
+          "year": 2011,
+          "num": 33,
+          "text": "El valor del dólar en yenes se ubica en el siguiente rango",
+          "options": [
+            {
+              "letter": "a",
+              "text": "1 dólar aproximadamente JPY 10-20",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "1 dólar aproximadamente JPY 150-200",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "1 dólar aproximadamente JPY 70-90",
+              "isCorrect": true
+            },
+            {
+              "letter": "d",
+              "text": "1 dólar aproximadamente JPY 1-10",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "c"
+        }
+      ],
+      "Organismos y Acuerdos Internacionales": [
+        {
+          "year": 2010,
+          "num": 34,
+          "text": "De acuerdo al Panorama Económico Mundial del FMI el año 2009 la economía de Estados Unidos caería:",
+          "options": [
+            {
+              "letter": "a",
+              "text": "Entre 0 y 1 por ciento",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "Entre 1 y 2 por ciento",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "Entre 2 y 3 por ciento",
+              "isCorrect": true
+            },
+            {
+              "letter": "d",
+              "text": "Entre 3 y 4 por ciento",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "c"
+        },
+        {
+          "year": 2011,
+          "num": 34,
+          "text": "De acuerdo al Panorama Económico Mundial del FMI el año 2010 la economía de Estados Unidos caería:",
+          "options": [
+            {
+              "letter": "a",
+              "text": "Entre 0 y 1 por ciento",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "Entre 1 y 2 por ciento",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "Entre 2 y 3 por ciento",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "Entre 3 y 4 por ciento",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": null
+        },
+        {
+          "year": 2011,
+          "num": 50,
+          "text": "El Director del FMI:",
+          "options": [
+            {
+              "letter": "a",
+              "text": "Dominique Strauss-Kahn",
+              "isCorrect": true
+            },
+            {
+              "letter": "b",
+              "text": "Laurent Fabius",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "Shakour Shaalan",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "Ben Bernanke 10",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "a"
+        },
+        {
+          "year": 2014,
+          "num": 5,
+          "text": "Según el Fondo Monetario Internacional (FMI) uno de los siguientes países no crecerán por encima de 5% anual en el 2013.",
+          "options": [
+            {
+              "letter": "a",
+              "text": "EEUU",
+              "isCorrect": true
+            },
+            {
+              "letter": "b",
+              "text": "Perú",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "Indonesia",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "Filipinas",
+              "isCorrect": false
+            },
+            {
+              "letter": "e",
+              "text": "N.A",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "a"
+        }
+      ]
+    }
+  },
+  "aptitud": {
+    "title": "Razonamiento Matemático y Aptitud Académica",
+    "icon": "📐",
+    "desc": "Ejercicios cuantitativos, resolución de sistemas de ecuaciones, velocidades, combinatoria y razonamiento lógico.",
+    "total_questions": 110,
+    "subtopics": {
+      "Álgebra y Ecuaciones": 45,
+      "Problemas Operativos / Tiempo y Ritmo": 35,
+      "Razonamiento Lógico y Combinatoria": 30
+    },
+    "examples": {
+      "Álgebra y Ecuaciones": [
+        {
+          "year": 2025,
+          "num": 1,
+          "text": "Si 4(-3x - 8) = 8(-x + 9), ¿cuánto es x2?",
+          "options": [
+            {
+              "letter": "a",
+              "text": "-26",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "52",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "26",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "676",
+              "isCorrect": false
+            },
+            {
+              "letter": "e",
+              "text": "226",
+              "isCorrect": true
+            }
+          ],
+          "correctKey": "e"
+        },
+        {
+          "year": 2025,
+          "num": 2,
+          "text": "Si 2a = 4b = 8c = 10, ¿cuánto es 64abc?",
+          "options": [
+            {
+              "letter": "a",
+              "text": "64 000",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "16 000",
+              "isCorrect": true
+            },
+            {
+              "letter": "c",
+              "text": "8 000",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "4 000",
+              "isCorrect": false
+            },
+            {
+              "letter": "e",
+              "text": "1 000",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "b"
+        },
+        {
+          "year": 2025,
+          "num": 7,
+          "text": "Un polígono tiene 12 vértices. ¿Cuántas diagonales se pueden formar dentro del polígono?",
+          "options": [
+            {
+              "letter": "a",
+              "text": "12",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "36",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "54",
+              "isCorrect": true
+            },
+            {
+              "letter": "d",
+              "text": "66",
+              "isCorrect": false
+            },
+            {
+              "letter": "e",
+              "text": "144",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "c"
+        },
+        {
+          "year": 2025,
+          "num": 8,
+          "text": "Tres personas tienen S/ 32, S/ 72 y S/ 98. Si juntan todo su dinero, y luego lo redistribuyen entre sí (en cantidades enteras positivas, sin céntimos), ¿cuál sería el valor máximo de la mediana de los montos de dinero?",
+          "options": [
+            {
+              "letter": "a",
+              "text": "0",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "72",
+              "isCorrect": true
+            },
+            {
+              "letter": "c",
+              "text": "100",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "201",
+              "isCorrect": false
+            },
+            {
+              "letter": "e",
+              "text": "202",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "b"
+        }
+      ],
+      "Problemas Operativos / Tiempo y Ritmo": [
+        {
+          "year": 2025,
+          "num": 4,
+          "text": "El reloj de manecillas del aula se atrasa 3 minutos cada hora. Si el docente acaba de colocarlo a la hora, ¿dentro de cuánto tiempo el reloj volverá a marcar la hora correctamente?",
+          "options": [
+            {
+              "letter": "a",
+              "text": "55 horas",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "10 días",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "5 días",
+              "isCorrect": true
+            },
+            {
+              "letter": "d",
+              "text": "3 días",
+              "isCorrect": false
+            },
+            {
+              "letter": "e",
+              "text": "200 horas",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "c"
+        },
+        {
+          "year": 2025,
+          "num": 9,
+          "text": "Una máquina purifica 100 m3 de agua en 4 minutos. ¿Cuántos minutos le tomará a la máquina purificar el contenido de un tanque de 15m x 15m x 10m de dimensión, que está lleno de agua hasta un tercio de su capacidad?",
+          "options": [
+            {
+              "letter": "a",
+              "text": "20",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "30",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "40",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "50",
+              "isCorrect": true
+            },
+            {
+              "letter": "e",
+              "text": "60",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "d"
+        },
+        {
+          "year": 2025,
+          "num": 10,
+          "text": "Ana cava un pozo en 15 horas, y Jorge cava un pozo idéntico en 10 horas. ¿Cuántas horas le tomará a Ana y Jorge cavar el pozo juntos, trabajando cada uno a su propio ritmo?",
+          "options": [
+            {
+              "letter": "a",
+              "text": "2",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "3",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "4",
+              "isCorrect": true
+            },
+            {
+              "letter": "d",
+              "text": "5",
+              "isCorrect": false
+            },
+            {
+              "letter": "e",
+              "text": "6 Actualidad",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "c"
+        },
+        {
+          "year": 2025,
+          "num": 15,
+          "text": "Una máquina purifica 100 m3 de agua en 4 minutos. ¿Cuántos minutos le tomará a la máquina purificar el contenido de un tanque de 15m x 15m x 10m de dimensión, que está lleno de agua hasta un tercio de su capacidad?",
+          "options": [
+            {
+              "letter": "a",
+              "text": "20",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "30",
+              "isCorrect": true
+            },
+            {
+              "letter": "c",
+              "text": "40",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "50",
+              "isCorrect": false
+            },
+            {
+              "letter": "e",
+              "text": "60",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "b"
+        }
+      ],
+      "Razonamiento Lógico y Combinatoria": [
+        {
+          "year": 2025,
+          "num": 5,
+          "text": "Cuatro amigas participaron en un sorteo. Cuando se les preguntó cuál de ellas había sido la ganadora, contestaron: • María: Ganó Susana. • Irene: Yo no gané. • Susana: Ganó Leticia. • Leticia: Susana miente. Si se sabe que sólo una de ellas dice la verdad, ¿quién ganó el sorteo?",
+          "options": [
+            {
+              "letter": "a",
+              "text": "María",
+              "isCorrect": true
+            },
+            {
+              "letter": "b",
+              "text": "Irene",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "Susana",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "Leticia",
+              "isCorrect": false
+            },
+            {
+              "letter": "e",
+              "text": "Ninguna de las anteriores",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "a"
+        },
+        {
+          "year": 2025,
+          "num": 6,
+          "text": "Un grupo de 12 personas están en el salón. ¿Cuántos apretones de manos se intercambiarán si cada par de personas se saluda exactamente 1 vez?",
+          "options": [
+            {
+              "letter": "a",
+              "text": "12",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "66",
+              "isCorrect": true
+            },
+            {
+              "letter": "c",
+              "text": "78",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "132",
+              "isCorrect": false
+            },
+            {
+              "letter": "e",
+              "text": "244",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "b"
+        }
+      ]
+    }
+  },
+  "ingles": {
+    "title": "Inglés Técnico Económico",
+    "icon": "🇬🇧",
+    "desc": "Comprensión de lectura crítica sobre textos económicos, tecnología e inteligencia artificial en inglés.",
+    "total_questions": 40,
+    "subtopics": {
+      "Reading Comprehension - Main Idea & Details": 40
+    },
+    "examples": {
+      "Reading Comprehension - Main Idea & Details": [
+        {
+          "year": 2014,
+          "num": 22,
+          "text": "According to the passage, ¿which of the following are true about quarks? I. They are the elementary building blocks for neutrons. II. Scientists have described them as having no internal structure. III. Some scientists group them with leptons in a single class of particles.",
+          "options": [
+            {
+              "letter": "a",
+              "text": "I only",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "III only",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "I and II only",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "I, II and III",
+              "isCorrect": true
+            },
+            {
+              "letter": "e",
+              "text": "None of the above is correct 7",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "d"
+        },
+        {
+          "year": 2016,
+          "num": 40,
+          "text": "According to the passage’s line 4, “…more grist for the already-brimming mill…”implies that",
+          "options": [
+            {
+              "letter": "a",
+              "text": "There is an excess in grist supply comparing to its demand",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "Last quarter’s GDP growth is still being suspicious",
+              "isCorrect": true
+            },
+            {
+              "letter": "c",
+              "text": "There is no doubt about last quarter’s GDP growth",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "Last quarter’s GDP growth should be higher",
+              "isCorrect": false
+            },
+            {
+              "letter": "e",
+              "text": "It is imminent a strong GDP slowdown in China",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "b"
+        },
+        {
+          "year": 2016,
+          "num": 41,
+          "text": "According to the passage, the author considers that all of the following factors generate doubts around last quarter GDP figure EXCEPT",
+          "options": [
+            {
+              "letter": "a",
+              "text": "Contraction in Manufacturing sector numbers",
+              "isCorrect": false
+            },
+            {
+              "letter": "b",
+              "text": "Stock market in turmoil",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "Devaluation of Chinese Yuan",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "Big rise in trade surplus due to a fall in imports",
+              "isCorrect": true
+            },
+            {
+              "letter": "e",
+              "text": "None of the Above",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "d"
+        },
+        {
+          "year": 2016,
+          "num": 42,
+          "text": "According to the passage, which of the following indicators are rising amid the rebalancing of the Chinese economy?",
+          "options": [
+            {
+              "letter": "a",
+              "text": "Employment, income and consumption",
+              "isCorrect": true
+            },
+            {
+              "letter": "b",
+              "text": "Unemployment, investment and retail sales",
+              "isCorrect": false
+            },
+            {
+              "letter": "c",
+              "text": "Unemployment, income and investment",
+              "isCorrect": false
+            },
+            {
+              "letter": "d",
+              "text": "Investment, employment and salaries",
+              "isCorrect": false
+            },
+            {
+              "letter": "e",
+              "text": "None of Above",
+              "isCorrect": false
+            }
+          ],
+          "correctKey": "a"
+        }
+      ]
+    }
+  }
+}
