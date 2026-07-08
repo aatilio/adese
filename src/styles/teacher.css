@@ -2566,6 +2566,7 @@
   }
   .tp-historial-search-wrap {
     width: 100% !important;
+    max-width: 100% !important;
   }
   .tp-historial-search-input {
     width: 100% !important;
