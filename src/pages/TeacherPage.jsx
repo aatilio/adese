@@ -85,6 +85,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
   const [todosEstudiantes, setTodosEstudiantes] = useState([]);
   const [sesionesProgr, setSesionesProgr] = useState([]);
   const [historialGen, setHistorialGen] = useState([]);
+  const [loadingHistorial, setLoadingHistorial] = useState(false);
 
   const [estadosDB, setEstadosDB] = useState([]);
   
@@ -254,6 +255,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
     } else if (activeTab === "clases") {
       api.getCursoSesiones(id).then((res) => setSesionesProgr(res.sesiones));
     } else if (activeTab === "historial") {
+      setLoadingHistorial(true);
       Promise.all([
         api.getCursoHistorial(id),
         api.getCursoEstudiantes(id),
@@ -261,6 +263,9 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
         // No transformar: usar los datos tal como vienen del API
         setHistorialGen(resH.historial);
         setEstudiantesCurso(resE.estudiantes);
+        setLoadingHistorial(false);
+      }).catch(() => {
+        setLoadingHistorial(false);
       });
     } else if (activeTab === "config") {
       api
@@ -1903,9 +1908,20 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                 </div>
 
                 {historialGen.length === 0 ? (
-                  <p className="text-muted" style={{ marginTop: "1rem" }}>
-                    No hay clases o registros aún para este curso.
-                  </p>
+                  <div style={{ textAlign: "center", padding: "2rem" }}>
+                    {loadingHistorial ? (
+                      <div className="loader-container">
+                        <div className="spinner-loader"></div>
+                        <p style={{ marginTop: "1rem", color: "#64748b", fontSize: "var(--text-sm)" }}>
+                          Cargando historial de asistencias...
+                        </p>
+                      </div>
+                    ) : (
+                      <p className="text-muted">
+                        No hay clases o registros aún para este curso.
+                      </p>
+                    )}
+                  </div>
                 ) : (
                   <>
                   <div
