@@ -13,8 +13,11 @@ export default function Scanner({
   step,
   setStep,
   toast,
+  disabled = false,
+  scannerRef = null,
 }) {
-  const scannerRef = useRef(null);
+  const localScannerRef = useRef(null);
+  const actualScannerRef = scannerRef || localScannerRef;
 
   useEffect(() => {
     if (step === STEPS.SCANNING) {
@@ -27,12 +30,16 @@ export default function Scanner({
 
   const initScanner = () => {
     const scanner = new Html5Qrcode("qr-reader");
-    scannerRef.current = scanner;
+    actualScannerRef.current = scanner;
     scanner
       .start(
         { facingMode: "environment" },
         { fps: 10, qrbox: { width: 220, height: 220 } },
-        (decodedText) => onScan(decodedText),
+        (decodedText) => {
+          // Detener el scanner inmediatamente después de detectar un código
+          scanner.stop().catch(() => {});
+          onScan(decodedText);
+        },
         () => {},
       )
       .catch(() => {
@@ -42,9 +49,9 @@ export default function Scanner({
   };
 
   const stopScanner = () => {
-    if (scannerRef.current) {
-      scannerRef.current.stop().catch(() => {});
-      scannerRef.current = null;
+    if (actualScannerRef.current) {
+      actualScannerRef.current.stop().catch(() => {});
+      actualScannerRef.current = null;
     }
   };
 
@@ -70,7 +77,7 @@ export default function Scanner({
       <button
         className="btn btn-black w-full"
         onClick={() => setStep(STEPS.SCANNING)}
-        disabled={loading || !estado}
+        disabled={loading || !estado || disabled}
       >
         <QrCode size={16} style={{ marginRight: "6px" }} /> Escanear QR
       </button>
@@ -83,11 +90,12 @@ export default function Scanner({
         value={inputCode}
         onChange={(e) => setInputCode(e.target.value.toUpperCase())}
         maxLength={16}
+        disabled={disabled}
       />
       <button
         className={`btn btn-sm w-full ${inputCode.length === 16 ? 'btn-success' : 'btn-ghost'}`}
         onClick={() => onScan(inputCode)}
-        disabled={loading || !estado || inputCode.length !== 16}
+        disabled={loading || !estado || inputCode.length !== 16 || disabled}
         style={{
           border: inputCode.length === 16 ? "none" : "1px solid var(--gray-200)",
         }}

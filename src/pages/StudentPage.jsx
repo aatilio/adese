@@ -42,6 +42,11 @@ export default function StudentPage({ user, onLogout, onUpdateUser }) {
   const [historial, setHistorial] = useState([]);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [estadosDB, setEstadosDB] = useState([]);
+  const [marcoEnSesionActual, setMarcoEnSesionActual] = useState(false);
+
+  // Refs para controlar el procesamiento
+  const isProcessingRef = useRef(false);
+  const scannerRef = useRef(null);
 
   // Build dynamic maps from DB
   const ESTADOS = useMemo(
@@ -55,8 +60,6 @@ export default function StudentPage({ user, onLogout, onUpdateUser }) {
     });
     return map;
   }, [estadosDB]);
-
-  const scannerRef = useRef(null);
 
   // Time ticker
   useEffect(() => {
@@ -116,8 +119,37 @@ export default function StudentPage({ user, onLogout, onUpdateUser }) {
           setSesionesCurso(filtradas);
         })
         .catch(() => {});
+
+      // Check if already registered in current active session
+      if (sesionActiva) {
+        api
+          .getHistorialAlumno(user.id)
+          .then((res) => {
+            const historialCompleto = res.historial || [];
+            const registroEnSesionActual = historialCompleto.find(
+              (h) =>
+                h.tipo === "clase" &&
+                h.curso_id === cursoActivo.id &&
+                h.sesion_id === sesionActiva.id
+            );
+            setMarcoEnSesionActual(!!registroEnSesionActual);
+            if (registroEnSesionActual) {
+              setRegistered({
+                estado: registroEnSesionActual.estado,
+                hora: new Date(registroEnSesionActual.fecha_hora).toLocaleTimeString("es-MX", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                }),
+              });
+            }
+          })
+          .catch(() => setMarcoEnSesionActual(false));
+      } else {
+        setMarcoEnSesionActual(false);
+        setRegistered(null);
+      }
     }
-  }, [activeTab, user.id, cursoActivo]);
+  }, [activeTab, user.id, cursoActivo, sesionActiva]);
 
   // Determine valid statuses based on rules
   const getValidStatuses = () => {
@@ -160,6 +192,19 @@ export default function StudentPage({ user, onLogout, onUpdateUser }) {
   }, [validStatuses, estado]);
 
   const handleQrScan = async (decodedText) => {
+    // Prevenir múltiples procesamientos simultáneos
+    if (isProcessingRef.current) return;
+    isProcessingRef.current = true;
+
+    // Detener el scanner inmediatamente
+    if (scannerRef.current) {
+      try {
+        await scannerRef.current.stop();
+      } catch (err) {
+        // Ignorar errores al detener el scanner
+      }
+    }
+
     setLoading(true);
     try {
       await api.registrarAsistencia({
@@ -167,6 +212,7 @@ export default function StudentPage({ user, onLogout, onUpdateUser }) {
         estudiante_id: user.id,
         estado,
       });
+
       const reg = {
         estado,
         hora: new Date().toLocaleTimeString("es-MX", {
@@ -174,12 +220,17 @@ export default function StudentPage({ user, onLogout, onUpdateUser }) {
           minute: "2-digit",
         }),
       };
+
+      // Limpiar input y actualizar estados
+      setInputCode("");
       setRegistered(reg);
+      setMarcoEnSesionActual(true);
       setStep(STEPS.DONE);
       toast.success("¡Asistencia registrada!");
     } catch (err) {
       toast.error(err.message);
       setStep(STEPS.SELECT);
+      isProcessingRef.current = false; // Permitir intentar nuevamente en caso de error
     } finally {
       setLoading(false);
     }
@@ -405,12 +456,31 @@ export default function StudentPage({ user, onLogout, onUpdateUser }) {
                         color="var(--success)"
                         style={{ margin: "1rem auto" }}
                       />
-                      <div className="fw-700">
-                        Registrado como {registered.estado}
+                      <div className="fw-700" style={{ fontSize: "var(--text-lg)", marginBottom: "0.5rem" }}>
+                        ✓ Asistencia Confirmada
+                      </div>
+                      <div className="sp-registered-status" style={{ marginBottom: "1rem" }}>
+                        <span
+                          className="badge-status"
+                          style={{
+                            background: ESTADO_COLORS[registered.estado]?.bg || "#e0e7ff",
+                            color: ESTADO_COLORS[registered.estado]?.color || "#4f46e5",
+                            padding: "0.5rem 1rem",
+                            borderRadius: "0.5rem",
+                            display: "inline-block",
+                            fontSize: "var(--text-sm)",
+                            fontWeight: "600",
+                          }}
+                        >
+                          {registered.estado}
+                        </span>
                       </div>
                       <div className="sp-registered-time">
                         Hora: <strong>{registered.hora}</strong>
                       </div>
+                      <p style={{ fontSize: "var(--text-sm)", color: "#64748b", marginTop: "1rem" }}>
+                        No puedes marcar nuevamente en esta sesión
+                      </p>
                     </div>
                   ) : (
                     <>
@@ -420,7 +490,7 @@ export default function StudentPage({ user, onLogout, onUpdateUser }) {
                         </div>
                       )}
 
-                      {validStatuses.length > 0 && (
+                      {validStatuses.length > 0 && !marcoEnSesionActual && (
                         <div className="card">
                             <Scanner
                               onScan={handleQrScan}
@@ -433,6 +503,8 @@ export default function StudentPage({ user, onLogout, onUpdateUser }) {
                               step={step}
                               setStep={setStep}
                               toast={toast}
+                              disabled={marcoEnSesionActual}
+                              scannerRef={scannerRef}
                             />
                         </div>
                       )}
