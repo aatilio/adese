@@ -281,6 +281,36 @@
   width: 100%;
 }
 
+/* ── Scanner loading / processing state ───────────────────── */
+.sp-scan-processing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 2rem 1rem;
+  color: var(--gray-500);
+}
+
+.sp-scan-spinner {
+  animation: sp-spin 0.9s linear infinite;
+  color: var(--primary, #4f46e5);
+}
+
+.sp-scan-processing-text {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--gray-600);
+  margin: 0;
+}
+
+@keyframes sp-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+
+
 /* ── Historial tab ───────────────────────────────────────── */
 .sp-historial-title {
   margin-bottom: 1rem;

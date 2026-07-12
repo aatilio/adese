@@ -50,7 +50,7 @@ export default defineConfig({
     },
   },
 
-  // ── SPA fallback para rutas como /ceu ───────────────────
+  // ── SPA fallback para rutas cliente (ej: /bcrp) ─────────────
   appType: 'spa',
 });
 

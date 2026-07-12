@@ -934,6 +934,7 @@ app.delete('/api/estados/:id', async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+
 if (process.env.NODE_ENV !== 'production' || process.env.DOCKER) {
   app.listen(PORT, () => {
     console.log(`API ADESE en http://localhost:${PORT}`);

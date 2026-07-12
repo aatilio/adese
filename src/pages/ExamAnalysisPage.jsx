@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import courseBreakdownData from '../data/course_breakdown.json';
 import LatexText from '../components/LatexText.jsx';
-import './ExamAnalysisPage.css';
+import '../styles/ExamAnalysisPage.css';
 
 const timelineData = [
   { year: 2010, q: 110, dur: 180, phase: 'Extenso', desc: 'Evaluación exhaustiva de 3 horas con amplia cobertura de teoría macroeconómica clásica y matemática financiera.' },

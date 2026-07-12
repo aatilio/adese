@@ -61,10 +61,7 @@ export default function EconometricsPage({ onBack }) {
         confidence,
       };
 
-      const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-      const targetUrl = isLocal ? "http://localhost:8000/api/calculate" : `${API_URL}/api/calculate`;
-
-      const res = await fetch(targetUrl, {
+      const res = await fetch(`${API_URL}/api/calculate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),

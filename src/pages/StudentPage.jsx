@@ -12,7 +12,7 @@ import {
   User,
   BarChart3,
 } from "lucide-react";
-import { Html5Qrcode } from "html5-qrcode";
+
 import Tabs from "../components/ui/Tabs";
 import CourseCard from "../components/ui/CourseCard";
 import Scanner from "../components/student/Scanner";
@@ -32,7 +32,7 @@ export default function StudentPage({ user, onLogout, onUpdateUser }) {
   const [cursoActivo, setCursoActivo] = useState(null);
   const [sesionActiva, setSesionActiva] = useState(null);
   const [sesionesCurso, setSesionesCurso] = useState([]);
-  const [inputCode, setInputCode] = useState("");
+
 
   const [activeTab, setActiveTab] = useState("marcar"); // marcar | historial
   const [step, setStep] = useState(STEPS.SELECT);
@@ -44,9 +44,8 @@ export default function StudentPage({ user, onLogout, onUpdateUser }) {
   const [estadosDB, setEstadosDB] = useState([]);
   const [marcoEnSesionActual, setMarcoEnSesionActual] = useState(false);
 
-  // Refs para controlar el procesamiento
+  // Ref para evitar múltiples envíos simultáneos
   const isProcessingRef = useRef(false);
-  const scannerRef = useRef(null);
 
   // Build dynamic maps from DB
   const ESTADOS = useMemo(
@@ -196,16 +195,10 @@ export default function StudentPage({ user, onLogout, onUpdateUser }) {
     if (isProcessingRef.current) return;
     isProcessingRef.current = true;
 
-    // Detener el scanner inmediatamente
-    if (scannerRef.current) {
-      try {
-        await scannerRef.current.stop();
-      } catch (err) {
-        // Ignorar errores al detener el scanner
-      }
-    }
-
+    // Mostrar spinner inmediatamente (Scanner ya detuvo la cámara)
     setLoading(true);
+    setStep(STEPS.SCANNING); // mantener el step en SCANNING para que Scanner muestre el spinner
+
     try {
       await api.registrarAsistencia({
         token_qr: decodedText,
@@ -221,8 +214,6 @@ export default function StudentPage({ user, onLogout, onUpdateUser }) {
         }),
       };
 
-      // Limpiar input y actualizar estados
-      setInputCode("");
       setRegistered(reg);
       setMarcoEnSesionActual(true);
       setStep(STEPS.DONE);
@@ -339,7 +330,7 @@ export default function StudentPage({ user, onLogout, onUpdateUser }) {
                   onClick={() => {
                     setViewMode("dashboard");
                     setRegistered(null);
-                    setInputCode("");
+                    setStep(STEPS.SELECT);
                   }}
                 >
                   « Volver
@@ -492,20 +483,17 @@ export default function StudentPage({ user, onLogout, onUpdateUser }) {
 
                       {validStatuses.length > 0 && !marcoEnSesionActual && (
                         <div className="card">
-                            <Scanner
-                              onScan={handleQrScan}
-                              onCancel={() => setStep(STEPS.SELECT)}
-                              loading={loading}
-                              estado={estado}
-                              inputCode={inputCode}
-                              setInputCode={setInputCode}
-                              STEPS={STEPS}
-                              step={step}
-                              setStep={setStep}
-                              toast={toast}
-                              disabled={marcoEnSesionActual}
-                              scannerRef={scannerRef}
-                            />
+                          <Scanner
+                            onScan={handleQrScan}
+                            onCancel={() => setStep(STEPS.SELECT)}
+                            loading={loading}
+                            estado={estado}
+                            STEPS={STEPS}
+                            step={step}
+                            setStep={setStep}
+                            toast={toast}
+                            disabled={marcoEnSesionActual}
+                          />
                         </div>
                       )}
                     </>
