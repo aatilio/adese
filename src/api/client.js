@@ -24,6 +24,7 @@ export const api = {
 
   // Sesiones
   getSesionActiva:     (cursoId)      => request('GET', '/api/sesiones/activa' + (cursoId ? `?curso_id=${cursoId}` : '')),
+  checkMiAsistencia:   (sesionId, estudianteId) => request('GET', `/api/sesiones/${sesionId}/mi-asistencia?estudiante_id=${estudianteId}`),
   crearSesion:         (nombre_clase, curso_id, profesor_id, tipo = 'clase', visible_alumnos = true) =>
                          request('POST', '/api/sesiones', { nombre_clase, curso_id, profesor_id, tipo, visible_alumnos }),
   cerrarSesion:        (id)           => request('DELETE', `/api/sesiones/${id}`),

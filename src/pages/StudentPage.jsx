@@ -43,6 +43,7 @@ export default function StudentPage({ user, onLogout, onUpdateUser }) {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [estadosDB, setEstadosDB] = useState([]);
   const [marcoEnSesionActual, setMarcoEnSesionActual] = useState(false);
+  const [isCheckingAttendance, setIsCheckingAttendance] = useState(false);
 
   // Ref para evitar múltiples envíos simultáneos
   const isProcessingRef = useRef(false);
@@ -95,16 +96,36 @@ export default function StudentPage({ user, onLogout, onUpdateUser }) {
     return () => clearInterval(interval);
   }, [cursoActivo?.id]);
 
-  // Fetch Historial & Sesiones
+  // ── Helpers de caché en sessionStorage ─────────────────────────────
+  // Clave: "asistencia_<sesionId>_<estudianteId>"  →  { estado, hora }
+  // La caché vive mientras el tab esté abierto (sessionStorage).
+  // Si el alumno ya marcó, las navegaciones dentro de la misma sesión
+  // no generan ninguna petición al servidor.
+  const cacheKey = (sesionId) => `asistencia_${sesionId}_${user.id}`;
+
+  const readCache = (sesionId) => {
+    try { return JSON.parse(sessionStorage.getItem(cacheKey(sesionId)) || 'null'); }
+    catch { return null; }
+  };
+
+  const writeCache = (sesionId, data) => {
+    try { sessionStorage.setItem(cacheKey(sesionId), JSON.stringify(data)); }
+    catch { /* sessionStorage lleno o bloqueado — ignorar */ }
+  };
+
+  // Fetch Historial & Sesiones (tab historial) + verificación de asistencia (tab marcar)
   useEffect(() => {
     if (!cursoActivo) return;
+
     if (activeTab === "historial") {
       api
         .getHistorialAlumno(user.id)
         .then((res) => setHistorial(res.historial))
         .catch(() => toast.error("Error cargando historial"));
     }
+
     if (activeTab === "marcar") {
+      // Sesiones de hoy
       api
         .getCursoSesiones(cursoActivo.id)
         .then((res) => {
@@ -119,34 +140,45 @@ export default function StudentPage({ user, onLogout, onUpdateUser }) {
         })
         .catch(() => {});
 
-      // Check if already registered in current active session
-      if (sesionActiva) {
-        api
-          .getHistorialAlumno(user.id)
-          .then((res) => {
-            const historialCompleto = res.historial || [];
-            const registroEnSesionActual = historialCompleto.find(
-              (h) =>
-                h.tipo === "clase" &&
-                h.curso_id === cursoActivo.id &&
-                h.sesion_id === sesionActiva.id
-            );
-            setMarcoEnSesionActual(!!registroEnSesionActual);
-            if (registroEnSesionActual) {
-              setRegistered({
-                estado: registroEnSesionActual.estado,
-                hora: new Date(registroEnSesionActual.fecha_hora).toLocaleTimeString("es-MX", {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                }),
-              });
-            }
-          })
-          .catch(() => setMarcoEnSesionActual(false));
-      } else {
+      if (!sesionActiva) {
+        // Sin sesión activa: limpiar estado
         setMarcoEnSesionActual(false);
         setRegistered(null);
+        return;
       }
+
+      // ── 1. Revisar caché primero (respuesta instantánea) ─────────
+      const cached = readCache(sesionActiva.id);
+      if (cached) {
+        setRegistered(cached);
+        setMarcoEnSesionActual(true);
+        // No necesitamos pedir nada al servidor
+        return;
+      }
+
+      // ── 2. Sin caché → consulta ultraliviana al servidor ─────────
+      // Un solo SELECT de 1 fila por clave primaria (sesion_id, estudiante_id).
+      setIsCheckingAttendance(true);
+      api
+        .checkMiAsistencia(sesionActiva.id, user.id)
+        .then((res) => {
+          if (res.marcado) {
+            const reg = {
+              estado: res.estado,
+              hora: new Date(res.hora).toLocaleTimeString("es-MX", {
+                hour: "2-digit",
+                minute: "2-digit",
+              }),
+            };
+            setRegistered(reg);
+            setMarcoEnSesionActual(true);
+            writeCache(sesionActiva.id, reg); // guardar en caché para navegaciones futuras
+          } else {
+            setMarcoEnSesionActual(false);
+          }
+        })
+        .catch(() => setMarcoEnSesionActual(false))
+        .finally(() => setIsCheckingAttendance(false));
     }
   }, [activeTab, user.id, cursoActivo, sesionActiva]);
 
@@ -156,7 +188,6 @@ export default function StudentPage({ user, onLogout, onUpdateUser }) {
       return ['Participó'];
     }
 
-    // Only use session-level limits
     const limits = sesionActiva?.limite_puntual ? {
       limite_puntual: sesionActiva.limite_puntual,
       limite_presente: sesionActiva.limite_presente,
@@ -191,13 +222,9 @@ export default function StudentPage({ user, onLogout, onUpdateUser }) {
   }, [validStatuses, estado]);
 
   const handleQrScan = async (decodedText) => {
-    // Prevenir múltiples procesamientos simultáneos
     if (isProcessingRef.current) return;
     isProcessingRef.current = true;
-
-    // Mostrar spinner inmediatamente (Scanner ya detuvo la cámara)
     setLoading(true);
-    setStep(STEPS.SCANNING); // mantener el step en SCANNING para que Scanner muestre el spinner
 
     try {
       await api.registrarAsistencia({
@@ -214,6 +241,9 @@ export default function StudentPage({ user, onLogout, onUpdateUser }) {
         }),
       };
 
+      // Escribir en caché inmediatamente — próximas navegaciones son instantáneas
+      if (sesionActiva?.id) writeCache(sesionActiva.id, reg);
+
       setRegistered(reg);
       setMarcoEnSesionActual(true);
       setStep(STEPS.DONE);
@@ -221,7 +251,7 @@ export default function StudentPage({ user, onLogout, onUpdateUser }) {
     } catch (err) {
       toast.error(err.message);
       setStep(STEPS.SELECT);
-      isProcessingRef.current = false; // Permitir intentar nuevamente en caso de error
+      isProcessingRef.current = false;
     } finally {
       setLoading(false);
     }
@@ -481,7 +511,7 @@ export default function StudentPage({ user, onLogout, onUpdateUser }) {
                         </div>
                       )}
 
-                      {validStatuses.length > 0 && !marcoEnSesionActual && (
+                      {validStatuses.length > 0 && !isCheckingAttendance && !marcoEnSesionActual && (
                         <div className="card">
                           <Scanner
                             onScan={handleQrScan}

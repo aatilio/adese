@@ -177,6 +177,27 @@ app.get('/api/sesiones/activa', async (req, res) => {
   }
 });
 
+// GET /api/sesiones/:id/mi-asistencia — consulta ultraliviana: ¿ya marcó el alumno en esta sesión?
+// Devuelve { marcado: bool, estado?, hora? }. Una sola fila por clave primaria.
+app.get('/api/sesiones/:id/mi-asistencia', async (req, res) => {
+  const { estudiante_id } = req.query;
+  if (!estudiante_id) return res.status(400).json({ error: 'estudiante_id requerido' });
+  try {
+    const r = await pool.query(
+      `SELECT a.id, ea.nombre AS estado, a.fecha_hora
+       FROM asistencias a
+       LEFT JOIN estados_asistencia ea ON ea.id = a.estado_id
+       WHERE a.sesion_id = $1 AND a.estudiante_id = $2
+       LIMIT 1`,
+      [req.params.id, estudiante_id]
+    );
+    if (r.rows.length === 0) return res.json({ marcado: false });
+    const row = r.rows[0];
+    res.set('Cache-Control', 'no-store'); // nunca cachear — dato en tiempo real
+    res.json({ marcado: true, estado: row.estado, hora: row.fecha_hora });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 // POST /api/sesiones — crea y activa una sesión. Acepta tipo, visible_alumnos, profesor_id.
 app.post('/api/sesiones', async (req, res) => {
   const { nombre_clase, curso_id, tipo, visible_alumnos, profesor_id } = req.body;
