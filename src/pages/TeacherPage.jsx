@@ -36,6 +36,7 @@ import { api } from "../api/client";
 import { ROL } from "../constants/roles";
 import { toast } from "../components/Toast";
 import Header from "../components/Header";
+import BottomNav from "../components/BottomNav";
 import Footer from "../components/Footer";
 import CourseCard from "../components/ui/CourseCard";
 import Tabs from "../components/ui/Tabs";
@@ -958,6 +959,20 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
         }
       />
 
+      {/* ── Bottom Navigation — mobile only ─────────── */}
+      <BottomNav
+        viewMode={viewMode}
+        activeTab={activeTab}
+        role={user.rol === 1 || user.rol === 2 ? "teacher" : "student"}
+        isAdmin={isAdmin}
+        cursoActivoId={cursoActivo?.id || null}
+        onLogout={onLogout}
+        onTabChange={(tab) => {
+          setActiveTab(tab);
+          if (cursoActivo?.id) navigate(`/courses/${cursoActivo.id}?tab=${tab}`, { replace: true });
+        }}
+      />
+
       {/* PROFILE: Edit user data */}
       {viewMode === "perfil" ? (
         <div className="page-body">
@@ -1232,18 +1247,30 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
           {/* COURSE VIEW: Header & Tabs */}
           <div
             className="teacher-course-toolbar tp-toolbar-mb"
+            style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}
           >
+            <button
+              type="button"
+              className="btn btn-sm btn-ghost tp-back-btn--toolbar"
+              onClick={() => navigate("/home")}
+              style={{ whiteSpace: "nowrap", padding: "6px 12px", border: "1px solid var(--gray-200, #e2e8f0)", borderRadius: "10px" }}
+            >
+              « Cursos
+            </button>
             <h2
               className="teacher-course-title tp-course-view-title"
+              style={{ margin: 0, display: "flex", alignItems: "center" }}
             >
-              <span className="tp-course-subtitle">Curso</span>
               <span
                 className="teacher-course-title-text tp-course-name"
+                style={{ fontSize: "1.15rem", fontWeight: "800" }}
               >
                 {cursoActivo?.nombre}
               </span>
             </h2>
           </div>
+
+
 
           <div className="tp-tabs-bar">
             <button

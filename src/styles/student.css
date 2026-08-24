@@ -248,6 +248,13 @@
   min-width: auto;
 }
 
+@media (max-width: 767px) {
+  .sp-course-detail__header .tabs {
+    display: none !important;
+  }
+}
+
+
 .sp-registered-time {
   font-size: 0.8rem;
   color: var(--gray-500);

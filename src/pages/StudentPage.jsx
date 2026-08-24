@@ -20,6 +20,7 @@ import Scanner from "../components/student/Scanner";
 import { api } from "../api/client";
 import { toast } from "../components/Toast";
 import Header from "../components/Header";
+import BottomNav from "../components/BottomNav";
 import ProfileView from "../components/ProfileView";
 import Footer from "../components/Footer";
 import EconometricsPage from "./EconometricsPage";
@@ -330,6 +331,20 @@ export default function StudentPage({ user, onLogout, onUpdateUser }) {
         }
       />
 
+      {/* ── Bottom Navigation — mobile only ─────────── */}
+      <BottomNav
+        viewMode={viewMode}
+        activeTab={activeTab}
+        role="student"
+        isAdmin={false}
+        cursoActivoId={cursoActivo?.id || null}
+        onLogout={onLogout}
+        onTabChange={(tab) => {
+          setActiveTab(tab);
+          if (cursoActivo?.id) navigate(`/courses/${cursoActivo.id}?tab=${tab}`, { replace: true });
+        }}
+      />
+
       <div className="page-body sp-body">
         {viewMode === "perfil" ? (
           <div>
@@ -388,7 +403,7 @@ export default function StudentPage({ user, onLogout, onUpdateUser }) {
           <div className="sp-course-detail">
             {/* Header & Tabs */}
             <div className="sp-course-detail__header">
-              <div className="sp-course-detail__header-left">
+              <div className="sp-course-detail__header-left" style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
                 <button
                   className="btn btn-sm btn-ghost sp-course-back-btn"
                   onClick={() => {
@@ -396,13 +411,15 @@ export default function StudentPage({ user, onLogout, onUpdateUser }) {
                     setRegistered(null);
                     setStep(STEPS.SELECT);
                   }}
+                  style={{ whiteSpace: "nowrap", padding: "6px 12px", border: "1px solid var(--gray-200, #e2e8f0)", borderRadius: "10px" }}
                 >
-                  « Volver
+                  « Cursos
                 </button>
-                <h2 className="sp-course-detail__title">
+                <h2 className="sp-course-detail__title" style={{ margin: 0, fontSize: "1.15rem", fontWeight: "800" }}>
                   {cursoActivo?.nombre}
                 </h2>
               </div>
+
               <Tabs
                 activeTab={activeTab}
                 onChange={(t) => {

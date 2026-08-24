@@ -1,0 +1,167 @@
+/* =============================================
+   BOTTOM NAV — Mobile fixed navigation bar
+   Only visible on screens < 768px
+   ============================================= */
+
+.bottom-nav {
+  display: none; /* Hidden on desktop by default */
+}
+
+@media (max-width: 767px) {
+  /* ── Show bottom nav on mobile ── */
+  .bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 5rem;
+    background: rgba(255, 255, 255, 0.82);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    backdrop-filter: blur(16px) saturate(180%);
+    border-radius: 1.5rem 1.5rem 0 0;
+    box-shadow: 0 -4px 20px rgba(15, 23, 42, 0.08);
+    z-index: 200;
+    justify-content: space-around;
+    align-items: center;
+    padding: 0 0.25rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.7);
+  }
+
+  /* ── Nav item — large touch target ── */
+  .bottom-nav__item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    flex: 1;
+    height: 100%;
+    min-height: 44px; /* iOS minimum tap target */
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #94a3b8;
+    transition: color 0.2s ease, transform 0.1s ease;
+    padding: 0.5rem 0;
+    position: relative;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+
+  .bottom-nav__item:active {
+    transform: scale(0.9);
+  }
+
+  /* ── Active state ── */
+  .bottom-nav__item--active {
+    color: var(--primary, #4f46e5);
+  }
+
+  /* Active indicator dot above icon */
+  .bottom-nav__item--active::before {
+    content: '';
+    position: absolute;
+    top: 6px;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background-color: var(--primary, #4f46e5);
+  }
+
+  /* ── Danger state (logout) ── */
+  .bottom-nav__item--danger {
+    color: #ef4444;
+  }
+
+  /* ── Icon ── */
+  .bottom-nav__icon {
+    flex-shrink: 0;
+    width: 26px;
+    height: 26px;
+  }
+
+  /* ── Label ── */
+  .bottom-nav__label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: 0.01em;
+  }
+
+  /* ── More popover overlay ── */
+  .bottom-nav__more-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.15);
+    z-index: 199;
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    padding: 0 0.75rem calc(5rem + 0.6rem) 0;
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+  }
+
+  .bottom-nav__more-sheet {
+    width: 190px;
+    background: rgba(255, 255, 255, 0.92);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    backdrop-filter: blur(24px) saturate(180%);
+    border-radius: 1.25rem;
+    padding: 0.4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    box-shadow: 0 12px 32px -4px rgba(15, 23, 42, 0.18), 0 0 0 1px rgba(255, 255, 255, 0.8) inset;
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    animation: popUp 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+    transform-origin: bottom right;
+  }
+
+  @keyframes popUp {
+    from { transform: scale(0.85) translateY(8px); opacity: 0; }
+    to   { transform: scale(1) translateY(0); opacity: 1; }
+  }
+
+  .bottom-nav__more-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 0.65rem 0.85rem;
+    background: none;
+    border: none;
+    border-radius: 0.875rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #334155;
+    text-align: left;
+    transition: background 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .bottom-nav__more-item:hover,
+  .bottom-nav__more-item:active {
+    background: rgba(241, 245, 249, 0.9);
+  }
+
+  .bottom-nav__more-item--active {
+    color: var(--primary, #4f46e5);
+    background: rgba(238, 242, 255, 0.9);
+    font-weight: 600;
+  }
+
+  .bottom-nav__more-item--danger {
+    color: #ef4444;
+  }
+
+
+  /* ── Content padding — so content doesn't hide behind bottom nav ── */
+  .page-body,
+  .tp-dashboard,
+  .sp-page-body {
+    padding-bottom: 5rem !important;
+  }
+}

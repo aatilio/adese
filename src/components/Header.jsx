@@ -34,7 +34,7 @@ export default function Header({ user, roleLabel, onLogout, onOpenProfile, onGoH
         <img src={appLogo} alt="Logo" className="app-header__logo" />
       </div>
 
-      {/* Right Side: User Menu Dropdown */}
+      {/* Right Side: User Menu Dropdown — hidden on mobile, handled by BottomNav */}
       <div className="app-header__actions">
         <UserMenu 
           user={user} 
