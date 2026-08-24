@@ -1,3 +1,7 @@
+// VITE_API_URL:
+// - Local Docker: http://localhost:3000
+// - Vercel / Mismo Dominio: '' (vacío, usa rewrites relativos de vercel.json -> /api/*)
+// - Servidor Externo / Producción (Render, Railway, VPS): https://api.midominio.com
 const API = import.meta.env.VITE_API_URL || '';
 
 const request = async (method, path, body) => {

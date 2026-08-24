@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from "react";
+import { useNavigate, useLocation, useParams, useSearchParams } from "react-router-dom";
 import {
   Plus,
   StopCircle,
@@ -69,9 +70,47 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
   const [profesores, setProfesores] = useState([]);
   const [selectedProfesoresIds, setSelectedProfesoresIds] = useState([]);
 
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { id: courseIdParam } = useParams();
+  const [searchParams] = useSearchParams();
+
   // ── Tab state ───────────────────────────────────────────
   const [activeTab, setActiveTab] = useState("vivo"); // vivo | alumnos | clases | historial | config
-  const [viewMode, setViewMode] = useState("dashboard"); // dashboard | curso
+  const [viewMode, setViewMode] = useState("dashboard"); // dashboard | curso | perfil | usuarios | econometrics | exam
+
+  // Synchronize router location with viewMode, cursoActivo, and activeTab
+  useEffect(() => {
+    const path = location.pathname;
+    if (path.startsWith('/courses/') && courseIdParam) {
+      setViewMode("curso");
+      const found = cursos.find(c => String(c.id) === String(courseIdParam));
+      if (found) {
+        setCursoActivo(found);
+      } else {
+        setCursoActivo((prev) => (prev && String(prev.id) === String(courseIdParam) ? prev : { id: Number(courseIdParam), nombre: `Curso ${courseIdParam}` }));
+      }
+      const tabParam = searchParams.get("tab");
+      if (tabParam) {
+        setActiveTab(tabParam);
+      }
+    } else if (path === '/profile') {
+      setViewMode("perfil");
+      setCursoActivo(null);
+    } else if (path === '/usuarios') {
+      setViewMode("usuarios");
+      setCursoActivo(null);
+    } else if (path === '/econometrics') {
+      setViewMode("econometrics");
+      setCursoActivo(null);
+    } else if (path === '/exam') {
+      setViewMode("exam");
+      setCursoActivo(null);
+    } else if (path === '/home' || path === '/dashboard' || path === '/courses' || path === '/') {
+      setViewMode("dashboard");
+      setCursoActivo(null);
+    }
+  }, [location.pathname, courseIdParam, searchParams, cursos]);
 
   // ── Live session ────────────────────────────────────────
   const [sesion, setSesion] = useState(null);
@@ -879,38 +918,39 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
         user={user}
         roleLabel={user.rol === 1 ? 'Administrador' : user.rol === 2 ? 'Profesor' : 'Alumno'}
         onLogout={onLogout}
-        onOpenProfile={() => setViewMode("perfil")}
+        onOpenProfile={() => navigate("/profile")}
+        onGoHome={() => navigate("/home")}
         extraOptions={
           viewMode === "curso"
             ? [
                 {
                   label: "Monitor",
                   icon: Radio,
-                  onClick: () => setActiveTab("vivo"),
+                  onClick: () => { setActiveTab("vivo"); if (cursoActivo?.id) navigate(`/courses/${cursoActivo.id}?tab=vivo`, { replace: true }); },
                   active: activeTab === "vivo",
                 },
                 {
                   label: "Programación",
                   icon: Calendar,
-                  onClick: () => setActiveTab("clases"),
+                  onClick: () => { setActiveTab("clases"); if (cursoActivo?.id) navigate(`/courses/${cursoActivo.id}?tab=clases`, { replace: true }); },
                   active: activeTab === "clases",
                 },
                 {
                   label: "Alumnos",
                   icon: Users,
-                  onClick: () => setActiveTab("alumnos"),
+                  onClick: () => { setActiveTab("alumnos"); if (cursoActivo?.id) navigate(`/courses/${cursoActivo.id}?tab=alumnos`, { replace: true }); },
                   active: activeTab === "alumnos",
                 },
                 {
                   label: "Historial",
                   icon: History,
-                  onClick: () => setActiveTab("historial"),
+                  onClick: () => { setActiveTab("historial"); if (cursoActivo?.id) navigate(`/courses/${cursoActivo.id}?tab=historial`, { replace: true }); },
                   active: activeTab === "historial",
                 },
                 {
                   label: "Ajustes",
                   icon: Settings,
-                  onClick: () => setActiveTab("config"),
+                  onClick: () => { setActiveTab("config"); if (cursoActivo?.id) navigate(`/courses/${cursoActivo.id}?tab=config`, { replace: true }); },
                   active: activeTab === "config",
                 },
               ]
@@ -934,7 +974,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
             user={user} 
             roleLabel={user.rol === 1 ? 'Administrador' : 'Profesor'}
             onUpdateUser={onUpdateUser} 
-            onCancel={() => setViewMode("dashboard")} 
+            onCancel={() => navigate("/dashboard")} 
           />
         </div>
       ) : viewMode === "dashboard" ? (
@@ -947,7 +987,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
             {isAdmin && (
               <button
                 className="btn btn-sm btn-ghost tp-btn-usuarios"
-                onClick={() => setViewMode("usuarios")}
+                onClick={() => navigate("/usuarios")}
               >
                 <Users size={14} /> Usuarios
               </button>
@@ -1111,6 +1151,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                   onClick={() => {
                     setCursoActivo(c);
                     setViewMode("curso");
+                    navigate(`/courses/${c.id}`);
                   }}
                   actions={
                     <>
@@ -1181,7 +1222,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
       ) : viewMode === "usuarios" ? (
         /* ══════ VISTA USUARIOS ══════════════════════ */
         <UsersView 
-          onBack={() => setViewMode("dashboard")} 
+          onBack={() => navigate("/home")} 
           cursos={cursos} 
           onCursosUpdated={reloadCursos}
           onProfesoresUpdated={reloadProfesores}
@@ -1209,7 +1250,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
               type="button"
               className="btn btn-sm btn-ghost tp-back-btn--tabs"
               style={{ whiteSpace: "nowrap" }}
-              onClick={() => setViewMode("dashboard")}
+              onClick={() => navigate("/dashboard")}
             >
               « Cursos
             </button>

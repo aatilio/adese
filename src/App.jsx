@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import StudentPage from './pages/StudentPage';
 import TeacherPage from './pages/TeacherPage';
@@ -7,8 +9,6 @@ import { normalizeSessionUser } from './constants/roles';
 import './index.css';
 
 // ── Sesión en localStorage ─────────────────────────────────────
-// SESSION_VERSION: incrementar este número invalida TODAS las sesiones
-// activas en todos los navegadores (útil si cambian IDs o estructura).
 const SESSION_VERSION = 2;
 const STORAGE_KEY = `sai_user_v${SESSION_VERSION}`;
 
@@ -26,10 +26,9 @@ function purgeOldSessions() {
   for (let v = 1; v < SESSION_VERSION; v++) {
     localStorage.removeItem(`sai_user_v${v}`);
   }
-  localStorage.removeItem('sai_user'); // clave sin versión (legado)
+  localStorage.removeItem('sai_user');
 }
 
-// ── App ────────────────────────────────────────────────────────
 export default function App() {
   const [user, setUser] = useState(() => {
     purgeOldSessions();
@@ -48,21 +47,51 @@ export default function App() {
     setUser(null);
   };
 
-  return (
-    <>
-      <ToastContainer />
-      {!user && <LoginPage onLogin={handleLogin} />}
-      {(user?.role === 'admin' || user?.role === 'profesor') && (
+  const renderUserApp = () => {
+    if (!user) return <Navigate to="/login" replace />;
+    if (user.role === 'admin' || user.role === 'profesor') {
+      return (
         <TeacherPage
           user={user}
           isAdmin={user.role === 'admin'}
           onLogout={handleLogout}
           onUpdateUser={handleLogin}
         />
-      )}
-      {user?.role === 'alumno' && (
-        <StudentPage user={user} onLogout={handleLogout} onUpdateUser={handleLogin} />
-      )}
-    </>
+      );
+    }
+    return (
+      <StudentPage
+        user={user}
+        onLogout={handleLogout}
+        onUpdateUser={handleLogin}
+      />
+    );
+  };
+
+  return (
+    <BrowserRouter>
+      <ToastContainer />
+      <Routes>
+        <Route
+          path="/"
+          element={user ? <Navigate to="/home" replace /> : <LandingPage />}
+        />
+        <Route
+          path="/login"
+          element={user ? <Navigate to="/home" replace /> : <LoginPage onLogin={handleLogin} />}
+        />
+        <Route path="/home" element={renderUserApp()} />
+        <Route path="/courses" element={renderUserApp()} />
+        <Route path="/courses/:id" element={renderUserApp()} />
+        <Route path="/profile" element={renderUserApp()} />
+        <Route path="/usuarios" element={renderUserApp()} />
+        <Route path="/econometrics" element={renderUserApp()} />
+        <Route path="/exam" element={renderUserApp()} />
+        <Route
+          path="*"
+          element={<Navigate to={user ? "/home" : "/"} replace />}
+        />
+      </Routes>
+    </BrowserRouter>
   );
 }

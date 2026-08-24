@@ -786,6 +786,24 @@ th.sticky-column {
   z-index: 10;
 }
 
+@media (max-width: 640px) {
+  .login-screen {
+    padding: var(--space-4);
+    background: #ffffff;
+  }
+
+  .login-card {
+    box-shadow: none;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    padding: var(--space-4) var(--space-2);
+    max-width: 100%;
+  }
+}
+
 .login-logo {
   display: flex;
   align-items: center;

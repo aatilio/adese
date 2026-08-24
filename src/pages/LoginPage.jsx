@@ -3,7 +3,7 @@ import { ChevronRight, Eye, EyeOff } from "lucide-react";
 import { api } from "../api/client";
 import { toast } from "../components/Toast";
 import { mapRolToUiRole } from "../constants/roles";
-import appLogo from "../assets/ac-d.svg";
+import appLogo from "../assets/adese.svg";
 import Footer from "../components/Footer";
 import "../styles/components/profile-view.css"; // shared .eye-btn and .password-input-wrap
 
@@ -38,8 +38,7 @@ export default function LoginPage({ onLogin }) {
       <div className="login-card">
         {/* Logo */}
         <div className="login-logo">
-          <img src={appLogo} alt="Adese Logo" style={{ width: "70px", height: "auto" }} />
-          <div className="login-logo-title">Adese</div>
+          <img src={appLogo} alt="Adese Logo" style={{ width: "200px", height: "auto" }} />
         </div>
 
         {/* Form */}

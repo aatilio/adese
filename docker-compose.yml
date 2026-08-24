@@ -52,7 +52,11 @@ services:
       - .:/app
       - /app/node_modules
     environment:
-      - VITE_API_URL=http://api:3000
+      # Para desarrollo local con Docker: El navegador del cliente consume la API en localhost:3000
+      # Para desplegar en Vercel / Producción:
+      # - Si Backend y Frontend están en Vercel (mismo dominio), dejar VITE_API_URL vacío ("") para usar rutas relativas /api
+      # - Si el Backend está en otro servidor (Render/VPS), cambiar a: https://tu-backend-api.com
+      - VITE_API_URL=http://localhost:3000
     stdin_open: true
     tty: true
     depends_on:

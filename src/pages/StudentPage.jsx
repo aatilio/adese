@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from "react";
+import { useNavigate, useLocation, useParams, useSearchParams } from "react-router-dom";
 import {
   LogOut,
   QrCode,
@@ -27,14 +28,45 @@ import '../styles/student.css';
 const STEPS = { SELECT: "select", SCANNING: "scanning", DONE: "done" };
 
 export default function StudentPage({ user, onLogout, onUpdateUser }) {
-  const [viewMode, setViewMode] = useState("dashboard"); // dashboard | curso | econometrics
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { id: courseIdParam } = useParams();
+  const [searchParams] = useSearchParams();
+
+  const [viewMode, setViewMode] = useState("dashboard"); // dashboard | curso | perfil | econometrics
   const [cursos, setCursos] = useState([]);
   const [cursoActivo, setCursoActivo] = useState(null);
   const [sesionActiva, setSesionActiva] = useState(null);
   const [sesionesCurso, setSesionesCurso] = useState([]);
 
-
   const [activeTab, setActiveTab] = useState("marcar"); // marcar | historial
+
+  // Synchronize router location with viewMode, cursoActivo, and activeTab
+  useEffect(() => {
+    const path = location.pathname;
+    if (path.startsWith('/courses/') && courseIdParam) {
+      setViewMode("curso");
+      const found = cursos.find(c => String(c.id) === String(courseIdParam));
+      if (found) {
+        setCursoActivo(found);
+      } else {
+        setCursoActivo((prev) => (prev && String(prev.id) === String(courseIdParam) ? prev : { id: Number(courseIdParam), nombre: `Curso ${courseIdParam}` }));
+      }
+      const tabParam = searchParams.get("tab");
+      if (tabParam) {
+        setActiveTab(tabParam);
+      }
+    } else if (path === '/profile') {
+      setViewMode("perfil");
+      setCursoActivo(null);
+    } else if (path === '/econometrics') {
+      setViewMode("econometrics");
+      setCursoActivo(null);
+    } else if (path === '/home' || path === '/dashboard' || path === '/courses' || path === '/') {
+      setViewMode("dashboard");
+      setCursoActivo(null);
+    }
+  }, [location.pathname, courseIdParam, searchParams, cursos]);
   const [step, setStep] = useState(STEPS.SELECT);
   const [estado, setEstado] = useState("");
   const [loading, setLoading] = useState(false);
@@ -270,26 +302,27 @@ export default function StudentPage({ user, onLogout, onUpdateUser }) {
         user={user}
         roleLabel="Estudiante"
         onLogout={onLogout}
-        onOpenProfile={() => setViewMode("perfil")}
+        onOpenProfile={() => navigate("/profile")}
+        onGoHome={() => navigate("/home")}
         extraOptions={
           viewMode === "curso" ? [
             {
               label: "Marcar Asistencia",
               icon: CheckCircle,
-              onClick: () => setActiveTab("marcar"),
+              onClick: () => { setActiveTab("marcar"); if (cursoActivo?.id) navigate(`/courses/${cursoActivo.id}?tab=marcar`, { replace: true }); },
               active: activeTab === "marcar"
             },
             {
               label: "Historial",
               icon: History,
-              onClick: () => setActiveTab("historial"),
+              onClick: () => { setActiveTab("historial"); if (cursoActivo?.id) navigate(`/courses/${cursoActivo.id}?tab=historial`, { replace: true }); },
               active: activeTab === "historial"
             },
             ...(cursoActivo?.nombre?.toLowerCase().includes('econometría') ? [
               {
                 label: "Estimador",
                 icon: BarChart3,
-                onClick: () => setActiveTab("econometria"),
+                onClick: () => { setActiveTab("econometria"); if (cursoActivo?.id) navigate(`/courses/${cursoActivo.id}?tab=econometria`, { replace: true }); },
                 active: activeTab === "econometria"
               }
             ] : [])
@@ -304,7 +337,7 @@ export default function StudentPage({ user, onLogout, onUpdateUser }) {
               <button
                 type="button"
                 className="btn btn-sm btn-ghost sp-back-btn"
-                onClick={() => setViewMode("dashboard")}
+                onClick={() => navigate("/home")}
               >
                 « Volver al Panel
               </button>
@@ -313,11 +346,11 @@ export default function StudentPage({ user, onLogout, onUpdateUser }) {
               user={user} 
               roleLabel="Estudiante"
               onUpdateUser={onUpdateUser} 
-              onCancel={() => setViewMode("dashboard")} 
+              onCancel={() => navigate("/home")} 
             />
           </div>
         ) : viewMode === "econometrics" ? (
-          <EconometricsPage onBack={() => setViewMode("dashboard")} />
+          <EconometricsPage onBack={() => navigate("/home")} />
         ) : viewMode === "dashboard" ? (
           <div>
             <div className="sp-dashboard__header">
@@ -342,6 +375,7 @@ export default function StudentPage({ user, onLogout, onUpdateUser }) {
                     onClick={() => {
                       setCursoActivo(c);
                       setViewMode("curso");
+                      navigate(`/courses/${c.id}`);
                     }}
                   />
                 ))}
@@ -358,7 +392,7 @@ export default function StudentPage({ user, onLogout, onUpdateUser }) {
                 <button
                   className="btn btn-sm btn-ghost sp-course-back-btn"
                   onClick={() => {
-                    setViewMode("dashboard");
+                    navigate("/home");
                     setRegistered(null);
                     setStep(STEPS.SELECT);
                   }}
@@ -371,7 +405,12 @@ export default function StudentPage({ user, onLogout, onUpdateUser }) {
               </div>
               <Tabs
                 activeTab={activeTab}
-                onChange={setActiveTab}
+                onChange={(t) => {
+                  setActiveTab(t);
+                  if (cursoActivo?.id) {
+                    navigate(`/courses/${cursoActivo.id}?tab=${t}`, { replace: true });
+                  }
+                }}
                 tabs={[
                   { id: "marcar", label: "Marcar", icon: CheckCircle },
                   { id: "historial", label: "Historial", icon: History },

@@ -1,18 +1,37 @@
-import appLogo from "../assets/ac-d.svg";
+import { useNavigate } from "react-router-dom";
+import appLogo from "../assets/adese.svg";
 import UserMenu from "./UserMenu";
 import "../styles/components/header.css";
 
-export default function Header({ user, roleLabel, onLogout, onOpenProfile, extraOptions = [] }) {
+export default function Header({ user, roleLabel, onLogout, onOpenProfile, onGoHome, extraOptions = [] }) {
+  const navigate = useNavigate();
+
+  const handleGoHome = () => {
+    if (onGoHome) {
+      onGoHome();
+    } else {
+      navigate('/home');
+    }
+  };
+
+  const handleOpenProfile = () => {
+    if (onOpenProfile) {
+      onOpenProfile();
+    } else {
+      navigate('/profile');
+    }
+  };
+
   return (
     <div className="page-header app-header">
-      {/* Left Side: Logo & App Name */}
-      <div className="app-header__brand">
+      {/* Left Side: Logo */}
+      <div 
+        className="app-header__brand"
+        onClick={handleGoHome}
+        style={{ cursor: "pointer" }}
+        title="Ir al inicio"
+      >
         <img src={appLogo} alt="Logo" className="app-header__logo" />
-        <div>
-          <div className="app-header__logo-pad">
-            <h1 className="app-header__title">Adese</h1>
-          </div>
-        </div>
       </div>
 
       {/* Right Side: User Menu Dropdown */}
@@ -21,7 +40,7 @@ export default function Header({ user, roleLabel, onLogout, onOpenProfile, extra
           user={user} 
           roleLabel={roleLabel} 
           onLogout={onLogout}
-          onOpenProfile={onOpenProfile}
+          onOpenProfile={handleOpenProfile}
           extraOptions={extraOptions}
         />
       </div>

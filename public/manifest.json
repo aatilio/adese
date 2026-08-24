@@ -1,0 +1,41 @@
+{
+  "name": "ADESE — Asistencia Digital",
+  "short_name": "ADESE",
+  "description": "Automatiza la toma de asistencia en tiempo real con códigos QR dinámicos anti-fraude.",
+  "start_url": "/home",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#f8fafc",
+  "theme_color": "#0284c7",
+  "lang": "es",
+  "categories": ["education", "productivity"],
+  "icons": [
+    {
+      "src": "/adese_icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/adese_icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/page.png",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Panel de control de cursos"
+    },
+    {
+      "src": "/phone.png",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Escaneo móvil de asistencia"
+    }
+  ]
+}
