@@ -6,8 +6,8 @@
   font-size: 11px;
   color: var(--gray-400);
   text-align: center;
-  margin-top: 2rem;
-  padding-bottom: 1.5rem;
+  margin-top: 0rem;
+  padding-bottom: 1rem; 
   line-height: 1.6;
   opacity: 0.8;
 }

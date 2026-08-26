@@ -49,9 +49,6 @@ export default function QrGenerator({ sesion, onRefresh }) {
     else toast.error('No se pudo copiar. Selecciona el texto manualmente.');
   }, [token]);
 
-  // Función para enmascarar el token visualmente
-  const maskedToken = token.length > 10 ? `${token.substring(0, 10)}***` : token;
-
   return (
     <div className="qr-box" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', padding: '1.5rem 2rem' }}>
       {token ? (
@@ -145,18 +142,19 @@ export default function QrGenerator({ sesion, onRefresh }) {
           <Copy size={16} strokeWidth={2.5} style={{ opacity: 0.7 }} />
           <span
             style={{
-              fontSize: '1.1rem',
+              fontSize: '1.05rem',
               fontWeight: 800,
-              letterSpacing: '0.15em',
+              letterSpacing: '0.12em',
               fontFamily: 'monospace',
               color: 'var(--primary-dark)',
+              userSelect: 'all',
             }}
           >
-            {maskedToken}
+            {token || '----------------'}
           </span>
         </button>
         <p style={{ fontSize: '0.65rem', color: 'var(--gray-400)', marginTop: '0.5rem' }}>
-          Haz clic para copiar el código completo de 16 dígitos
+          Código de 16 caracteres para validación manual en caso de problemas con la cámara
         </p>
       </div>
     </div>

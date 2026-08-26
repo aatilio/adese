@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { QrCode, Loader2 } from 'lucide-react';
+import { QrCode, Loader2, KeyRound } from 'lucide-react';
 import { Html5Qrcode } from 'html5-qrcode';
 
 export default function Scanner({
@@ -16,6 +16,7 @@ export default function Scanner({
   const scannerInstanceRef = useRef(null);
   const hasScannedRef = useRef(false);   // evita que el callback dispare más de una vez
   const [cameraReady, setCameraReady] = useState(false);
+  const [manualCode, setManualCode] = useState('');
 
   /* ─── Iniciar / detener cámara según el step ─────────────────────────── */
   useEffect(() => {
@@ -80,10 +81,23 @@ export default function Scanner({
       });
   };
 
+  const handleManualSubmit = (e) => {
+    e.preventDefault();
+    const clean = manualCode.trim().toUpperCase();
+    if (!clean) {
+      toast.error('Por favor ingresa el código de 16 caracteres');
+      return;
+    }
+    if (clean.length < 8) {
+      toast.error('El código debe tener al menos 8 caracteres');
+      return;
+    }
+    onScan(clean);
+  };
+
   /* ─── Vistas ──────────────────────────────────────────────────────────── */
 
   // Mientras loading (procesando la petición al backend) mostramos un spinner
-  // en lugar de la pantalla vacía que provocaba el problema original
   if (loading) {
     return (
       <div className="sp-scan-processing">
@@ -119,16 +133,56 @@ export default function Scanner({
     );
   }
 
-  // Vista inicial: sólo el botón de escanear (se elimina el input manual)
+  // Vista inicial: Escanear QR o Ingreso de Código Manual
   return (
     <div className="sp-scan-actions">
       <button
-        className="btn btn-black w-full"
+        type="button"
+        className="btn btn-primary w-full"
         onClick={() => setStep(STEPS.SCANNING)}
         disabled={loading || !estado || disabled}
+        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px' }}
       >
-        <QrCode size={16} style={{ marginRight: '6px' }} /> Escanear QR
+        <QrCode size={18} /> Escanear con Cámara QR
       </button>
+
+      <div className="sp-or-divider" style={{ margin: '0.65rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--gray-400)', fontSize: '0.725rem', fontWeight: 700 }}>
+        <span style={{ flex: 1, height: '1px', background: 'var(--gray-200, #e2e8f0)' }} />
+        <span>O INGRESA EL CÓDIGO MANUAL</span>
+        <span style={{ flex: 1, height: '1px', background: 'var(--gray-200, #e2e8f0)' }} />
+      </div>
+
+      <form onSubmit={handleManualSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+        <input
+          type="text"
+          className="form-input sp-code-input"
+          placeholder="Código de 16 dígitos"
+          value={manualCode}
+          onChange={(e) => setManualCode(e.target.value.toUpperCase())}
+          maxLength={16}
+          disabled={loading || !estado || disabled}
+          style={{
+            width: '100%',
+            padding: '10px 14px',
+            fontFamily: 'monospace',
+            fontSize: '1.05rem',
+            fontWeight: '800',
+            textAlign: 'center',
+            letterSpacing: '0.15em',
+            textTransform: 'uppercase',
+            borderRadius: '10px',
+            border: '1px solid var(--gray-300, #cbd5e1)',
+          }}
+        />
+        <button
+          type="submit"
+          className="btn btn-black w-full"
+          disabled={loading || !manualCode.trim() || !estado || disabled}
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: '10px' }}
+        >
+          <KeyRound size={16} /> Validar Asistencia
+        </button>
+      </form>
     </div>
   );
 }

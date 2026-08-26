@@ -30,6 +30,8 @@ import {
   EyeOff,
   Lock,
   Unlock,
+  ArrowLeft,
+  UploadCloud,
 } from "lucide-react";
 import * as XLSX from "xlsx";
 import { api } from "../api/client";
@@ -218,9 +220,14 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
   const [nuevoAlumnoCodigo, setNuevoAlumnoCodigo] = useState('');
   const [nuevoAlumnoNombre, setNuevoAlumnoNombre] = useState('');
   const [nuevoAlumnoEncontrado, setNuevoAlumnoEncontrado] = useState(null);
+  const [alumnoResultadosList, setAlumnoResultadosList] = useState([]);
   const [buscandoAlumno, setBuscandoAlumno] = useState(false);
   const [csvImportando, setCsvImportando] = useState(false);
+  const [showImportPage, setShowImportPage] = useState(false);
+  const [importLog, setImportLog] = useState([]);  // { type: 'info'|'ok'|'warn'|'error', msg }
+  const [importResult, setImportResult] = useState(null);
   const [editingAlumnoData, setEditingAlumnoData] = useState(null);
+
 
   // ── Init: load courses ──────────────────────────────────
   useEffect(() => {
@@ -678,16 +685,42 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
   };
 
   // ── Nuevo Alumno functions ───────────────────────────────
-  const buscarAlumnoPorCodigo = async (codigo) => {
-    setNuevoAlumnoCodigo(codigo);
-    if (!codigo.trim() || codigo.trim().length < 2) { setNuevoAlumnoEncontrado(null); return; }
+  const buscarDebounceRef = useRef(null);
+  const buscarAlumnoPorCodigo = (term) => {
+    setNuevoAlumnoCodigo(term);
+    if (!term.trim() || term.trim().length < 2) {
+      setNuevoAlumnoEncontrado(null);
+      setAlumnoResultadosList([]);
+      setBuscandoAlumno(false);
+      if (buscarDebounceRef.current) clearTimeout(buscarDebounceRef.current);
+      return;
+    }
     setBuscandoAlumno(true);
-    try {
-      const res = await api.buscarUsuario(codigo.trim());
-      setNuevoAlumnoEncontrado(res.usuario || null);
-      if (res.usuario) setNuevoAlumnoNombre(res.usuario.nombre_completo);
-    } catch { setNuevoAlumnoEncontrado(null); }
-    finally { setBuscandoAlumno(false); }
+    if (buscarDebounceRef.current) clearTimeout(buscarDebounceRef.current);
+    buscarDebounceRef.current = setTimeout(async () => {
+      try {
+        const res = await api.buscarUsuario(term.trim());
+        const list = res.usuarios || (res.usuario ? [res.usuario] : []);
+        setAlumnoResultadosList(list);
+        if (list.length > 0) {
+          setNuevoAlumnoEncontrado(list[0]);
+          setNuevoAlumnoNombre(list[0].nombre_completo);
+        } else {
+          setNuevoAlumnoEncontrado(null);
+        }
+      } catch {
+        setNuevoAlumnoEncontrado(null);
+        setAlumnoResultadosList([]);
+      } finally {
+        setBuscandoAlumno(false);
+      }
+    }, 350);
+  };
+
+  const seleccionarAlumnoBusqueda = (alumno) => {
+    setNuevoAlumnoEncontrado(alumno);
+    setNuevoAlumnoCodigo(alumno.codigo);
+    setNuevoAlumnoNombre(alumno.nombre_completo);
   };
 
   const crearYAgregarAlumno = async (e) => {
@@ -713,36 +746,98 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
       await api.addEstudianteCurso(cursoActivo.id, estudianteId);
       const res = await api.getCursoEstudiantes(cursoActivo.id);
       setEstudiantesCurso(res.estudiantes);
-      setShowNuevoAlumno(false); setNuevoAlumnoCodigo(''); setNuevoAlumnoNombre(''); setNuevoAlumnoEncontrado(null);
-      toast.success('Alumno añadido al curso');
+      setShowNuevoAlumno(false); setNuevoAlumnoCodigo(''); setNuevoAlumnoNombre(''); setNuevoAlumnoEncontrado(null); setAlumnoResultadosList([]);
+      toast.success('Alumno matriculado en el curso');
     } catch (err) { toast.error(err.message); }
+  };
+
+  const descargarPlantillaCsv = () => {
+    const content = "codigo,nombre_completo\n20240001,Perez Gomez Carlos Alberto\n20240002,Vargas Rios Sofia Fernanda\n20240003,Mendoza Torres Maria Elena";
+    const blob = new Blob([content], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "plantilla_alumnos_adese.csv";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    toast.info("Plantilla descargada: plantilla_alumnos_adese.csv");
   };
 
   const handleCsvImport = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
     setCsvImportando(true);
+    setImportLog([]);
+    setImportResult(null);
+
+    const log = (type, msg) => setImportLog(prev => [...prev, { type, msg }]);
+
     try {
-      const text = await file.text();
-      const lines = text.split('\n').filter(l => l.trim());
-      const header = lines[0].toLowerCase();
-      const isAdese = header.includes('user') || header.includes('codigo');
-      const alumnos = [];
-      const start = isAdese ? 1 : 0;
-      for (let i = start; i < lines.length; i++) {
-        const cols = lines[i].split(',');
-        if (cols.length < 2) continue;
-        const codigo = cols[0].trim();
-        const nombre = cols[1].trim();
-        if (codigo && nombre) alumnos.push({ codigo, nombre_completo: nombre });
+      log('info', `Leyendo archivo: ${file.name} (${(file.size / 1024).toFixed(1)} KB)...`);
+      const data = await file.arrayBuffer();
+      const workbook = XLSX.read(data, { type: 'array' });
+      const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+
+      if (!rows || rows.length < 2) {
+        log('error', 'El archivo está vacío o no contiene filas válidas (se esperan al menos 1 fila de encabezado + 1 alumno).');
+        setCsvImportando(false);
+        e.target.value = '';
+        return;
       }
-      if (alumnos.length === 0) { toast.error('No se encontraron alumnos en el CSV'); return; }
+
+      const header = rows[0].map((c) => String(c || '').trim().toLowerCase());
+      let codigoIdx = header.findIndex((h) => h.includes('codigo') || h.includes('cui') || h.includes('user'));
+      let nombreIdx = header.findIndex((h) => h.includes('nombre') || h.includes('completo') || h.includes('estudiante') || h.includes('alumno'));
+
+      if (codigoIdx === -1) codigoIdx = 0;
+      if (nombreIdx === -1) nombreIdx = 1;
+
+      log('info', `Columnas detectadas → CUI: columna ${codigoIdx + 1}, Nombres: columna ${nombreIdx + 1}`);
+      log('info', `Procesando ${rows.length - 1} filas...`);
+
+      const alumnos = [];
+      let saltados = 0;
+      for (let i = 1; i < rows.length; i++) {
+        const row = rows[i];
+        if (!row || row.length === 0) { saltados++; continue; }
+        const codigo = String(row[codigoIdx] || '').trim();
+        const nombre = String(row[nombreIdx] || '').trim();
+        if (!codigo) { saltados++; continue; }
+        alumnos.push({ codigo, nombre_completo: nombre || `Alumno ${codigo}` });
+      }
+
+      if (saltados > 0) log('warn', `${saltados} filas vacías o sin CUI omitidas.`);
+
+      if (alumnos.length === 0) {
+        log('error', 'No se encontraron alumnos válidos. Revisa que la columna CUI no esté vacía.');
+        setCsvImportando(false);
+        e.target.value = '';
+        return;
+      }
+
+      log('ok', `${alumnos.length} alumnos listos para importar. Enviando al servidor...`);
+
       const res = await api.importarAlumnos(cursoActivo.id, alumnos);
       const resE = await api.getCursoEstudiantes(cursoActivo.id);
       setEstudiantesCurso(resE.estudiantes);
-      toast.success(`Importados: ${res.creados} nuevos, ${res.existentes} ya existían, ${res.vinculados} vinculados`);
-    } catch (err) { toast.error(err.message); }
-    finally { setCsvImportando(false); e.target.value = ''; }
+
+      if (res.creados > 0) log('ok', `${res.creados} alumnos nuevos creados en la base de datos general.`);
+      if (res.existentes > 0) log('info', `${res.existentes} alumnos ya existían en la base de datos general (no se modificaron).`);
+      if (res.vinculados > 0) log('ok', `${res.vinculados} alumnos matriculados al curso "${cursoActivo.nombre}".`);
+      log('ok', '¡Importación completada exitosamente!');
+
+      setImportResult({ creados: res.creados, existentes: res.existentes, vinculados: res.vinculados, total: alumnos.length });
+      toast.success(`Importación completada: ${res.creados + res.existentes} procesados, ${res.vinculados} matriculados.`);
+    } catch (err) {
+      log('error', 'Error al procesar el archivo: ' + err.message);
+      toast.error('Error al procesar el archivo: ' + err.message);
+    } finally {
+      setCsvImportando(false);
+      e.target.value = '';
+    }
   };
 
   const updateEstudiante = async (id, field, value) => {
@@ -1268,20 +1363,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                 {cursoActivo?.nombre}
               </span>
             </h2>
-          </div>
-
-
-
-          <div className="tp-tabs-bar">
-            <button
-              type="button"
-              className="btn btn-sm btn-ghost tp-back-btn--tabs"
-              style={{ whiteSpace: "nowrap" }}
-              onClick={() => navigate("/dashboard")}
-            >
-              « Cursos
-            </button>
-
+            <div className="tp-tabs-bar">
             <Tabs
               className="tabs tp-tabs-inline"
               tabClass="tab tp-tab--compact"
@@ -1294,7 +1376,12 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                 { id: "historial", label: "Historial", icon: History },
               ]}
             />
+            </div>
           </div>
+
+
+
+          
 
           <div className="page-body tp-page-body-full">
             {/* ─── MONITOR EN VIVO ─────────────────────── */}
@@ -1357,8 +1444,157 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                 </div>
               ))}
 
+            {/* ─── ALUMNOS DEL CURSO: Import Page ────── */}
+            {activeTab === "alumnos" && showImportPage && (
+              <div className="card tp-alumnos-card">
+                {/* Header */}
+                <div className="tp-import-page-header">
+                  <button
+                    type="button"
+                    className="tp-import-back-btn"
+                    onClick={() => setShowImportPage(false)}
+                  >
+                    <ArrowLeft size={16} /> Volver a Alumnos
+                  </button>
+                  <div className="tp-import-title-group">
+                    <h3 className="tp-import-title">Importar Alumnos Masivamente</h3>
+                    <span className="tp-import-subtitle">Curso: {cursoActivo.nombre}</span>
+                  </div>
+                </div>
+
+                <div className="tp-import-body">
+                  {/* Banner de Instrucciones */}
+                  <div className="tp-import-instructions">
+                    <div className="tp-import-instructions__title">
+                      <Info size={18} /> Instrucciones para la carga masiva
+                    </div>
+                    <div className="tp-import-steps-grid">
+                      <div className="tp-import-step">
+                        <span className="tp-step-num">1</span>
+                        <span>Descarga la plantilla oficial (CSV o Excel) desde el panel inferior.</span>
+                      </div>
+                      <div className="tp-import-step">
+                        <span className="tp-step-num">2</span>
+                        <span>Ingresa los datos en las columnas <strong>cui</strong> y <strong>nombres_apellidos</strong> (1 por fila).</span>
+                      </div>
+                      <div className="tp-import-step">
+                        <span className="tp-step-num">3</span>
+                        <span>Sube el archivo final para preprocesar y matricular los alumnos.</span>
+                      </div>
+                    </div>
+                    <div className="tp-import-note">
+                      <Check size={14} /> <strong>Protección de datos:</strong> Si un alumno ya existe en el sistema, no se creará duplicado ni se cambiará su clave — únicamente se vinculará a este curso.
+                    </div>
+                  </div>
+
+                  {/* Fila de 2 Columnas */}
+                  <div className="tp-import-grid">
+                    {/* Columna 1: Plantillas */}
+                    <div className="tp-import-card">
+                      <div className="tp-import-card__title">
+                        <Download size={16} /> 1. Plantillas Oficiales
+                      </div>
+                      <p className="tp-import-card__desc">
+                        Elige el formato de tu preferencia con los encabezados precargados:
+                      </p>
+                      <div className="tp-import-templates-row">
+                        <a
+                          href="/plantilla_importacion.csv"
+                          download="plantilla_importacion_adese.csv"
+                          className="tp-template-btn tp-template-btn--csv"
+                        >
+                          <Download size={15} /> Plantilla CSV (.csv)
+                        </a>
+                        <a
+                          href="/plantilla_importacion.xlsx"
+                          download="plantilla_importacion_adese.xlsx"
+                          className="tp-template-btn tp-template-btn--excel"
+                        >
+                          <FileSpreadsheet size={15} /> Plantilla Excel (.xlsx)
+                        </a>
+                      </div>
+                    </div>
+
+                    {/* Columna 2: Cargar Archivo */}
+                    <div className="tp-import-card">
+                      <div className="tp-import-card__title">
+                        <UploadCloud size={16} /> 2. Cargar y Procesar
+                      </div>
+                      <p className="tp-import-card__desc">
+                        Sube tu lista terminada para analizar coincidencias y matricular:
+                      </p>
+                      <label className={`tp-upload-dropzone ${csvImportando ? 'tp-upload-dropzone--loading' : ''}`}>
+                        <UploadCloud size={30} className="tp-upload-icon" />
+                        <span className="tp-upload-text">
+                          {csvImportando ? 'Procesando archivo...' : 'Seleccionar archivo (CSV o Excel)'}
+                        </span>
+                        <span className="tp-upload-sub">Formatos admitidos: .csv, .xlsx, .xls</span>
+                        <input
+                          type="file"
+                          accept=".csv, .xlsx, .xls"
+                          onChange={handleCsvImport}
+                          disabled={csvImportando}
+                          style={{ display: 'none' }}
+                        />
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Log de Preprocesamiento */}
+                  {importLog.length > 0 && (
+                    <div className="tp-import-log-section">
+                      <div className="tp-import-log-title">Consola de Preprocesamiento en Vivo:</div>
+                      <div className="tp-import-log-box">
+                        {importLog.map((entry, i) => (
+                          <div key={i} className={`tp-log-line tp-log-line--${entry.type}`}>
+                            <span>{entry.type === 'ok' ? '✓' : entry.type === 'error' ? '✗' : entry.type === 'warn' ? '⚠' : '›'}</span>
+                            <span>{entry.msg}</span>
+                          </div>
+                        ))}
+                        {csvImportando && <div className="tp-log-line tp-log-line--info">⋯ enviando datos al servidor...</div>}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Resumen Final de Resultados */}
+                  {importResult && !csvImportando && (
+                    <div className="tp-import-result-card">
+                      <div className="tp-import-result-header">
+                        <Check size={20} style={{ color: '#16a34a' }} />
+                        <div>
+                          <div className="tp-import-result-title">¡Preprocesamiento e Importación Finalizados!</div>
+                          <div className="tp-import-result-sub">Se han procesado {importResult.total} registros del archivo correctamente.</div>
+                        </div>
+                      </div>
+                      <div className="tp-import-stats-grid">
+                        <div className="tp-import-stat tp-import-stat--green">
+                          <div className="tp-import-stat__num">{importResult.vinculados}</div>
+                          <div className="tp-import-stat__label">Matriculados en el Curso</div>
+                        </div>
+                        <div className="tp-import-stat tp-import-stat--blue">
+                          <div className="tp-import-stat__num">{importResult.creados}</div>
+                          <div className="tp-import-stat__label">Nuevas Cuentas Creadas</div>
+                        </div>
+                        <div className="tp-import-stat tp-import-stat--gray">
+                          <div className="tp-import-stat__num">{importResult.existentes}</div>
+                          <div className="tp-import-stat__label">Alumnos Ya Existentes en BD</div>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        className="btn btn-primary tp-import-finish-btn"
+                        onClick={() => setShowImportPage(false)}
+                      >
+                        Ver Alumnos Matriculados
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* ─── ALUMNOS DEL CURSO ──────────────────── */}
-            {activeTab === "alumnos" && (
+            {activeTab === "alumnos" && !showImportPage && (
               <div
                 className="card tp-alumnos-card"
               >
@@ -1369,12 +1605,23 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                   <div className="card-subtitle tp-card-subtitle-mt">
                     {estudiantesCurso.length} matriculados.
                   </div>
-                  <button
-                    className="btn btn-primary tp-add-alumno-btn"
-                    onClick={() => { setShowNuevoAlumno(true); setNuevoAlumnoCodigo(''); setNuevoAlumnoNombre(''); setNuevoAlumnoEncontrado(null); }}
-                  >
-                    <UserPlus size={16} /> Nuevo Alumno
-                  </button>
+                  <div className="tp-alumnos-actions" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '0.5rem' }}>
+                    <button
+                      className="btn btn-primary tp-add-alumno-btn"
+                      onClick={() => { setShowNuevoAlumno(true); setNuevoAlumnoCodigo(''); setNuevoAlumnoNombre(''); setNuevoAlumnoEncontrado(null); setAlumnoResultadosList([]); }}
+                    >
+                      <UserPlus size={16} /> Matricular Alumno
+                    </button>
+
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      onClick={() => { setShowImportPage(true); setImportLog([]); setImportResult(null); }}
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
+                    >
+                      <FileSpreadsheet size={16} /> Importar CSV / Excel
+                    </button>
+                  </div>
                 </div>
 
                 {/* Modal Nuevo Alumno (Matricular) */}
@@ -1391,31 +1638,62 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                       <form onSubmit={crearYAgregarAlumno}>
                         <div className="tp-modal-body">
                           <div className="form-group" style={{ marginTop: 0, position: 'relative' }}>
-                            <label className="form-label tp-form-label-sm">CUI</label>
+                            <label className="form-label tp-form-label-sm">Buscar por CUI / Código o Nombre y Apellidos</label>
                             <input
                               className="form-input"
                               autoFocus
                               value={nuevoAlumnoCodigo}
                               onChange={e => buscarAlumnoPorCodigo(e.target.value)}
-                              placeholder="Código del alumno"
+                              placeholder="Ej. 20241417 o Carlos Perez..."
                               style={{ borderColor: nuevoAlumnoEncontrado ? (estudiantesCurso.some(est => est.id === nuevoAlumnoEncontrado.id) ? '#f59e0b' : '#22c55e') : undefined }}
                             />
                             {buscandoAlumno && <div className="tp-spinner-sm"><div className="spinner tp-spinner-xs" /></div>}
+
+                            {/* Autocomplete / Coincidencias encontradas */}
+                            {alumnoResultadosList.length > 1 && (
+                              <div className="tp-alumno-search-results">
+                                <div style={{ padding: '6px 12px', fontSize: '0.72rem', color: '#64748b', fontWeight: 600, background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+                                  Coincidencias encontradas (haz clic para seleccionar):
+                                </div>
+                                {alumnoResultadosList.map((alum) => {
+                                  const yaMat = estudiantesCurso.some(e => e.id === alum.id);
+                                  const isSel = nuevoAlumnoEncontrado?.id === alum.id;
+                                  return (
+                                    <div
+                                      key={alum.id}
+                                      className={`tp-alumno-search-item ${isSel ? 'tp-alumno-search-item--selected' : ''}`}
+                                      onClick={() => seleccionarAlumnoBusqueda(alum)}
+                                    >
+                                      <div>
+                                        <strong>{alum.nombre_completo}</strong>
+                                        <span style={{ fontSize: '0.75rem', color: '#64748b', marginLeft: '6px' }}>({alum.codigo})</span>
+                                      </div>
+                                      {yaMat ? (
+                                        <span style={{ fontSize: '0.72rem', background: '#fef3c7', color: '#92400e', padding: '2px 8px', borderRadius: '12px', fontWeight: 600 }}>Ya Matriculado</span>
+                                      ) : (
+                                        <span style={{ fontSize: '0.72rem', background: '#dcfce7', color: '#15803d', padding: '2px 8px', borderRadius: '12px', fontWeight: 600 }}>Disponible</span>
+                                      )}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            )}
+
                             {nuevoAlumnoEncontrado && (
                               estudiantesCurso.some(est => est.id === nuevoAlumnoEncontrado.id) ? (
                                 <div className="tp-alumno-warn">
-                                  <AlertTriangle size={14} style={{ color: '#d97706', flexShrink: 0 }} />
+                                  <AlertTriangle size={16} style={{ color: '#d97706', flexShrink: 0 }} />
                                   <div>
-                                    <div className="tp-alumno-warn__title">Ya está matriculado</div>
-                                    <div className="tp-alumno-warn__sub">{nuevoAlumnoEncontrado.nombre_completo} ya pertenece a este curso.</div>
+                                    <div className="tp-alumno-warn__title">El alumno ya está matriculado en este curso</div>
+                                    <div className="tp-alumno-warn__sub">{nuevoAlumnoEncontrado.nombre_completo} (CUI: {nuevoAlumnoEncontrado.codigo}) ya pertenece a este curso.</div>
                                   </div>
                                 </div>
                               ) : (
                                 <div className="tp-alumno-found">
-                                  <Check size={14} style={{ color: '#16a34a' }} />
+                                  <Check size={16} style={{ color: '#16a34a', flexShrink: 0 }} />
                                   <div>
-                                    <div className="tp-alumno-found__title">Alumno encontrado</div>
-                                    <div className="tp-alumno-found__sub">{nuevoAlumnoEncontrado.nombre_completo}</div>
+                                    <div className="tp-alumno-found__title">Alumno registrado en la base de datos</div>
+                                    <div className="tp-alumno-found__sub">{nuevoAlumnoEncontrado.nombre_completo} (CUI: {nuevoAlumnoEncontrado.codigo})</div>
                                   </div>
                                 </div>
                               )
@@ -1423,16 +1701,16 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                           </div>
                           {!nuevoAlumnoEncontrado && nuevoAlumnoCodigo.trim().length >= 2 && !buscandoAlumno && (
                             <div className="form-group tp-form-group-0">
-                              <label className="form-label tp-form-label-sm">Nombre Completo</label>
+                              <label className="form-label tp-form-label-sm">Nombre Completo (Nuevo Estudiante)</label>
                               <input
                                 className="form-input"
                                 value={nuevoAlumnoNombre}
                                 onChange={e => setNuevoAlumnoNombre(e.target.value)}
-                                placeholder="Nombre Completo"
+                                placeholder="Apellidos y Nombres"
                                 required={!nuevoAlumnoEncontrado}
                               />
                               <div className="tp-alumno-hint">
-                                Se creará un nuevo usuario. La contraseña será igual al código.
+                                El alumno no existe en la base de datos general. Se creará una cuenta nueva y se matriculará al curso.
                               </div>
                             </div>
                           )}

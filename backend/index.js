@@ -396,19 +396,23 @@ app.get('/api/usuarios', async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// GET /api/usuarios/buscar?codigo=X — busca usuario por código (case insensitive)
+// GET /api/usuarios/buscar — busca estudiante por código (CUI) o por nombre/apellido
 app.get('/api/usuarios/buscar', async (req, res) => {
-  const { codigo } = req.query;
-  if (!codigo) return res.status(400).json({ error: 'Parámetro codigo requerido' });
+  const q = (req.query.codigo || req.query.query || req.query.term || '').trim();
+  if (!q) return res.status(400).json({ error: 'Parámetro de búsqueda requerido' });
   try {
     const r = await pool.query(
-      'SELECT * FROM usuarios WHERE UPPER(codigo) = UPPER($1)',
-      [String(codigo).trim()]
+      `SELECT * FROM usuarios 
+       WHERE (UPPER(codigo) LIKE UPPER($1) OR UPPER(nombre_completo) LIKE UPPER($1))
+         AND rol = 3
+       ORDER BY nombre_completo ASC
+       LIMIT 10`,
+      [`%${q}%`]
     );
-    if (r.rows.length === 0) return res.status(404).json({ error: 'Usuario no encontrado' });
-    res.json({ usuario: r.rows[0] });
+    res.json({ usuarios: r.rows, usuario: r.rows[0] || null });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
+
 
 // POST /api/usuarios
 app.post('/api/usuarios', async (req, res) => {

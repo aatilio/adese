@@ -19,7 +19,8 @@ import {
 } from "lucide-react";
 import appLogo from "../assets/adese.svg";
 import macMockup from "../assets/moc/mac.png";
-import phoneMockup from "../assets/moc/iphone.png";
+import sanMockup from "../assets/moc/san.png";
+import sansungQrMockup from "../assets/moc/sansungqr.png";
 import dellMockup from "../assets/moc/dell.png";
 import "../styles/landing.css";
 
@@ -43,34 +44,23 @@ export default function LandingPage() {
 
   useEffect(() => {
     // Listen for standard browser beforeinstallprompt
-    const handler = (e) => {
+    const handleBeforeInstallPrompt = (e) => {
       e.preventDefault();
       setInstallPrompt(e);
     };
-    window.addEventListener("beforeinstallprompt", handler);
 
-    // Listen for appinstalled event
     const handleAppInstalled = () => {
       localStorage.setItem(PWA_INSTALLED_KEY, "true");
       setIsInstalled(true);
       setInstallPrompt(null);
+      setShowInstallGuide(false);
     };
+
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
     window.addEventListener("appinstalled", handleAppInstalled);
 
-    // Check display-mode media query changes
-    const mediaQuery = window.matchMedia("(display-mode: standalone)");
-    const handleMediaChange = (evt) => {
-      if (evt.matches) {
-        localStorage.setItem(PWA_INSTALLED_KEY, "true");
-        setIsInstalled(true);
-      }
-    };
-    if (mediaQuery.addEventListener) {
-      mediaQuery.addEventListener("change", handleMediaChange);
-    }
-
     return () => {
-      window.removeEventListener("beforeinstallprompt", handler);
+      window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
       window.removeEventListener("appinstalled", handleAppInstalled);
     };
   }, []);
@@ -78,8 +68,8 @@ export default function LandingPage() {
   const handleInstall = async () => {
     if (installPrompt) {
       installPrompt.prompt();
-      const { outcome } = await installPrompt.userChoice;
-      if (outcome === "accepted") {
+      const choiceResult = await installPrompt.userChoice;
+      if (choiceResult.outcome === "accepted") {
         localStorage.setItem(PWA_INSTALLED_KEY, "true");
         setIsInstalled(true);
         setInstallPrompt(null);
@@ -134,7 +124,7 @@ export default function LandingPage() {
 
             {/* Desktop Login Link (Hidden on mobile via CSS) */}
             <Link to="/login" className="landing-btn-login landing-btn-login--desktop">
-              Acceder al Sistema <ArrowRight size={16} />
+              Iniciar Sesión <ArrowRight size={16} />
             </Link>
 
             {/* Mobile Hamburger Toggle Button */}
@@ -257,21 +247,28 @@ export default function LandingPage() {
               Explorar Funciones
             </a>
           </div>
+
+          <div className="landing-hero__features-list">
+            <span className="landing-hero__feature-item">
+              <CheckCircle2 size={16} className="feature-item-icon" /> Multi-rol y Multi-curso
+            </span>
+            <span className="landing-hero__feature-item">
+              <CheckCircle2 size={16} className="feature-item-icon" /> QR Dinámico Anti-copia
+            </span>
+            <span className="landing-hero__feature-item">
+              <CheckCircle2 size={16} className="feature-item-icon" /> Exportación Excel / PDF
+            </span>
+          </div>
         </div>
 
         {/* Dual Hardware Mockup Showcase */}
         <div className="landing-hero__visual">
+          <div className="landing-hero__ambient-glow" />
           <div className="landing-mockup-laptop">
-            <img src={macMockup} alt="Mac Laptop Mockup" className="mockup-frame-laptop" />
-            <div className="mockup-screen-laptop">
-              <img src="/page.png" alt="Panel de Control Web ADESE" />
-            </div>
+            <img src={macMockup} alt="Plataforma Web ADESE en Laptop" className="mockup-frame-laptop" />
           </div>
           <div className="landing-mockup-phone">
-            <img src={phoneMockup} alt="iPhone Mockup" className="mockup-frame-phone" />
-            <div className="mockup-screen-phone">
-              <img src="/phone.png" alt="Escaneo Móvil de Asistencia ADESE" />
-            </div>
+            <img src={sanMockup} alt="App Móvil ADESE" className="mockup-frame-phone" />
           </div>
         </div>
       </header>
@@ -395,10 +392,12 @@ export default function LandingPage() {
           </div>
 
           <div className="landing-automation__image">
-            <div className="landing-mockup-laptop landing-mockup-laptop--automation">
-              <img src={dellMockup} alt="Dell Laptop Mockup" className="mockup-frame-laptop" />
-              <div className="mockup-screen-laptop">
-                <img src="/page.png" alt="Plataforma de Control ADESE" />
+            <div className="landing-automation-visual">
+              <div className="landing-mockup-laptop landing-mockup-laptop--automation">
+                <img src={dellMockup} alt="Laptop en Sesión de Asistencia" className="mockup-frame-laptop" />
+              </div>
+              <div className="landing-automation-phone">
+                <img src={sansungQrMockup} alt="Celular Escaneando QR en Vivo" className="automation-phone-frame" />
               </div>
             </div>
           </div>
@@ -413,7 +412,7 @@ export default function LandingPage() {
             Ingresa a la plataforma y aprovecha la tecnología para llevar un control estratégico, transparente y seguro.
           </p>
           <Link to="/login" className="landing-btn-primary">
-            Acceder a la Plataforma <ArrowRight size={18} />
+            Iniciar Sesión <ArrowRight size={18} />
           </Link>
         </div>
       </section>

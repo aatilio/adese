@@ -56,7 +56,8 @@ export const api = {
   getUsuarios:         ()             => request('GET', '/api/usuarios'),
   crearUsuario:        (datos)        => request('POST', '/api/usuarios', datos),
   deleteUsuario:       (id)           => request('DELETE', `/api/usuarios/${id}`),
-  buscarUsuario:       (codigo)       => request('GET', `/api/usuarios/buscar?codigo=${encodeURIComponent(codigo)}`),
+  buscarUsuario:       (term)         => request('GET', `/api/usuarios/buscar?term=${encodeURIComponent(term)}`),
+
 
   // Cursos
   getCursos:           (qs = '')      => request('GET', '/api/cursos' + qs),
