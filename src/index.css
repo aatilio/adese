@@ -788,8 +788,9 @@ th.sticky-column {
 
 @media (max-width: 640px) {
   .login-screen {
-    padding: var(--space-4);
+    padding: 1.5rem 1.25rem;
     background: #ffffff;
+    align-items: flex-start;
   }
 
   .login-card {
@@ -799,7 +800,7 @@ th.sticky-column {
     background: transparent;
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
-    padding: var(--space-4) var(--space-2);
+    padding: 1rem 0.25rem;
     max-width: 100%;
   }
 }

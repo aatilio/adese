@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
 import StudentPage from './pages/StudentPage';
 import TeacherPage from './pages/TeacherPage';
 import { ToastContainer } from './components/Toast';
@@ -79,6 +80,14 @@ export default function App() {
         <Route
           path="/login"
           element={user ? <Navigate to="/home" replace /> : <LoginPage onLogin={handleLogin} />}
+        />
+        <Route
+          path="/register"
+          element={user ? <Navigate to="/home" replace /> : <RegisterPage onLogin={handleLogin} />}
+        />
+        <Route
+          path="/registro"
+          element={user ? <Navigate to="/home" replace /> : <RegisterPage onLogin={handleLogin} />}
         />
         <Route path="/home" element={renderUserApp()} />
         <Route path="/courses" element={renderUserApp()} />
