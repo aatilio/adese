@@ -412,12 +412,12 @@ export default function LandingPage() {
             Ingresa a la plataforma y aprovecha la tecnología para llevar un control estratégico, transparente y seguro.
           </p>
           <div className="landing-cta__actions" style={{ display: "flex", gap: "1rem", justifyContent: "center", alignItems: "center", flexWrap: "wrap" }}>
-            <Link to="/register" className="landing-btn-primary">
+            {/* <Link to="/register" className="landing-btn-primary">
               Registrarte como Docente <ArrowRight size={18} />
             </Link>
             <Link to="/login" className="landing-btn-secondary">
               Iniciar Sesión
-            </Link>
+            </Link> */}
           </div>
         </div>
       </section>

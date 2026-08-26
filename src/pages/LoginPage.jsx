@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
 import { ChevronRight, Eye, EyeOff } from "lucide-react";
 import { api } from "../api/client";
 import { toast } from "../components/Toast";
@@ -37,13 +36,7 @@ export default function LoginPage({ onLogin }) {
   return (
     <div className="login-screen">
       <div className="login-card">
-        {/* Title */}
-        <div className="login-title">
-          <h2 style={{ fontSize: "1.35rem", fontWeight: "800", color: "#0f172a", margin: "0 0 0.35rem" }}>
-            Login
-          </h2>
-        </div>
-    
+        
         {/* Logo */}
         <div className="login-logo">
           <img src={appLogo} alt="Adese Logo" style={{ width: "200px", height: "auto" }} />
@@ -104,13 +97,6 @@ export default function LoginPage({ onLogin }) {
             </button>
           </div>
         </form>
-
-        <div style={{ marginTop: "1.75rem", marginBottom: "1.5rem", textAlign: "center", fontSize: "0.875rem", color: "#64748b" }}>
-          ¿Eres docente y no tienes cuenta?{" "}
-          <Link to="/register" style={{ color: "#0284c7", fontWeight: "700", textDecoration: "none" }}>
-            Registrarte aquí
-          </Link>
-        </div>
 
         <Footer />
       </div>
