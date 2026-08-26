@@ -25,6 +25,7 @@ const request = async (method, path, body) => {
 export const api = {
   // Auth
   login:               (codigo, pass) => request('POST', '/api/auth/login', { codigo, pass: pass || '' }),
+  registerDocente:     (datos)        => request('POST', '/api/auth/register', datos),
 
   // Sesiones
   getSesionActiva:     (cursoId)      => request('GET', '/api/sesiones/activa' + (cursoId ? `?curso_id=${cursoId}` : '')),

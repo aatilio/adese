@@ -107,6 +107,10 @@ const runMigrations = async (pool) => {
       ALTER TABLE sesiones 
       ADD COLUMN IF NOT EXISTS faltas_procesadas BOOLEAN DEFAULT FALSE;
     `);
+    await pool.query(`
+      ALTER TABLE usuarios 
+      ADD COLUMN IF NOT EXISTS email TEXT;
+    `);
   } catch (err) {
     console.error("Error en migración:", err.message);
   }
@@ -121,6 +125,62 @@ runMigrations(pool);
 app.get('/api/health', (_, res) =>
   res.json({ status: 'ok', env: !!(process.env.DATABASE_URL || process.env.DB_HOST) })
 );
+
+// POST /api/auth/register — registro de docente (rol = 2)
+app.post('/api/auth/register', async (req, res) => {
+  const { codigo, usuario, nombre_completo, email, pass } = req.body;
+  const username = (usuario || codigo || nombre_completo || '').trim();
+  const fullName = (nombre_completo || usuario || codigo || '').trim();
+  const userEmail = (email || '').trim();
+  const password = (pass || '').trim();
+
+  if (!username) return res.status(400).json({ error: 'El nombre de usuario es requerido' });
+  if (!userEmail) return res.status(400).json({ error: 'El correo electrónico es requerido' });
+  if (!password) return res.status(400).json({ error: 'La contraseña es requerida' });
+
+  try {
+    // Verificar si ya existe usuario con ese código/usuario o email
+    const existe = await pool.query(
+      'SELECT id FROM usuarios WHERE UPPER(codigo) = UPPER($1) OR (email IS NOT NULL AND email != \'\' AND UPPER(email) = UPPER($2))',
+      [username, userEmail]
+    );
+
+    if (existe.rows.length > 0) {
+      return res.status(409).json({ error: 'El usuario o correo electrónico ya está registrado' });
+    }
+
+    // Insertar nuevo docente (rol = 2)
+    const newUsr = await pool.query(
+      `INSERT INTO usuarios (codigo, nombre_completo, email, rol, pass)
+       VALUES ($1, $2, $3, 2, $4)
+       RETURNING *`,
+      [username, fullName, userEmail, password]
+    );
+
+    const u = newUsr.rows[0];
+
+    // Crear estados de asistencia por defecto para el nuevo docente (profesor_id = u.id)
+    const defaultEstados = [
+      ['Puntual', '#00BD45', '2'],
+      ['Presente', '#2E7EFF', '1'],
+      ['Tarde', '#FF9500', '1'],
+      ['Falto', '#FF0F0F', '0'],
+      ['Justificado', '#8400FF', '2'],
+      ['Participó', '#75cbcc', '2']
+    ];
+
+    for (const [nombre, color, puntuacion] of defaultEstados) {
+      await pool.query(
+        'INSERT INTO estados_asistencia (profesor_id, nombre, color, puntuacion) VALUES ($1, $2, $3, $4)',
+        [u.id, nombre, color, puntuacion]
+      );
+    }
+
+    res.status(201).json({ usuario: { ...u, rol: 2 } });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 // POST /api/auth/login — acepta { codigo, pass }. Roles: 1=admin, 2=profesor, 3=estudiante
 app.post('/api/auth/login', async (req, res) => {
