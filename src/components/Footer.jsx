@@ -10,19 +10,6 @@ export default function Footer({ simple = false }) {
         </a>{" "}
         v5.0
       </div>
-      {!simple && (
-        <div className="app-footer__dev">
-          Desarrollado por{" "}
-          <a
-            href="https://alan.arahocorp.com/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="app-footer__dev-link"
-          >
-            Alan
-          </a>
-        </div>
-      )}
     </div>
   );
 }

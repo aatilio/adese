@@ -41,6 +41,16 @@ export default function LandingPage() {
   const [isInstalled, setIsInstalled] = useState(checkIsPwaInstalled);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showInstallGuide, setShowInstallGuide] = useState(false);
+  const [activeHeroTab, setActiveHeroTab] = useState("teacher"); // 'teacher' | 'student'
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   useEffect(() => {
     // Listen for standard browser beforeinstallprompt
@@ -83,7 +93,7 @@ export default function LandingPage() {
   return (
     <div className="landing-page">
       {/* ── Navigation Bar ────────────────────────────── */}
-      <nav className="landing-nav">
+      <nav className={`landing-nav ${isScrolled ? "landing-nav--scrolled" : ""}`}>
         <div className="landing-nav__container">
           <div className="landing-nav__brand">
             <img src={appLogo} alt="ADESE Logo" className="landing-nav__logo" />
@@ -138,36 +148,41 @@ export default function LandingPage() {
           </div>
         </div>
 
-        {/* Mobile Menu Dropdown */}
+        {/* Mobile Menu Dropdown (Glassmorphic Floating Card) */}
         {isMobileMenuOpen && (
           <div className="landing-mobile-menu">
-            <a
-              href="#caracteristicas"
-              className="landing-mobile-menu__link"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              Características
-            </a>
-            <a
-              href="#automatizacion"
-              className="landing-mobile-menu__link"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              Automatización
-            </a>
-            <a
-              href="#beneficios"
-              className="landing-mobile-menu__link"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              Beneficios
-            </a>
+            <div className="landing-mobile-menu__nav">
+              <a
+                href="#caracteristicas"
+                className="landing-mobile-menu__link"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <Sparkles size={16} className="mobile-menu-icon" />
+                <span>Características</span>
+              </a>
+              <a
+                href="#automatizacion"
+                className="landing-mobile-menu__link"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <Clock size={16} className="mobile-menu-icon" />
+                <span>Automatización</span>
+              </a>
+              <a
+                href="#beneficios"
+                className="landing-mobile-menu__link"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <TrendingUp size={16} className="mobile-menu-icon" />
+                <span>Beneficios</span>
+              </a>
+            </div>
             <Link
               to="/login"
-              className="landing-mobile-menu__link landing-mobile-menu__login-link"
+              className="landing-mobile-menu__login-btn"
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              <LogIn size={16} /> Iniciar Sesión
+              <LogIn size={16} /> <span>Iniciar Sesión</span>
             </Link>
           </div>
         )}
@@ -224,28 +239,12 @@ export default function LandingPage() {
           </h1>
           <p className="landing-hero__subtitle">
             Plataforma web multi-rol y multi-curso diseñada para instituciones educativas.
-            Elimina el pase de lista manual con escaneo QR dinámico anti-fraude, control de tolerancias en tiempo real y reportes automáticos.
+            Elimina el pase de lista manual con escaneo QR dinámico encriptado, control de tolerancias en tiempo real y reportes en Excel.
           </p>
           <div className="landing-hero__actions">
-            <Link to="/login" className="landing-btn-primary">
-              Iniciar Sesión <ArrowRight size={18} />
+            <Link to="/login" className="landing-btn-hero-login">
+              Iniciar Sesión <ArrowRight size={16} />
             </Link>
-
-            {/* PWA Install Button (Displayed ONLY on mobile views via CSS @media if not installed) */}
-            {!isInstalled && (
-              <button
-                id="pwa-install-hero-btn"
-                className="landing-btn-install-hero"
-                onClick={handleInstall}
-              >
-                <Download size={18} />
-                Instalar App
-              </button>
-            )}
-
-            <a href="#caracteristicas" className="landing-btn-secondary">
-              Explorar Funciones
-            </a>
           </div>
 
           <div className="landing-hero__features-list">
@@ -253,22 +252,57 @@ export default function LandingPage() {
               <CheckCircle2 size={16} className="feature-item-icon" /> Multi-rol y Multi-curso
             </span>
             <span className="landing-hero__feature-item">
-              <CheckCircle2 size={16} className="feature-item-icon" /> QR Dinámico Anti-copia
+              <CheckCircle2 size={16} className="feature-item-icon" /> QR Dinámico Encriptado
             </span>
             <span className="landing-hero__feature-item">
-              <CheckCircle2 size={16} className="feature-item-icon" /> Exportación Excel / PDF
+              <CheckCircle2 size={16} className="feature-item-icon" /> Exportación a Excel
             </span>
           </div>
         </div>
 
-        {/* Dual Hardware Mockup Showcase */}
+        {/* Dual Hardware Mockup Showcase con tarjetas e interactividad estilo Apple */}
         <div className="landing-hero__visual">
           <div className="landing-hero__ambient-glow" />
+          
+          {/* Tarjeta flotante superior Glassmorphism */}
+          <div className="hero-glass-badge hero-glass-badge--top">
+            <span className="live-pulse-dot" />
+            <span>Monitoreo Activo en Tiempo Real</span>
+          </div>
+
           <div className="landing-mockup-laptop">
             <img src={macMockup} alt="Plataforma Web ADESE en Laptop" className="mockup-frame-laptop" />
           </div>
+
           <div className="landing-mockup-phone">
-            <img src={sanMockup} alt="App Móvil ADESE" className="mockup-frame-phone" />
+            <img 
+              src={activeHeroTab === "student" ? sansungQrMockup : sanMockup} 
+              alt="App Móvil ADESE" 
+              className="mockup-frame-phone" 
+            />
+            {activeHeroTab === "student" && <div className="qr-scan-line-animated" />}
+          </div>
+
+          {/* Tarjeta flotante inferior Glassmorphism */}
+          <div className="hero-glass-badge hero-glass-badge--bottom">
+            <Sparkles size={14} className="sparkle-icon" />
+            <span>QR Dinámico Encriptado</span>
+          </div>
+
+          {/* Selector de Vistas Interactivo Estilo Apple */}
+          <div className="hero-view-tabs">
+            <button 
+              className={`hero-view-tab ${activeHeroTab === "teacher" ? "hero-view-tab--active" : ""}`}
+              onClick={() => setActiveHeroTab("teacher")}
+            >
+              <Users size={13} /> Vista Docente
+            </button>
+            <button 
+              className={`hero-view-tab ${activeHeroTab === "student" ? "hero-view-tab--active" : ""}`}
+              onClick={() => setActiveHeroTab("student")}
+            >
+              <Smartphone size={13} /> Vista Alumno
+            </button>
           </div>
         </div>
       </header>
@@ -282,7 +316,7 @@ export default function LandingPage() {
           </div>
           <div className="landing-stat-card">
             <div className="landing-stat-number">100%</div>
-            <div className="landing-stat-label">Anti-Fraude (Tokens QR Dinámicos)</div>
+            <div className="landing-stat-label">Tokens QR Dinámicos Encriptados</div>
           </div>
           <div className="landing-stat-card">
             <div className="landing-stat-number">0s</div>
@@ -290,7 +324,7 @@ export default function LandingPage() {
           </div>
           <div className="landing-stat-card">
             <div className="landing-stat-number">1 Clic</div>
-            <div className="landing-stat-label">Exportación a Excel / PDF</div>
+            <div className="landing-stat-label">Exportación Directa a Excel</div>
           </div>
         </div>
       </section>
@@ -425,11 +459,19 @@ export default function LandingPage() {
       {/* ── Footer ────────────────────────────────────── */}
       <footer className="landing-footer">
         <div className="landing-footer__container">
-          <div className="landing-footer__brand">
-            <img src={appLogo} alt="Logo" className="landing-footer__logo" />
+          <div className="landing-footer__copyright">
+            Copyright &copy; {new Date().getFullYear()} <strong>ADESE</strong>. Todos los derechos reservados.
           </div>
-          <div>
-            © 2026 <strong>Asistencia Digital Estratégica</strong>. Todos los derechos reservados.
+          <div className="landing-footer__copyright">
+            Desarrollado por{" "}
+            <a
+              href="https://alan.arahocorp.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="landing-footer__link"
+            >
+              Alan C.A.
+            </a>
           </div>
         </div>
       </footer>
