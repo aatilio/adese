@@ -442,20 +442,48 @@ export default function LandingPage() {
       {/* ── CTA Banner ────────────────────────────────── */}
       <section id="contactanos" className="landing-cta">
         <div className="landing-cta__box">
-          <h2>¿Listo para Modernizar el Control de Asistencia?</h2>
-          <p>
-            Contactate con nosotros para solicitar, crear una cuenta si eres delegado de algun curso o docente.
+          <div className="landing-cta__badge">
+            <span className="landing-cta__badge-dot"></span>
+            ACTIVACIÓN DE CUENTAS
+          </div>
+          <h2 className="landing-cta__title">
+            ¿Listo para Modernizar el Control de Asistencia?
+          </h2>
+          <p className="landing-cta__text">
+            Si eres docente o delegado de curso, comunícate con nosotros para habilitar tu acceso y comenzar a gestionar asistencias de forma automatizada.
           </p>
-          <div className="landing-cta__actions" style={{ display: "flex", gap: "1rem", justifyContent: "center", alignItems: "center", flexWrap: "wrap" }}>
+
+          <div className="landing-cta__features">
+            <div className="landing-cta__feature-item">
+              <CheckCircle2 size={16} className="landing-cta__feature-icon" />
+              <span>Activación rápida</span>
+            </div>
+            <div className="landing-cta__feature-item">
+              <CheckCircle2 size={16} className="landing-cta__feature-icon" />
+              <span>Soporte para docentes y delegados</span>
+            </div>
+            <div className="landing-cta__feature-item">
+              <CheckCircle2 size={16} className="landing-cta__feature-icon" />
+              <span>Validación Rapida</span>
+            </div>
+          </div>
+
+          <div className="landing-cta__actions">
             <a
               href="https://wa.me/51900337702?text=Hola%2C%20deseo%20crear%20y%20validar%20mi%20cuenta%20en%20ADESE"
               target="_blank"
               rel="noopener noreferrer"
-              className="landing-btn-whatsapp"
+              className="landing-btn-whatsapp-hero"
             >
-              <MessageCircle size={19} />
-              <span>Crear Cuenta</span>
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+                <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.477 2 12C2 13.818 2.487 15.524 3.336 16.992L2.054 21.674C1.986 21.921 2.058 22.183 2.241 22.363C2.424 22.543 2.688 22.61 2.934 22.538L7.498 21.203C8.914 21.828 10.422 22.155 12 22.155C17.523 22.155 22 17.677 22 12C22 6.477 17.523 2 12 2ZM8.5 7.5C8.224 7.5 7.962 7.612 7.771 7.808C7.579 8.005 7 8.653 7 9.917C7 11.18 7.922 12.398 8.053 12.573C8.184 12.748 9.866 15.344 12.435 16.452C13.045 16.716 13.523 16.874 13.894 16.992C14.507 17.186 15.066 17.159 15.508 17.093C16 17.02 17.022 16.474 17.235 15.874C17.449 15.274 17.449 14.761 17.385 14.652C17.322 14.543 17.152 14.477 16.897 14.35C16.642 14.223 15.388 13.606 15.154 13.52C14.92 13.433 14.75 13.39 14.58 13.652C14.41 13.913 13.921 14.477 13.772 14.652C13.623 14.826 13.474 14.848 13.219 14.721C12.964 14.594 12.143 14.325 11.169 13.456C10.411 12.78 9.898 11.946 9.749 11.691C9.6 11.436 9.733 11.298 9.861 11.171C9.976 11.056 10.116 10.873 10.244 10.726C10.371 10.58 10.414 10.471 10.499 10.302C10.584 10.133 10.542 9.986 10.478 9.859C10.414 9.732 9.904 8.471 9.691 7.96C9.484 7.464 9.274 7.531 9.117 7.522C8.968 7.514 8.798 7.5 8.5 7.5Z"/>
+              </svg>
+              <span>Solicitar Cuenta</span>
             </a>
+          </div>
+
+          <div className="landing-cta__footer-note">
+            <span>o Comunícate al: +51 900 337 702</span>
           </div>
         </div>
       </section>
