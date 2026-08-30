@@ -71,6 +71,7 @@ export const api = {
   addEstudianteCurso:     (cursoId, estudianteId) => request('POST', `/api/cursos/${cursoId}/estudiantes`, { estudiante_id: estudianteId }),
   removeEstudianteCurso:  (cursoId, estudianteId) => request('DELETE', `/api/cursos/${cursoId}/estudiantes/${estudianteId}`),
   importarAlumnos:        (cursoId, alumnos)      => request('POST', `/api/cursos/${cursoId}/importar`, { alumnos }),
+  previewImportarAlumnos: (cursoId, alumnos)      => request('POST', `/api/cursos/${cursoId}/importar/preview`, { alumnos }),
 
   // Cursos → Sesiones
   getCursoSesiones:    (cursoId)      => request('GET', `/api/cursos/${cursoId}/sesiones`),

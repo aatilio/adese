@@ -226,6 +226,8 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
   const [showImportPage, setShowImportPage] = useState(false);
   const [importLog, setImportLog] = useState([]);  // { type: 'info'|'ok'|'warn'|'error', msg }
   const [importResult, setImportResult] = useState(null);
+  const [importPreview, setImportPreview] = useState(null); // null | { alumnos: [], stats: {} }
+  const [importConfirmando, setImportConfirmando] = useState(false);
   const [editingAlumnoData, setEditingAlumnoData] = useState(null);
 
 
@@ -688,8 +690,10 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
   const buscarDebounceRef = useRef(null);
   const buscarAlumnoPorCodigo = (term) => {
     setNuevoAlumnoCodigo(term);
-    if (!term.trim() || term.trim().length < 2) {
+    const cleanTerm = term.trim();
+    if (!cleanTerm || cleanTerm.length < 2) {
       setNuevoAlumnoEncontrado(null);
+      setNuevoAlumnoNombre('');
       setAlumnoResultadosList([]);
       setBuscandoAlumno(false);
       if (buscarDebounceRef.current) clearTimeout(buscarDebounceRef.current);
@@ -699,36 +703,50 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
     if (buscarDebounceRef.current) clearTimeout(buscarDebounceRef.current);
     buscarDebounceRef.current = setTimeout(async () => {
       try {
-        const res = await api.buscarUsuario(term.trim());
+        const res = await api.buscarUsuario(cleanTerm);
         const list = res.usuarios || (res.usuario ? [res.usuario] : []);
-        setAlumnoResultadosList(list);
-        if (list.length > 0) {
-          setNuevoAlumnoEncontrado(list[0]);
-          setNuevoAlumnoNombre(list[0].nombre_completo);
+
+        // Coincidencia exacta por código CUI
+        const exactMatch = list.find(u => String(u.codigo).trim().toUpperCase() === cleanTerm.toUpperCase());
+        
+        // Sugerencias de CUI similares
+        const matchingByCode = list.filter(u => String(u.codigo).trim().toUpperCase().includes(cleanTerm.toUpperCase()));
+        setAlumnoResultadosList(matchingByCode);
+
+        if (exactMatch) {
+          setNuevoAlumnoEncontrado(exactMatch);
+          setNuevoAlumnoNombre(exactMatch.nombre_completo);
         } else {
+          // Si no existe coincidencia exacta por CUI, limpiar objeto encontrado y dejar el campo nombre vacío
           setNuevoAlumnoEncontrado(null);
+          setNuevoAlumnoNombre('');
         }
       } catch {
         setNuevoAlumnoEncontrado(null);
+        setNuevoAlumnoNombre('');
         setAlumnoResultadosList([]);
       } finally {
         setBuscandoAlumno(false);
       }
-    }, 350);
+    }, 250);
   };
 
   const seleccionarAlumnoBusqueda = (alumno) => {
     setNuevoAlumnoEncontrado(alumno);
     setNuevoAlumnoCodigo(alumno.codigo);
     setNuevoAlumnoNombre(alumno.nombre_completo);
+    setAlumnoResultadosList([]);
   };
 
   const crearYAgregarAlumno = async (e) => {
     e.preventDefault();
-    if (!nuevoAlumnoCodigo.trim()) return;
+    const cui = nuevoAlumnoCodigo.trim();
+    if (!cui) return;
     
     if (nuevoAlumnoEncontrado) {
-      const yaMatriculado = estudiantesCurso.some(est => est.id === nuevoAlumnoEncontrado.id);
+      const yaMatriculado = estudiantesCurso.some(
+        est => est.id === nuevoAlumnoEncontrado.id || String(est.codigo).trim().toUpperCase() === cui.toUpperCase()
+      );
       if (yaMatriculado) {
         toast.error("El alumno ya está matriculado en este curso.");
         return;
@@ -740,14 +758,27 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
       if (nuevoAlumnoEncontrado) {
         estudianteId = nuevoAlumnoEncontrado.id;
       } else {
-        const { usuario } = await api.crearUsuario({ codigo: nuevoAlumnoCodigo.trim(), nombre_completo: nuevoAlumnoNombre.trim(), rol: 3 });
+        if (!nuevoAlumnoNombre.trim()) {
+          toast.error("Por favor ingresa el nombre completo del estudiante");
+          return;
+        }
+        const { usuario } = await api.crearUsuario({
+          codigo: cui.toUpperCase(),
+          nombre_completo: nuevoAlumnoNombre.trim(),
+          rol: 3,
+          pass: cui.toUpperCase(), // Asignar CUI como contraseña por defecto
+        });
         estudianteId = usuario.id;
       }
       await api.addEstudianteCurso(cursoActivo.id, estudianteId);
       const res = await api.getCursoEstudiantes(cursoActivo.id);
       setEstudiantesCurso(res.estudiantes);
-      setShowNuevoAlumno(false); setNuevoAlumnoCodigo(''); setNuevoAlumnoNombre(''); setNuevoAlumnoEncontrado(null); setAlumnoResultadosList([]);
-      toast.success('Alumno matriculado en el curso');
+      setShowNuevoAlumno(false);
+      setNuevoAlumnoCodigo('');
+      setNuevoAlumnoNombre('');
+      setNuevoAlumnoEncontrado(null);
+      setAlumnoResultadosList([]);
+      toast.success(nuevoAlumnoEncontrado ? 'Alumno matriculado en el curso' : 'Alumno registrado y matriculado en el curso');
     } catch (err) { toast.error(err.message); }
   };
 
@@ -771,6 +802,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
     setCsvImportando(true);
     setImportLog([]);
     setImportResult(null);
+    setImportPreview(null);
 
     const log = (type, msg) => setImportLog(prev => [...prev, { type, msg }]);
 
@@ -796,7 +828,6 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
       if (nombreIdx === -1) nombreIdx = 1;
 
       log('info', `Columnas detectadas → CUI: columna ${codigoIdx + 1}, Nombres: columna ${nombreIdx + 1}`);
-      log('info', `Procesando ${rows.length - 1} filas...`);
 
       const alumnos = [];
       let saltados = 0;
@@ -818,25 +849,54 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
         return;
       }
 
-      log('ok', `${alumnos.length} alumnos listos para importar. Enviando al servidor...`);
+      log('info', `Consultando el servidor para clasificar ${alumnos.length} registros...`);
+      const previewRes = await api.previewImportarAlumnos(cursoActivo.id, alumnos);
+      const lista = previewRes.preview || [];
 
-      const res = await api.importarAlumnos(cursoActivo.id, alumnos);
-      const resE = await api.getCursoEstudiantes(cursoActivo.id);
-      setEstudiantesCurso(resE.estudiantes);
+      const nuevos        = lista.filter(a => a.estado === 'nuevo');
+      const soloVincular  = lista.filter(a => a.estado === 'existe_vincular');
+      const yaMatriculado = lista.filter(a => a.estado === 'ya_matriculado');
 
-      if (res.creados > 0) log('ok', `${res.creados} alumnos nuevos creados en la base de datos general.`);
-      if (res.existentes > 0) log('info', `${res.existentes} alumnos ya existían en la base de datos general (no se modificaron).`);
-      if (res.vinculados > 0) log('ok', `${res.vinculados} alumnos matriculados al curso "${cursoActivo.nombre}".`);
-      log('ok', '¡Importación completada exitosamente!');
+      log('ok', `Vista previa lista: ${nuevos.length} nuevos, ${soloVincular.length} a vincular, ${yaMatriculado.length} ya matriculados.`);
 
-      setImportResult({ creados: res.creados, existentes: res.existentes, vinculados: res.vinculados, total: alumnos.length });
-      toast.success(`Importación completada: ${res.creados + res.existentes} procesados, ${res.vinculados} matriculados.`);
+      setImportPreview({ alumnos: lista, stats: { nuevos: nuevos.length, soloVincular: soloVincular.length, yaMatriculado: yaMatriculado.length, total: lista.length } });
     } catch (err) {
       log('error', 'Error al procesar el archivo: ' + err.message);
       toast.error('Error al procesar el archivo: ' + err.message);
     } finally {
       setCsvImportando(false);
       e.target.value = '';
+    }
+  };
+
+  const handleConfirmarImportacion = async () => {
+    if (!importPreview) return;
+    const alumnosAImportar = importPreview.alumnos.filter(a => a.estado !== 'ya_matriculado');
+    if (alumnosAImportar.length === 0) {
+      toast.info('Todos los alumnos ya estaban matriculados. No hay nada que hacer.');
+      return;
+    }
+    setImportConfirmando(true);
+    const log = (type, msg) => setImportLog(prev => [...prev, { type, msg }]);
+    try {
+      log('info', `Matriculando ${alumnosAImportar.length} alumnos al curso...`);
+      const res = await api.importarAlumnos(cursoActivo.id, alumnosAImportar);
+      const resE = await api.getCursoEstudiantes(cursoActivo.id);
+      setEstudiantesCurso(resE.estudiantes);
+
+      if (res.creados > 0) log('ok', `${res.creados} nuevas cuentas creadas en el sistema.`);
+      if (res.existentes > 0) log('info', `${res.existentes} alumnos ya existían (no se modificaron sus datos).`);
+      if (res.vinculados > 0) log('ok', `${res.vinculados} alumnos matriculados exitosamente al curso.`);
+      log('ok', '¡Matriculación completada!');
+
+      setImportResult({ creados: res.creados, existentes: res.existentes, vinculados: res.vinculados, total: importPreview.stats.total });
+      setImportPreview(null);
+      toast.success(`Matriculación completada: ${res.vinculados} alumnos agregados al curso.`);
+    } catch (err) {
+      log('error', 'Error al matricular: ' + err.message);
+      toast.error('Error al matricular: ' + err.message);
+    } finally {
+      setImportConfirmando(false);
     }
   };
 
@@ -1479,7 +1539,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                       </div>
                       <div className="tp-import-step">
                         <span className="tp-step-num">3</span>
-                        <span>Sube el archivo final para preprocesar y matricular los alumnos.</span>
+                        <span>Sube el archivo, <strong>revisa la vista previa</strong> y confirma para matricular.</span>
                       </div>
                     </div>
                     <div className="tp-import-note">
@@ -1518,27 +1578,91 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                     {/* Columna 2: Cargar Archivo */}
                     <div className="tp-import-card">
                       <div className="tp-import-card__title">
-                        <UploadCloud size={16} /> 2. Cargar y Procesar
+                        <UploadCloud size={16} /> 2. Cargar y Pre-visualizar
                       </div>
                       <p className="tp-import-card__desc">
-                        Sube tu lista terminada para analizar coincidencias y matricular:
+                        Sube tu lista para revisar y luego confirmar la matriculación:
                       </p>
                       <label className={`tp-upload-dropzone ${csvImportando ? 'tp-upload-dropzone--loading' : ''}`}>
                         <UploadCloud size={30} className="tp-upload-icon" />
                         <span className="tp-upload-text">
-                          {csvImportando ? 'Procesando archivo...' : 'Seleccionar archivo (CSV o Excel)'}
+                          {csvImportando ? 'Analizando archivo...' : (importPreview ? 'Cargar otro archivo' : 'Seleccionar archivo (CSV o Excel)')}
                         </span>
                         <span className="tp-upload-sub">Formatos admitidos: .csv, .xlsx, .xls</span>
                         <input
                           type="file"
                           accept=".csv, .xlsx, .xls"
                           onChange={handleCsvImport}
-                          disabled={csvImportando}
+                          disabled={csvImportando || importConfirmando}
                           style={{ display: 'none' }}
                         />
                       </label>
                     </div>
                   </div>
+
+                  {/* ── Tabla de Vista Previa ─────────────── */}
+                  {importPreview && !importResult && (
+                    <div className="tp-import-preview-section">
+                      <div className="tp-import-preview-header">
+                        <div className="tp-import-preview-title">
+                          <Eye size={17} /> Vista Previa — Confirma antes de matricular
+                        </div>
+                        <div className="tp-import-preview-badges">
+                          <span className="tp-preview-badge tp-preview-badge--green">{importPreview.stats.nuevos} nuevos</span>
+                          <span className="tp-preview-badge tp-preview-badge--blue">{importPreview.stats.soloVincular} a vincular</span>
+                          <span className="tp-preview-badge tp-preview-badge--gray">{importPreview.stats.yaMatriculado} ya matriculados</span>
+                        </div>
+                      </div>
+                      <div className="tp-import-preview-table-wrap">
+                        <table className="tp-import-preview-table">
+                          <thead>
+                            <tr>
+                              <th>CUI</th>
+                              <th>Nombre del archivo</th>
+                              <th>Nombre en sistema</th>
+                              <th>Acción</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {importPreview.alumnos.map((a, i) => (
+                              <tr key={i} className={`tp-preview-row tp-preview-row--${a.estado}`}>
+                                <td className="tp-preview-cui">{a.codigo}</td>
+                                <td>{a.nombre_completo}</td>
+                                <td className="tp-preview-nombre-bd">{a.nombre_bd || <span className="tp-preview-new-tag">Se creará nuevo usuario</span>}</td>
+                                <td>
+                                  {a.estado === 'nuevo' && <span className="tp-preview-tag tp-preview-tag--green"><UserPlus size={12} /> Crear y Matricular</span>}
+                                  {a.estado === 'existe_vincular' && <span className="tp-preview-tag tp-preview-tag--blue"><Check size={12} /> Solo Matricular</span>}
+                                  {a.estado === 'ya_matriculado' && <span className="tp-preview-tag tp-preview-tag--gray"><Check size={12} /> Ya Matriculado</span>}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                      <div className="tp-import-preview-actions">
+                        <button
+                          type="button"
+                          className="btn btn-secondary"
+                          onClick={() => { setImportPreview(null); setImportLog([]); }}
+                          disabled={importConfirmando}
+                        >
+                          Cancelar
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-primary tp-import-confirm-btn"
+                          onClick={handleConfirmarImportacion}
+                          disabled={importConfirmando || importPreview.stats.nuevos + importPreview.stats.soloVincular === 0}
+                        >
+                          {importConfirmando ? (
+                            <><div className="spinner tp-spinner-xs" /> Matriculando...</>
+                          ) : (
+                            <><Check size={16} /> Confirmar y Matricular ({importPreview.stats.nuevos + importPreview.stats.soloVincular})</>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Log de Preprocesamiento */}
                   {importLog.length > 0 && (
@@ -1551,18 +1675,18 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                             <span>{entry.msg}</span>
                           </div>
                         ))}
-                        {csvImportando && <div className="tp-log-line tp-log-line--info">⋯ enviando datos al servidor...</div>}
+                        {(csvImportando || importConfirmando) && <div className="tp-log-line tp-log-line--info">⋯ {csvImportando ? 'analizando archivo...' : 'matriculando alumnos...'}</div>}
                       </div>
                     </div>
                   )}
 
                   {/* Resumen Final de Resultados */}
-                  {importResult && !csvImportando && (
+                  {importResult && !csvImportando && !importConfirmando && (
                     <div className="tp-import-result-card">
                       <div className="tp-import-result-header">
                         <Check size={20} style={{ color: '#16a34a' }} />
                         <div>
-                          <div className="tp-import-result-title">¡Preprocesamiento e Importación Finalizados!</div>
+                          <div className="tp-import-result-title">¡Matriculación Completada Exitosamente!</div>
                           <div className="tp-import-result-sub">Se han procesado {importResult.total} registros del archivo correctamente.</div>
                         </div>
                       </div>
@@ -1616,7 +1740,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                     <button
                       type="button"
                       className="btn btn-secondary"
-                      onClick={() => { setShowImportPage(true); setImportLog([]); setImportResult(null); }}
+                      onClick={() => { setShowImportPage(true); setImportLog([]); setImportResult(null); setImportPreview(null); }}
                       style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
                     >
                       <FileSpreadsheet size={16} /> Importar CSV / Excel
@@ -1638,30 +1762,29 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                       <form onSubmit={crearYAgregarAlumno}>
                         <div className="tp-modal-body">
                           <div className="form-group" style={{ marginTop: 0, position: 'relative' }}>
-                            <label className="form-label tp-form-label-sm">Buscar por CUI / Código o Nombre y Apellidos</label>
+                            <label className="form-label tp-form-label-sm">Buscar por CUI</label>
                             <input
                               className="form-input"
                               autoFocus
                               value={nuevoAlumnoCodigo}
                               onChange={e => buscarAlumnoPorCodigo(e.target.value)}
-                              placeholder="Ej. 20241417 o Carlos Perez..."
-                              style={{ borderColor: nuevoAlumnoEncontrado ? (estudiantesCurso.some(est => est.id === nuevoAlumnoEncontrado.id) ? '#f59e0b' : '#22c55e') : undefined }}
+                              placeholder="Ej. 20274851..."
+                              style={{ borderColor: nuevoAlumnoEncontrado ? (estudiantesCurso.some(est => est.id === nuevoAlumnoEncontrado.id || String(est.codigo).trim().toUpperCase() === nuevoAlumnoCodigo.trim().toUpperCase()) ? '#f59e0b' : '#22c55e') : undefined }}
                             />
                             {buscandoAlumno && <div className="tp-spinner-sm"><div className="spinner tp-spinner-xs" /></div>}
 
-                            {/* Autocomplete / Coincidencias encontradas */}
-                            {alumnoResultadosList.length > 1 && (
+                            {/* Autocomplete / Coincidencias encontradas por CUI */}
+                            {alumnoResultadosList.length > 0 && !nuevoAlumnoEncontrado && (
                               <div className="tp-alumno-search-results">
                                 <div style={{ padding: '6px 12px', fontSize: '0.72rem', color: '#64748b', fontWeight: 600, background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
-                                  Coincidencias encontradas (haz clic para seleccionar):
+                                  Coincidencias encontradas por CUI (haz clic para seleccionar):
                                 </div>
                                 {alumnoResultadosList.map((alum) => {
-                                  const yaMat = estudiantesCurso.some(e => e.id === alum.id);
-                                  const isSel = nuevoAlumnoEncontrado?.id === alum.id;
+                                  const yaMat = estudiantesCurso.some(e => e.id === alum.id || String(e.codigo).trim().toUpperCase() === String(alum.codigo).trim().toUpperCase());
                                   return (
                                     <div
                                       key={alum.id}
-                                      className={`tp-alumno-search-item ${isSel ? 'tp-alumno-search-item--selected' : ''}`}
+                                      className="tp-alumno-search-item"
                                       onClick={() => seleccionarAlumnoBusqueda(alum)}
                                     >
                                       <div>
@@ -1680,20 +1803,20 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                             )}
 
                             {nuevoAlumnoEncontrado && (
-                              estudiantesCurso.some(est => est.id === nuevoAlumnoEncontrado.id) ? (
-                                <div className="tp-alumno-warn">
+                              estudiantesCurso.some(est => est.id === nuevoAlumnoEncontrado.id || String(est.codigo).trim().toUpperCase() === String(nuevoAlumnoEncontrado.codigo).trim().toUpperCase()) ? (
+                                <div className="tp-alumno-warn" style={{ marginTop: '0.75rem' }}>
                                   <AlertTriangle size={16} style={{ color: '#d97706', flexShrink: 0 }} />
                                   <div>
                                     <div className="tp-alumno-warn__title">El alumno ya está matriculado en este curso</div>
-                                    <div className="tp-alumno-warn__sub">{nuevoAlumnoEncontrado.nombre_completo} (CUI: {nuevoAlumnoEncontrado.codigo}) ya pertenece a este curso.</div>
+                                    <div className="tp-alumno-warn__sub"><strong>{nuevoAlumnoEncontrado.nombre_completo}</strong> (CUI: {nuevoAlumnoEncontrado.codigo})</div>
                                   </div>
                                 </div>
                               ) : (
-                                <div className="tp-alumno-found">
+                                <div className="tp-alumno-found" style={{ marginTop: '0.75rem' }}>
                                   <Check size={16} style={{ color: '#16a34a', flexShrink: 0 }} />
                                   <div>
-                                    <div className="tp-alumno-found__title">Alumno registrado en la base de datos</div>
-                                    <div className="tp-alumno-found__sub">{nuevoAlumnoEncontrado.nombre_completo} (CUI: {nuevoAlumnoEncontrado.codigo})</div>
+                                    <div className="tp-alumno-found__title">Estudiante encontrado</div>
+                                    <div className="tp-alumno-found__sub"><strong>{nuevoAlumnoEncontrado.nombre_completo}</strong> (CUI: {nuevoAlumnoEncontrado.codigo})</div>
                                   </div>
                                 </div>
                               )
@@ -1710,7 +1833,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                                 required={!nuevoAlumnoEncontrado}
                               />
                               <div className="tp-alumno-hint">
-                                El alumno no existe en la base de datos general. Se creará una cuenta nueva y se matriculará al curso.
+                                No se encontró ningún estudiante con el CUI <strong>{nuevoAlumnoCodigo}</strong>. Ingresa su nombre completo para registrar su cuenta y matricularlo al curso (su contraseña por defecto será su CUI).
                               </div>
                             </div>
                           )}
@@ -1722,12 +1845,13 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                             className="btn btn-primary tp-flex-1"
                             disabled={
                               !nuevoAlumnoCodigo.trim() ||
+                              buscandoAlumno ||
                               (!nuevoAlumnoEncontrado && !nuevoAlumnoNombre.trim()) ||
-                              (nuevoAlumnoEncontrado && estudiantesCurso.some(est => est.id === nuevoAlumnoEncontrado.id))
+                              (nuevoAlumnoEncontrado && estudiantesCurso.some(est => est.id === nuevoAlumnoEncontrado.id || String(est.codigo).trim().toUpperCase() === String(nuevoAlumnoEncontrado.codigo).trim().toUpperCase()))
                             }
                           >
                             {nuevoAlumnoEncontrado
-                              ? (estudiantesCurso.some(est => est.id === nuevoAlumnoEncontrado.id) ? 'Ya Matriculado' : 'Añadir al Curso')
+                              ? (estudiantesCurso.some(est => est.id === nuevoAlumnoEncontrado.id || String(est.codigo).trim().toUpperCase() === String(nuevoAlumnoEncontrado.codigo).trim().toUpperCase()) ? 'Ya Matriculado' : 'Matricular Alumno')
                               : 'Crear y Matricular'}
                           </button>
                         </div>

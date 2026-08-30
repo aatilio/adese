@@ -136,7 +136,8 @@ app.post('/api/auth/register', async (req, res) => {
 
   if (!username) return res.status(400).json({ error: 'El nombre de usuario es requerido' });
   if (!userEmail) return res.status(400).json({ error: 'El correo electrónico es requerido' });
-  if (!password) return res.status(400).json({ error: 'La contraseña es requerida' });
+  // Si no se provee contraseña, se usa el CUI como contraseña temporal
+  const finalPassword = password || username.toUpperCase();
 
   try {
     // Verificar si ya existe usuario con ese código/usuario o email
@@ -154,7 +155,7 @@ app.post('/api/auth/register', async (req, res) => {
       `INSERT INTO usuarios (codigo, nombre_completo, email, rol, pass)
        VALUES ($1, $2, $3, 2, $4)
        RETURNING *`,
-      [username, fullName, userEmail, password]
+      [username, fullName, userEmail, finalPassword]
     );
 
     const u = newUsr.rows[0];
@@ -465,9 +466,9 @@ app.get('/api/usuarios/buscar', async (req, res) => {
       `SELECT * FROM usuarios 
        WHERE (UPPER(codigo) LIKE UPPER($1) OR UPPER(nombre_completo) LIKE UPPER($1))
          AND rol = 3
-       ORDER BY nombre_completo ASC
+       ORDER BY CASE WHEN UPPER(codigo) = UPPER($2) THEN 1 ELSE 2 END, nombre_completo ASC
        LIMIT 10`,
-      [`%${q}%`]
+      [`%${q}%`, q]
     );
     res.json({ usuarios: r.rows, usuario: r.rows[0] || null });
   } catch (err) { res.status(500).json({ error: err.message }); }
@@ -914,6 +915,50 @@ app.get('/api/cursos/:id/historial', async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+// POST /api/cursos/:id/importar/preview — verifica qué alumnos existen SIN modificar la BD
+app.post('/api/cursos/:id/importar/preview', async (req, res) => {
+  const cursoId = req.params.id;
+  const { alumnos } = req.body; // [{ codigo, nombre_completo }]
+  if (!Array.isArray(alumnos)) return res.status(400).json({ error: 'alumnos debe ser un array' });
+
+  try {
+    const codigos = alumnos.map(a => String(a.codigo || '').toUpperCase()).filter(Boolean);
+    if (codigos.length === 0) return res.json({ preview: [] });
+
+    // Buscar cuáles ya existen en usuarios
+    const existRes = await pool.query(
+      `SELECT id, UPPER(codigo) AS codigo, nombre_completo FROM usuarios WHERE UPPER(codigo) = ANY($1::text[])`,
+      [codigos]
+    );
+    const existMap = new Map(existRes.rows.map(r => [r.codigo, r]));
+
+    // Buscar cuáles ya están matriculados en este curso
+    const enrolledRes = await pool.query(
+      `SELECT u.codigo FROM curso_usuarios cu
+       JOIN usuarios u ON u.id = cu.usuario_id
+       WHERE cu.curso_id = $1`,
+      [cursoId]
+    );
+    const enrolledSet = new Set(enrolledRes.rows.map(r => String(r.codigo).toUpperCase()));
+
+    const preview = alumnos.map(a => {
+      const cui = String(a.codigo || '').toUpperCase();
+      const existingUser = existMap.get(cui);
+      const yaMatriculado = enrolledSet.has(cui);
+      return {
+        codigo: a.codigo,
+        nombre_completo: a.nombre_completo,
+        estado: existingUser
+          ? (yaMatriculado ? 'ya_matriculado' : 'existe_vincular')
+          : 'nuevo',
+        nombre_bd: existingUser ? existingUser.nombre_completo : null,
+      };
+    });
+
+    res.json({ preview });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 // POST /api/cursos/:id/importar — importa alumnos al curso (upsert)
 app.post('/api/cursos/:id/importar', async (req, res) => {
   const cursoId = req.params.id;
@@ -928,8 +973,8 @@ app.post('/api/cursos/:id/importar', async (req, res) => {
 
       // Intentar insertar usuario; si ya existe, ignorar
       const insertRes = await pool.query(
-        `INSERT INTO usuarios (codigo, nombre_completo, rol)
-         VALUES (UPPER($1), $2, $3)
+        `INSERT INTO usuarios (codigo, nombre_completo, rol, pass)
+         VALUES (UPPER($1), $2, $3, UPPER($1))
          ON CONFLICT (codigo) DO NOTHING
          RETURNING id`,
         [codigo, nombre_completo, ROL_ESTUDIANTE]
