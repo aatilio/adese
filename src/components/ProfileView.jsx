@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { User, KeyRound, Eye, EyeOff } from "lucide-react";
+import { User, KeyRound, Eye, EyeOff, Mail, Hash, Shield } from "lucide-react";
 import { api } from "../api/client";
 import { toast } from "./Toast";
 import "../styles/components/profile-view.css";
 
 export default function ProfileView({ user, roleLabel, onUpdateUser, onCancel }) {
   const [nombre, setNombre] = useState(user.nombre_completo || "");
+  const [email, setEmail] = useState(user.email || "");
   const [passActual, setPassActual] = useState("");
   const [passNueva, setPassNueva] = useState("");
   const [passRepetir, setPassRepetir] = useState("");
@@ -21,6 +22,14 @@ export default function ProfileView({ user, roleLabel, onUpdateUser, onCancel })
     if (!nombre.trim()) {
       toast.error("El nombre no puede estar vacío");
       return;
+    }
+    // Validate email format if provided
+    if (email.trim()) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email.trim())) {
+        toast.error("El formato del correo electrónico no es válido");
+        return;
+      }
     }
     if (passNueva || passRepetir) {
       if (!passActual) {
@@ -39,7 +48,10 @@ export default function ProfileView({ user, roleLabel, onUpdateUser, onCancel })
 
     setSaving(true);
     try {
-      const payload = { nombre_completo: nombre.trim() };
+      const payload = {
+        nombre_completo: nombre.trim(),
+        email: email.trim() || null,
+      };
       if (passNueva) {
         payload.pass = passNueva;
         payload.passActual = passActual;
@@ -56,121 +68,160 @@ export default function ProfileView({ user, roleLabel, onUpdateUser, onCancel })
     }
   };
 
+  const roleColor = {
+    "Admin": { bg: "#fef3c7", color: "#92400e" },
+    "Profesor": { bg: "#dbeafe", color: "#1d4ed8" },
+    "Estudiante": { bg: "#dcfce7", color: "#15803d" },
+  }[roleLabel] || { bg: "var(--primary-bg)", color: "var(--primary)" };
+
   return (
     <div className="profile-view">
-      <div className="card">
-        {/* Header */}
-        <div className="profile-view__header">
-          <div className="profile-view__avatar">
-            <User size={24} />
+      <div className="pv-card">
+
+        {/* ── Profile Header ──────────────────────────── */}
+        <div className="pv-header">
+          <div className="pv-avatar">
+            <User size={26} />
           </div>
-          <div>
-            <h2 className="profile-view__title">Datos Generales</h2>
+          <div className="pv-header__info">
+            <div className="pv-header__name">{user.nombre_completo}</div>
+            <div className="pv-header__meta">
+              <span className="pv-chip pv-chip--code">
+                <Hash size={11} />
+                {user.codigo}
+              </span>
+              <span
+                className="pv-chip pv-chip--role"
+                style={{ background: roleColor.bg, color: roleColor.color }}
+              >
+                <Shield size={11} />
+                {roleLabel || "Usuario"}
+              </span>
+            </div>
           </div>
         </div>
 
         <form onSubmit={handleSave}>
-          {/* Nombre */}
-          <div className="form-group">
-            <label className="form-label">Nombre Completo</label>
-            <input
-              className="form-input"
-              value={nombre}
-              onChange={(e) => setNombre(e.target.value)}
-              placeholder={user.nombre_completo}
-              required
-            />
-            <div className="profile-view__meta" style={{ marginTop: "10px", padding: "0 4px", justifyContent: "space-between" }}>
-              <div className="profile-view__chip">
-                <span className="profile-view__chip-val" style={{ background: "transparent", padding: 0, opacity: 0.7 }}>
-                  {user.codigo || "N/A"}
+          {/* ── Sección Datos Personales ──────────────── */}
+          <div className="pv-section">
+            <div className="pv-section__label">
+              <User size={14} />
+              Datos Personales
+            </div>
+
+            <div className="pv-field">
+              <label className="pv-field__label">Nombre Completo <span className="pv-required">*</span></label>
+              <input
+                className="pv-input"
+                value={nombre}
+                onChange={(e) => setNombre(e.target.value)}
+                placeholder="Escribe tu nombre completo"
+                required
+              />
+            </div>
+
+            <div className="pv-field">
+              <label className="pv-field__label">
+                Correo Electrónico
+                <span className="pv-optional">opcional</span>
+              </label>
+              <div className="pv-input-icon-wrap">
+                <Mail size={15} className="pv-input-icon" />
+                <input
+                  className="pv-input pv-input--icon"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="ejemplo@correo.com"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* ── Sección Cambiar Contraseña ────────────── */}
+          <div className="pv-section">
+            <div className="pv-section__label">
+              <KeyRound size={14} />
+              Cambiar Contraseña
+              <span className="pv-optional">opcional</span>
+            </div>
+
+            <div className="pv-field">
+              <label className="pv-field__label">Contraseña actual</label>
+              <div className="pv-password-wrap">
+                <input
+                  className="pv-input"
+                  type={showPassActual ? "text" : "password"}
+                  value={passActual}
+                  onChange={(e) => setPassActual(e.target.value)}
+                  placeholder="Escribe tu contraseña actual"
+                />
+                <button type="button" className="pv-eye-btn" onClick={() => setShowPassActual(!showPassActual)}>
+                  {showPassActual ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
+            </div>
+
+            <div className="pv-field-row">
+              <div className="pv-field">
+                <label className="pv-field__label">Nueva contraseña</label>
+                <div className="pv-password-wrap">
+                  <input
+                    className="pv-input"
+                    type={showPassNueva ? "text" : "password"}
+                    value={passNueva}
+                    onChange={(e) => setPassNueva(e.target.value)}
+                    placeholder="Mín. 4 caracteres"
+                  />
+                  <button type="button" className="pv-eye-btn" onClick={() => setShowPassNueva(!showPassNueva)}>
+                    {showPassNueva ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+              </div>
+
+              <div className="pv-field">
+                <label className="pv-field__label">Repetir nueva contraseña</label>
+                <div className="pv-password-wrap">
+                  <input
+                    className="pv-input"
+                    type={showPassRepetir ? "text" : "password"}
+                    value={passRepetir}
+                    onChange={(e) => setPassRepetir(e.target.value)}
+                    placeholder="Repetir contraseña"
+                  />
+                  <button type="button" className="pv-eye-btn" onClick={() => setShowPassRepetir(!showPassRepetir)}>
+                    {showPassRepetir ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Strength indicator */}
+            {passNueva && (
+              <div className="pv-pass-strength">
+                <div className={`pv-pass-bar ${passNueva.length >= 8 ? 'pv-pass-bar--strong' : passNueva.length >= 4 ? 'pv-pass-bar--medium' : 'pv-pass-bar--weak'}`} />
+                <span className="pv-pass-strength__label">
+                  {passNueva.length >= 8 ? 'Contraseña fuerte' : passNueva.length >= 4 ? 'Contraseña aceptable' : 'Muy corta (mín. 4)'}
                 </span>
               </div>
-              <div className="profile-view__chip">
-                <span className="profile-view__chip-val profile-view__chip-val--role" style={{ fontSize: "0.75rem", padding: "2px 6px" }}>
-                  {roleLabel || "Usuario"}
-                </span>
-              </div>
-            </div>
+            )}
           </div>
 
-          <hr className="profile-view__divider" />
-
-          <h3 className="profile-view__section-title">
-            <KeyRound size={18} /> Cambiar Contraseña (Opcional)
-          </h3>
-
-          {/* Contraseña actual */}
-          <div className="form-group">
-            <label className="form-label">Contraseña actual</label>
-            <div className="password-input-wrap">
-              <input
-                className="form-input"
-                type={showPassActual ? "text" : "password"}
-                value={passActual}
-                onChange={(e) => setPassActual(e.target.value)}
-                placeholder="Escribe tu contraseña actual"
-                style={{ paddingRight: "2.5rem" }}
-              />
-              <button type="button" className="eye-btn" onClick={() => setShowPassActual(!showPassActual)}>
-                {showPassActual ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
-            </div>
-          </div>
-
-          {/* Nueva contraseña */}
-          <div className="form-group">
-            <label className="form-label">Nueva contraseña</label>
-            <div className="password-input-wrap">
-              <input
-                className="form-input"
-                type={showPassNueva ? "text" : "password"}
-                value={passNueva}
-                onChange={(e) => setPassNueva(e.target.value)}
-                placeholder="Mínimo 4 caracteres"
-                style={{ paddingRight: "2.5rem" }}
-              />
-              <button type="button" className="eye-btn" onClick={() => setShowPassNueva(!showPassNueva)}>
-                {showPassNueva ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
-            </div>
-          </div>
-
-          {/* Repetir nueva contraseña */}
-          <div className="form-group">
-            <label className="form-label">Repetir nueva contraseña</label>
-            <div className="password-input-wrap">
-              <input
-                className="form-input"
-                type={showPassRepetir ? "text" : "password"}
-                value={passRepetir}
-                onChange={(e) => setPassRepetir(e.target.value)}
-                placeholder="Repite la nueva contraseña"
-                style={{ paddingRight: "2.5rem" }}
-              />
-              <button type="button" className="eye-btn" onClick={() => setShowPassRepetir(!showPassRepetir)}>
-                {showPassRepetir ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
-            </div>
-          </div>
-
-          {/* Actions */}
-          <div className="profile-view__actions">
+          {/* ── Actions ───────────────────────────────── */}
+          <div className="pv-actions">
             <button
               type="button"
-              className="btn"
-              style={{ flex: 1, background: "var(--gray-100)", color: "var(--gray-800)" }}
+              className="pv-btn pv-btn--cancel"
               onClick={onCancel}
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="btn btn-primary"
-              style={{ flex: 1 }}
+              className="pv-btn pv-btn--save"
               disabled={saving}
             >
-              {saving ? <div className="spinner" /> : "Guardar"}
+              {saving ? <div className="spinner" /> : "Guardar cambios"}
             </button>
           </div>
         </form>

@@ -1,110 +1,312 @@
-/* ── ProfileView Component ──────────────────────────────────
-   User profile edit form shown when clicking on the user menu.
-   ──────────────────────────────────────────────────────── */
+/* ── ProfileView Component ────────────────────────────────────────────
+   Redesigned with a premium card layout, email field, and better UX.
+   ──────────────────────────────────────────────────────────────────── */
 
 .profile-view {
-  max-width: 600px;
+  max-width: 560px;
   margin: 0 auto;
-  padding: 1rem;
+  padding: 1.25rem 1rem;
 }
 
-/* Header: avatar icon + user meta */
-.profile-view__header {
+/* ── Main card ────────────────────────────────────────────────────── */
+.pv-card {
+  background: #fff;
+  border: 1px solid var(--gray-100, #f1f5f9);
+  border-radius: 20px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.07), 0 1px 4px rgba(0,0,0,0.04);
+  overflow: hidden;
+}
+
+/* ── Header ───────────────────────────────────────────────────────── */
+.pv-header {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 1.5rem;
+  gap: 14px;
+  padding: 1.5rem 1.75rem 1.25rem;
+  background: linear-gradient(135deg, #f8fafc 0%, #f0f4ff 100%);
+  border-bottom: 1px solid var(--gray-100, #f1f5f9);
 }
 
-.profile-view__avatar {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  background: var(--gray-50);
+.pv-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--primary, #2563eb) 0%, #7c3aed 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--primary);
+  color: #fff;
   flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(37,99,235,0.25);
 }
 
-.profile-view__title {
-  margin: 0;
-  font-size: 1.25rem;
-  color: var(--gray-800);
+.pv-header__info {
+  flex: 1;
+  min-width: 0;
 }
 
-/* Meta chips row (código, rol) */
-.profile-view__meta {
+.pv-header__name {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--gray-800, #1e293b);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pv-header__meta {
   display: flex;
-  gap: 1rem;
-  margin-top: 8px;
+  gap: 6px;
+  margin-top: 5px;
   flex-wrap: wrap;
 }
 
-.profile-view__chip {
+/* ── Chips ────────────────────────────────────────────────────────── */
+.pv-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 8px;
+}
+
+.pv-chip--code {
+  background: var(--gray-100, #f1f5f9);
+  color: var(--gray-600, #475569);
+  font-family: monospace;
+  font-size: 0.72rem;
+}
+
+.pv-chip--role {
+  background: var(--primary-bg, #eff6ff);
+  color: var(--primary, #2563eb);
+  text-transform: capitalize;
+}
+
+/* ── Section blocks ───────────────────────────────────────────────── */
+.pv-section {
+  padding: 1.5rem 1.75rem;
+  border-bottom: 1px solid var(--gray-100, #f1f5f9);
+}
+
+.pv-section:last-of-type {
+  border-bottom: none;
+}
+
+.pv-section__label {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.8rem;
-  color: var(--gray-500);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--gray-500, #64748b);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 1.1rem;
 }
 
-.profile-view__chip-label {
-  font-weight: 600;
+/* ── Fields ───────────────────────────────────────────────────────── */
+.pv-field {
+  margin-bottom: 1.1rem;
 }
 
-.profile-view__chip-val {
-  font-family: monospace;
-  background: var(--gray-100);
-  padding: 2px 6px;
-  border-radius: 4px;
-  color: var(--gray-700);
+.pv-field:last-child {
+  margin-bottom: 0;
 }
 
-.profile-view__chip-val--role {
-  font-family: var(--font);
-  text-transform: capitalize;
-  background: var(--primary-bg);
-  color: var(--primary);
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-weight: 600;
+.pv-field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-bottom: 0;
 }
 
-/* Section divider */
-.profile-view__divider {
-  margin: 2rem 0;
-  border: none;
-  border-top: 1px solid var(--gray-100);
+@media (max-width: 520px) {
+  .pv-field-row {
+    grid-template-columns: 1fr;
+  }
 }
 
-/* Password section heading */
-.profile-view__section-title {
-  font-size: 1rem;
+.pv-field__label {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 1rem;
-  color: var(--gray-700);
+  gap: 6px;
+  font-size: 0.78rem;
   font-weight: 600;
+  color: var(--gray-600, #475569);
+  margin-bottom: 0.4rem;
 }
 
-/* Action buttons row */
-.profile-view__actions {
-  display: flex;
-  gap: 1rem;
-  margin-top: 2rem;
+.pv-required {
+  color: #ef4444;
+  margin-left: 1px;
 }
 
-/* ── Shared: Eye toggle button ──────────────────────────────
-   Used by ProfileView AND LoginPage for password visibility toggle.
-   ──────────────────────────────────────────────────────── */
+.pv-optional {
+  font-size: 0.68rem;
+  font-weight: 500;
+  color: var(--gray-400, #94a3b8);
+  background: var(--gray-100, #f1f5f9);
+  padding: 1px 6px;
+  border-radius: 6px;
+  margin-left: 4px;
+}
 
-.password-input-wrap {
+/* ── Inputs ───────────────────────────────────────────────────────── */
+.pv-input {
+  width: 100%;
+  padding: 0.6rem 0.85rem;
+  border: 1.5px solid var(--gray-200, #e2e8f0);
+  border-radius: 10px;
+  font-size: 0.88rem;
+  color: var(--gray-800, #1e293b);
+  background: #fff;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.pv-input:focus {
+  border-color: var(--primary, #2563eb);
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
+}
+
+.pv-input::placeholder {
+  color: var(--gray-400, #94a3b8);
+}
+
+/* Input with icon prefix */
+.pv-input-icon-wrap {
   position: relative;
 }
 
+.pv-input-icon {
+  position: absolute;
+  left: 0.8rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--gray-400, #94a3b8);
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
+.pv-input--icon {
+  padding-left: 2.2rem;
+}
+
+/* ── Password wrap ────────────────────────────────────────────────── */
+.pv-password-wrap {
+  position: relative;
+}
+
+.pv-eye-btn {
+  position: absolute;
+  right: 0.7rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--gray-400, #94a3b8);
+  display: flex;
+  align-items: center;
+  padding: 0;
+  transition: color 0.15s;
+}
+
+.pv-eye-btn:hover {
+  color: var(--primary, #2563eb);
+}
+
+/* ── Field hint ───────────────────────────────────────────────────── */
+.pv-field__hint {
+  margin-top: 5px;
+  font-size: 0.72rem;
+  color: var(--gray-400, #94a3b8);
+  line-height: 1.5;
+}
+
+/* ── Password strength bar ────────────────────────────────────────── */
+.pv-pass-strength {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 0.5rem;
+}
+
+.pv-pass-bar {
+  height: 4px;
+  flex: 1;
+  border-radius: 99px;
+  transition: background 0.2s;
+}
+
+.pv-pass-bar--weak   { background: #ef4444; }
+.pv-pass-bar--medium { background: #f59e0b; }
+.pv-pass-bar--strong { background: #22c55e; }
+
+.pv-pass-strength__label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--gray-500, #64748b);
+  white-space: nowrap;
+}
+
+/* ── Actions ──────────────────────────────────────────────────────── */
+.pv-actions {
+  display: flex;
+  gap: 0.75rem;
+  padding: 1.25rem 1.75rem;
+  background: var(--gray-50, #f8fafc);
+  border-top: 1px solid var(--gray-100, #f1f5f9);
+}
+
+.pv-btn {
+  flex: 1;
+  padding: 0.65rem 1rem;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: 1.5px solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pv-btn--cancel {
+  background: #fff;
+  color: var(--gray-600, #475569);
+  border-color: var(--gray-200, #e2e8f0);
+}
+
+.pv-btn--cancel:hover {
+  background: var(--gray-100, #f1f5f9);
+}
+
+.pv-btn--save {
+  background: var(--primary, #2563eb);
+  color: #fff;
+  border-color: var(--primary, #2563eb);
+  box-shadow: 0 2px 8px rgba(37,99,235,0.25);
+}
+
+.pv-btn--save:hover:not(:disabled) {
+  background: var(--primary-dark, #1d4ed8);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37,99,235,0.3);
+}
+
+.pv-btn--save:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ── Backward compat (keep legacy classes working) ────────────────── */
+.password-input-wrap { position: relative; }
 .eye-btn {
   position: absolute;
   right: 0.8rem;
@@ -117,25 +319,25 @@
   display: flex;
   align-items: center;
   padding: 0;
-  transition: color 0.15s ease;
+  transition: color 0.15s;
 }
+.eye-btn:hover { color: var(--primary); }
 
-.eye-btn:hover {
-  color: var(--primary);
-}
-
-@media (max-width: 600px) {
+/* ── Responsive ───────────────────────────────────────────────────── */
+@media (max-width: 560px) {
   .profile-view {
     padding: 0.5rem 0;
   }
-  .profile-view .card {
-    border: none;
+  .pv-card {
     border-radius: 0;
+    border-left: none;
+    border-right: none;
     box-shadow: none;
-    padding: 1.5rem 1rem;
-    background: transparent;
   }
-  .profile-view__header {
-    margin-bottom: 1rem;
+  .pv-header,
+  .pv-section,
+  .pv-actions {
+    padding-left: 1rem;
+    padding-right: 1rem;
   }
 }

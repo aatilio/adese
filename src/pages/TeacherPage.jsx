@@ -32,6 +32,7 @@ import {
   Unlock,
   ArrowLeft,
   UploadCloud,
+  Mail,
 } from "lucide-react";
 import * as XLSX from "xlsx";
 import { api } from "../api/client";
@@ -1872,6 +1873,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                         </h3>
                       </div>
                       <div className="tp-modal-body">
+                        {/* CUI */}
                         <div className="form-group tp-form-group-0">
                           <label className="form-label tp-form-label-sm">CUI</label>
                           <input
@@ -1880,6 +1882,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                             onChange={e => setEditingAlumnoData({ ...editingAlumnoData, codigo: e.target.value })}
                           />
                         </div>
+                        {/* Nombre */}
                         <div className="form-group tp-form-group-0">
                           <label className="form-label tp-form-label-sm">Nombre Completo</label>
                           <input
@@ -1888,8 +1891,27 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                             onChange={e => setEditingAlumnoData({ ...editingAlumnoData, nombre_completo: e.target.value })}
                           />
                         </div>
+                        {/* Email (opcional) */}
                         <div className="form-group tp-form-group-0">
-                          <label className="form-label tp-form-label-sm">Nueva Contraseña (dejar vacío para no cambiar)</label>
+                          <label className="form-label tp-form-label-sm" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            Correo Electrónico
+                            <span style={{ fontSize: '0.68rem', fontWeight: 500, color: '#94a3b8', background: '#f1f5f9', padding: '1px 6px', borderRadius: '6px' }}>opcional</span>
+                          </label>
+                          <div style={{ position: 'relative' }}>
+                            <Mail size={14} style={{ position: 'absolute', left: '0.8rem', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', pointerEvents: 'none' }} />
+                            <input
+                              className="form-input"
+                              type="email"
+                              value={editingAlumnoData.email || ''}
+                              onChange={e => setEditingAlumnoData({ ...editingAlumnoData, email: e.target.value })}
+                              placeholder="ejemplo@correo.com"
+                              style={{ paddingLeft: '2.2rem' }}
+                            />
+                          </div>
+                        </div>
+                        {/* Contraseña */}
+                        <div className="form-group tp-form-group-0">
+                          <label className="form-label tp-form-label-sm">Nueva Contraseña <span style={{ fontSize: '0.68rem', fontWeight: 500, color: '#94a3b8', background: '#f1f5f9', padding: '1px 6px', borderRadius: '6px' }}>dejar vacío para no cambiar</span></label>
                           <input
                             className="form-input"
                             type="text"
@@ -1906,10 +1928,16 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                           className="btn btn-primary tp-flex-1"
                           onClick={async () => {
                             try {
-                              const payload = { codigo: editingAlumnoData.codigo, nombre_completo: editingAlumnoData.nombre_completo };
+                              const payload = {
+                                codigo: editingAlumnoData.codigo,
+                                nombre_completo: editingAlumnoData.nombre_completo,
+                                email: editingAlumnoData.email?.trim() || null,
+                              };
                               if (editingAlumnoData.newPass?.trim()) payload.pass = editingAlumnoData.newPass.trim();
                               await api.updateEstudiante(editingAlumnoData.id, payload);
-                              setEstudiantesCurso(prev => prev.map(e => e.id === editingAlumnoData.id ? { ...e, codigo: editingAlumnoData.codigo, nombre_completo: editingAlumnoData.nombre_completo } : e));
+                              setEstudiantesCurso(prev => prev.map(e => e.id === editingAlumnoData.id
+                                ? { ...e, codigo: editingAlumnoData.codigo, nombre_completo: editingAlumnoData.nombre_completo, email: editingAlumnoData.email }
+                                : e));
                               toast.success('Alumno actualizado');
                               setEditingAlumnoData(null);
                             } catch (err) { toast.error(err.message); }

@@ -512,22 +512,23 @@ app.delete('/api/usuarios/:id', async (req, res) => {
 
 // PUT /api/estudiantes/:id (usuarios)
 app.put('/api/estudiantes/:id', async (req, res) => {
-  const { codigo, nombre_completo, pass, rol } = req.body;
+  const { codigo, nombre_completo, pass, rol, email } = req.body;
   try {
     let r;
     // Extraemos el rol actual si no se proporciona
     const currentUser = await pool.query('SELECT rol FROM usuarios WHERE id = $1', [req.params.id]);
     const finalRol = rol || (currentUser.rows[0]?.rol ?? 3);
+    const finalEmail = (email ?? '').trim() || null;
 
     if (pass !== undefined && pass !== '') {
       r = await pool.query(
-        'UPDATE usuarios SET codigo = $1, nombre_completo = $2, pass = $3, rol = $4 WHERE id = $5 RETURNING *',
-        [codigo, nombre_completo, pass, finalRol, req.params.id]
+        'UPDATE usuarios SET codigo = $1, nombre_completo = $2, pass = $3, rol = $4, email = $5 WHERE id = $6 RETURNING *',
+        [codigo, nombre_completo, pass, finalRol, finalEmail, req.params.id]
       );
     } else {
       r = await pool.query(
-        'UPDATE usuarios SET codigo = $1, nombre_completo = $2, rol = $3 WHERE id = $4 RETURNING *',
-        [codigo, nombre_completo, finalRol, req.params.id]
+        'UPDATE usuarios SET codigo = $1, nombre_completo = $2, rol = $3, email = $4 WHERE id = $5 RETURNING *',
+        [codigo, nombre_completo, finalRol, finalEmail, req.params.id]
       );
     }
     res.json({ estudiante: r.rows[0] });
@@ -538,9 +539,10 @@ app.put('/api/estudiantes/:id', async (req, res) => {
 
 // PUT /api/usuarios/:id/perfil
 app.put('/api/usuarios/:id/perfil', async (req, res) => {
-  const { nombre_completo, pass, passActual } = req.body;
+  const { nombre_completo, email, pass, passActual } = req.body;
   try {
-    if (pass !== undefined) {
+    const finalEmail = (email ?? '').trim() || null;
+    if (pass !== undefined && pass !== '') {
       // Validar contraseña actual
       const userRes = await pool.query('SELECT pass FROM usuarios WHERE id = $1', [req.params.id]);
       if (userRes.rows.length === 0) {
@@ -553,14 +555,14 @@ app.put('/api/usuarios/:id/perfil', async (req, res) => {
       }
 
       const r = await pool.query(
-        'UPDATE usuarios SET nombre_completo = $1, pass = $2 WHERE id = $3 RETURNING *',
-        [nombre_completo, pass, req.params.id]
+        'UPDATE usuarios SET nombre_completo = $1, email = $2, pass = $3 WHERE id = $4 RETURNING *',
+        [nombre_completo, finalEmail, pass, req.params.id]
       );
       res.json({ usuario: r.rows[0] });
     } else {
       const r = await pool.query(
-        'UPDATE usuarios SET nombre_completo = $1 WHERE id = $2 RETURNING *',
-        [nombre_completo, req.params.id]
+        'UPDATE usuarios SET nombre_completo = $1, email = $2 WHERE id = $3 RETURNING *',
+        [nombre_completo, finalEmail, req.params.id]
       );
       res.json({ usuario: r.rows[0] });
     }
