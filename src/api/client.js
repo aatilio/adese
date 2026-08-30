@@ -10,15 +10,18 @@ const request = async (method, path, body) => {
 
   const res = await fetch(`${API}${path}`, opts);
 
-  // Fast path: parse JSON directly; only fall back to text on parse error
   let data;
+  const rawText = await res.text();
   try {
-    data = await res.json();
+    data = JSON.parse(rawText);
   } catch {
+    if (!res.ok) {
+      throw new Error(`Error del servidor (${res.status}): No se pudo conectar con la base de datos o el servicio.`);
+    }
     throw new Error(`Respuesta inválida del servidor (${method} ${path})`);
   }
 
-  if (!res.ok) throw new Error(data?.error || 'Error desconocido');
+  if (!res.ok) throw new Error(data?.error || data?.message || 'Error desconocido');
   return data;
 };
 

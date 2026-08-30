@@ -27,13 +27,9 @@ const pool = new Pool({
   ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false,
 });
 
-// Test de conexión inicial
-pool.query('SELECT NOW()', (err) => {
-  if (err) {
-    console.error("❌ Error inicial de conexión a la BD:", err.message);
-  } else {
-    console.log("✅ Conexión a la base de datos establecida correctamente.");
-  }
+// Manejar errores de clientes ociosos para evitar que crashee el proceso de Vercel
+pool.on('error', (err) => {
+  console.error('❌ Error inesperado en el pool de la BD:', err.message);
 });
 
 // ── Helpers ───────────────────────────────────────────────────
@@ -100,27 +96,29 @@ const autoFillAbsences = async (pool, sesionId, force = false) => {
   }
 };
 
-// ── Migración Automática ──────────────────────────────────────
-const runMigrations = async (pool) => {
-  try {
-    await pool.query(`
-      ALTER TABLE sesiones 
-      ADD COLUMN IF NOT EXISTS faltas_procesadas BOOLEAN DEFAULT FALSE;
-    `);
-  } catch (err) {
-    console.error("Error en migración:", err.message);
-  }
-};
-
-// Ejecutar migración al iniciar
-runMigrations(pool);
-
 // ── ROUTES ────────────────────────────────────────────────────
 
 // Health check
-app.get('/api/health', (_, res) =>
-  res.json({ status: 'ok', env: !!(process.env.DATABASE_URL || process.env.DB_HOST) })
-);
+app.get('/api/health', async (_, res) => {
+  const hasEnv = !!process.env.DATABASE_URL;
+  if (!hasEnv) {
+    return res.status(200).json({
+      status: 'warning',
+      env: false,
+      message: 'Falta configurar la variable DATABASE_URL en Vercel Settings'
+    });
+  }
+  try {
+    const r = await pool.query('SELECT NOW()');
+    res.json({ status: 'ok', env: true, db_time: r.rows[0].now });
+  } catch (err) {
+    res.status(500).json({
+      status: 'error',
+      env: true,
+      error: 'Error conectando a la base de datos: ' + err.message
+    });
+  }
+});
 
 // POST /api/auth/login — acepta { codigo, pass }. Roles: 1=admin, 2=profesor, 3=estudiante
 app.post('/api/auth/login', async (req, res) => {
