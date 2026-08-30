@@ -20,17 +20,31 @@ app.use(cors());
 app.use(express.json());
 
 // ── Database Pool ─────────────────────────────────────────────
-const pool = new Pool({
-  connectionString:
-    process.env.DATABASE_URL ||
-    `postgresql://root:rootpassword@${process.env.DB_HOST || 'localhost'}:5432/asistenciadb`,
-  ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false,
-});
+let _poolInstance = null;
 
-// Manejar errores de clientes ociosos para evitar que crashee el proceso de Vercel
-pool.on('error', (err) => {
-  console.error('❌ Error inesperado en el pool de la BD:', err.message);
-});
+const getPool = () => {
+  if (_poolInstance) return _poolInstance;
+  try {
+    const connStr = process.env.DATABASE_URL || `postgresql://root:rootpassword@${process.env.DB_HOST || 'localhost'}:5432/asistenciadb`;
+    _poolInstance = new Pool({
+      connectionString: connStr,
+      ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false,
+    });
+    _poolInstance.on('error', (err) => {
+      console.error('❌ Error inesperado en el pool de la BD:', err.message);
+    });
+    return _poolInstance;
+  } catch (err) {
+    console.error("❌ Error inicializando pool:", err);
+    throw err;
+  }
+};
+
+const pool = {
+  query: async (text, params) => {
+    return getPool().query(text, params);
+  }
+};
 
 // ── Helpers ───────────────────────────────────────────────────
 // Generador de códigos alfanuméricos de 16 caracteres
