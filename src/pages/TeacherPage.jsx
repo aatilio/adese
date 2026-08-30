@@ -31,6 +31,8 @@ import {
   Lock,
   Unlock,
   ArrowLeft,
+  ArrowRight,
+  ChevronRight,
   UploadCloud,
   Mail,
 } from "lucide-react";
@@ -233,6 +235,17 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
   const [importConfirmando, setImportConfirmando] = useState(false);
   const [editingAlumnoData, setEditingAlumnoData] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [searchAlumnoQuery, setSearchAlumnoQuery] = useState('');
+
+  const filteredEstudiantesCurso = useMemo(() => {
+    if (!searchAlumnoQuery.trim()) return estudiantesCurso;
+    const q = searchAlumnoQuery.trim().toLowerCase();
+    return estudiantesCurso.filter(
+      (e) =>
+        (e.codigo || "").toLowerCase().includes(q) ||
+        (e.nombre_completo || "").toLowerCase().includes(q)
+    );
+  }, [estudiantesCurso, searchAlumnoQuery]);
 
 
   // ── Init: load courses ──────────────────────────────────
@@ -1628,7 +1641,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                     className="tp-import-back-btn"
                     onClick={() => setShowImportPage(false)}
                   >
-                    <ArrowLeft size={16} /> Volver a Alumnos
+                    <ArrowLeft size={16} /> Volver
                   </button>
                   <div className="tp-import-title-group">
                     <h3 className="tp-import-title">Importar Alumnos Masivamente</h3>
@@ -1830,28 +1843,53 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                 className="card tp-alumnos-card"
               >
                 <div className="tp-alumnos-header">
-                  <div className="card-title tp-alumnos-subtitle">
-                    Alumnos Matriculados
-                  </div>
-                  <div className="card-subtitle tp-card-subtitle-mt">
-                    {estudiantesCurso.length} matriculados.
-                  </div>
-                  <div className="tp-alumnos-actions" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '0.5rem' }}>
-                    <button
-                      className="btn btn-primary tp-add-alumno-btn"
-                      onClick={() => { setShowNuevoAlumno(true); setNuevoAlumnoCodigo(''); setNuevoAlumnoNombre(''); setNuevoAlumnoEncontrado(null); setAlumnoResultadosList([]); }}
-                    >
-                      <UserPlus size={16} /> Matricular Alumno
-                    </button>
+                  <div className="tp-alumnos-header-top">
+                    <div>
+                      <div className="card-title tp-alumnos-subtitle">
+                        {estudiantesCurso.length} Alumnos Matriculados
+                      </div>
+                    </div>
 
-                    <button
-                      type="button"
-                      className="btn btn-secondary"
-                      onClick={() => { setShowImportPage(true); setImportLog([]); setImportResult(null); setImportPreview(null); }}
-                      style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
-                    >
-                      <FileSpreadsheet size={16} /> Importar CSV / Excel
-                    </button>
+                    <div className="tp-alumnos-actions">
+                      <button
+                        className="btn btn-primary tp-add-alumno-btn"
+                        onClick={() => { setShowNuevoAlumno(true); setNuevoAlumnoCodigo(''); setNuevoAlumnoNombre(''); setNuevoAlumnoEncontrado(null); setAlumnoResultadosList([]); }}
+                      >
+                        <UserPlus size={16} /> Matricular
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Buscador en vivo de Alumnos */}
+                  <div className="tp-alumnos-search-box">
+                    <Search size={16} className="tp-alumnos-search-icon" />
+                    <input
+                      type="text"
+                      className="tp-alumnos-search-input"
+                      placeholder="Buscar alumno por CUI o nombre..."
+                      value={searchAlumnoQuery}
+                      onChange={(e) => setSearchAlumnoQuery(e.target.value)}
+                    />
+                    {searchAlumnoQuery && (
+                      <button
+                        type="button"
+                        onClick={() => setSearchAlumnoQuery('')}
+                        style={{
+                          position: 'absolute',
+                          right: '0.75rem',
+                          top: '50%',
+                          transform: 'translateY(-50%)',
+                          background: 'none',
+                          border: 'none',
+                          color: '#94a3b8',
+                          cursor: 'pointer',
+                          padding: '2px'
+                        }}
+                        title="Limpiar búsqueda"
+                      >
+                        <X size={14} />
+                      </button>
+                    )}
                   </div>
                 </div>
 
@@ -1865,9 +1903,38 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                         <h3 className="tp-modal-header__title">
                           <UserPlus size={18} className="tp-modal-header__icon" /> Matricular Alumno
                         </h3>
+                        <button
+                          type="button"
+                          className="tp-modal-close"
+                          onClick={() => setShowNuevoAlumno(false)}
+                        >
+                          <X size={20} />
+                        </button>
                       </div>
                       <form onSubmit={crearYAgregarAlumno}>
                         <div className="tp-modal-body">
+                          {/* Banner elegante de acceso directo a Carga Masiva */}
+                          <div 
+                            className="tp-import-shortcut"
+                            onClick={() => {
+                              setShowNuevoAlumno(false);
+                              setShowImportPage(true);
+                              setImportLog([]);
+                              setImportResult(null);
+                              setImportPreview(null);
+                            }}
+                            title="Haz clic para importar alumnos desde archivo CSV o Excel"
+                          >
+                            <div className="tp-import-shortcut__left">
+                              <div className="tp-import-shortcut__icon">
+                                <FileSpreadsheet size={18} />
+                              </div>
+                              <div>
+                                <div className="tp-import-shortcut__title">¿Deseas matricular varios alumnos a la vez?</div>
+                              </div>
+                            </div>
+                            <ArrowRight size={18} className="tp-import-shortcut__arrow" />
+                          </div>
                           <div className="form-group" style={{ marginTop: 0, position: 'relative' }}>
                             <label className="form-label tp-form-label-sm">Buscar por CUI</label>
                             <input
@@ -2066,7 +2133,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                       </tr>
                     </thead>
                     <tbody>
-                      {estudiantesCurso.map((est, idx) => (
+                      {filteredEstudiantesCurso.map((est, idx) => (
                         <tr key={est.id}
                           onMouseEnter={e => e.currentTarget.style.background = 'var(--gray-50)'}
                           onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
@@ -2094,9 +2161,13 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                           </td>
                         </tr>
                       ))}
-                      {estudiantesCurso.length === 0 && (
+                      {filteredEstudiantesCurso.length === 0 && (
                         <tr>
-                          <td colSpan={4} className="tp-table-empty">No hay alumnos matriculados en este curso.</td>
+                          <td colSpan={4} className="tp-table-empty">
+                            {searchAlumnoQuery.trim()
+                              ? `No se encontraron alumnos coincidentes con "${searchAlumnoQuery}".`
+                              : "No hay alumnos matriculados en este curso."}
+                          </td>
                         </tr>
                       )}
                     </tbody>
