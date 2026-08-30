@@ -911,15 +911,48 @@
   margin: 0 auto 2.25rem;
 }
 
-.landing-cta__box .landing-btn-primary {
-  background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
-  color: #ffffff;
-  box-shadow: 0 10px 25px rgba(2, 132, 199, 0.35);
+.landing-btn-whatsapp {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+  color: #ffffff !important;
+  font-weight: 700;
+  font-size: 1rem;
+  padding: 0.85rem 1.6rem;
+  border-radius: 12px;
+  text-decoration: none;
+  box-shadow: 0 10px 25px rgba(37, 211, 102, 0.35);
+  transition: all 0.2s ease;
 }
 
-.landing-cta__box .landing-btn-primary:hover {
+.landing-btn-whatsapp:hover {
   transform: translateY(-2px);
-  box-shadow: 0 14px 30px rgba(2, 132, 199, 0.45);
+  box-shadow: 0 14px 30px rgba(37, 211, 102, 0.45);
+  color: #ffffff !important;
+}
+
+.landing-btn-secondary-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #ffffff;
+  color: #1e293b !important;
+  font-weight: 700;
+  font-size: 1rem;
+  padding: 0.85rem 1.6rem;
+  border-radius: 12px;
+  border: 1px solid #cbd5e1;
+  text-decoration: none;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+  transition: all 0.2s ease;
+}
+
+.landing-btn-secondary-cta:hover {
+  transform: translateY(-2px);
+  background: #f8fafc;
+  border-color: #94a3b8;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
 }
 
 /* ── Footer ────────────────────────────────────── */

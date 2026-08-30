@@ -16,6 +16,7 @@ import {
   Share,
   PlusSquare,
   LogIn,
+  MessageCircle,
 } from "lucide-react";
 import appLogo from "../assets/adese.svg";
 import macMockup from "../assets/moc/mac.png";
@@ -112,8 +113,8 @@ export default function LandingPage() {
               </a>
             </li>
             <li>
-              <a href="#beneficios" className="landing-nav__link">
-                Beneficios
+              <a href="#contactanos" className="landing-nav__link">
+                Probar Ahora
               </a>
             </li>
           </ul>
@@ -169,12 +170,12 @@ export default function LandingPage() {
                 <span>Automatización</span>
               </a>
               <a
-                href="#beneficios"
+                href="#contactanos"
                 className="landing-mobile-menu__link"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 <TrendingUp size={16} className="mobile-menu-icon" />
-                <span>Beneficios</span>
+                <span>Probar Ahora</span>
               </a>
             </div>
             <Link
@@ -439,19 +440,22 @@ export default function LandingPage() {
       </section>
 
       {/* ── CTA Banner ────────────────────────────────── */}
-      <section id="beneficios" className="landing-cta">
+      <section id="contactanos" className="landing-cta">
         <div className="landing-cta__box">
           <h2>¿Listo para Modernizar el Control de Asistencia?</h2>
           <p>
-            Ingresa a la plataforma y aprovecha la tecnología para llevar un control estratégico, transparente y seguro.
+            Contactate con nosotros para solicitar, crear una cuenta si eres delegado de algun curso o docente.
           </p>
           <div className="landing-cta__actions" style={{ display: "flex", gap: "1rem", justifyContent: "center", alignItems: "center", flexWrap: "wrap" }}>
-            {/* <Link to="/register" className="landing-btn-primary">
-              Registrarte como Docente <ArrowRight size={18} />
-            </Link>
-            <Link to="/login" className="landing-btn-secondary">
-              Iniciar Sesión
-            </Link> */}
+            <a
+              href="https://wa.me/51900337702?text=Hola%2C%20deseo%20crear%20y%20validar%20mi%20cuenta%20en%20ADESE"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="landing-btn-whatsapp"
+            >
+              <MessageCircle size={19} />
+              <span>Crear Cuenta</span>
+            </a>
           </div>
         </div>
       </section>
