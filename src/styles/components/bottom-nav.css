@@ -16,16 +16,16 @@
     left: 0;
     width: 100%;
     height: 5rem;
-    background: rgba(255, 255, 255, 0.82);
-    -webkit-backdrop-filter: blur(16px) saturate(180%);
-    backdrop-filter: blur(16px) saturate(180%);
+    background: rgba(255, 255, 255, 0.58);
+    -webkit-backdrop-filter: blur(24px) saturate(190%);
+    backdrop-filter: blur(24px) saturate(190%);
     border-radius: 1.5rem 1.5rem 0 0;
-    box-shadow: 0 -4px 20px rgba(15, 23, 42, 0.08);
+    box-shadow: 0 -4px 24px rgba(15, 23, 42, 0.06);
     z-index: 200;
     justify-content: space-around;
     align-items: center;
     padding: 0 0.25rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.7);
+    border-top: 1px solid rgba(255, 255, 255, 0.45);
   }
 
   /* ── Nav item — large touch target ── */
@@ -56,17 +56,6 @@
   /* ── Active state ── */
   .bottom-nav__item--active {
     color: var(--primary, #4f46e5);
-  }
-
-  /* Active indicator dot above icon */
-  .bottom-nav__item--active::before {
-    content: '';
-    position: absolute;
-    top: 6px;
-    width: 4px;
-    height: 4px;
-    border-radius: 50%;
-    background-color: var(--primary, #4f46e5);
   }
 
   /* ── Danger state (logout) ── */

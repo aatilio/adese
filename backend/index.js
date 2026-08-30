@@ -111,6 +111,12 @@ const runMigrations = async (pool) => {
       ALTER TABLE usuarios 
       ADD COLUMN IF NOT EXISTS email TEXT;
     `);
+    await pool.query(`
+      ALTER TABLE cursos 
+      ADD COLUMN IF NOT EXISTS visible_alumnos BOOLEAN NOT NULL DEFAULT TRUE;
+      ALTER TABLE cursos
+      ADD COLUMN IF NOT EXISTS descripcion TEXT DEFAULT '';
+    `);
   } catch (err) {
     console.error("Error en migración:", err.message);
   }
@@ -578,7 +584,8 @@ app.get('/api/estudiantes/:id/cursos', async (req, res) => {
       SELECT c.* 
       FROM cursos c
       JOIN curso_usuarios cu ON cu.curso_id = c.id
-      WHERE cu.usuario_id = $1`,
+      WHERE cu.usuario_id = $1 AND COALESCE(c.visible_alumnos, true) = true
+      ORDER BY c.created_at DESC`,
       [req.params.id]
     );
     res.json({ cursos: r.rows });
@@ -734,9 +741,9 @@ app.post('/api/asistencias/manual', async (req, res) => {
 
 // ── CURSOS ─────────────────────────────────────────────────
 
-// GET /api/cursos — soporta ?profesor_id=X para filtrar por profesor
+// GET /api/cursos — soporta ?profesor_id=X para filtrar por profesor y ?solo_visibles=true
 app.get('/api/cursos', async (req, res) => {
-  const { profesor_id } = req.query;
+  const { profesor_id, solo_visibles } = req.query;
   try {
     let query = `
       SELECT c.*, 
@@ -747,24 +754,36 @@ app.get('/api/cursos', async (req, res) => {
       FROM cursos c
     `;
     const params = [];
-    
+    const whereConditions = [];
+
     if (profesor_id) {
       params.push(profesor_id);
-      query += ` JOIN curso_usuarios cu2 ON cu2.curso_id = c.id WHERE cu2.usuario_id = $1`;
+      query += ` JOIN curso_usuarios cu2 ON cu2.curso_id = c.id`;
+      whereConditions.push(`cu2.usuario_id = $${params.length}`);
     }
+
+    if (solo_visibles === 'true') {
+      whereConditions.push(`COALESCE(c.visible_alumnos, true) = true`);
+    }
+
+    if (whereConditions.length > 0) {
+      query += ` WHERE ` + whereConditions.join(' AND ');
+    }
+
     query += ` ORDER BY c.created_at DESC`;
     const r = await pool.query(query, params);
     res.json({ cursos: r.rows });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// POST /api/cursos — acepta nombre, descripcion, profesores_ids
+// POST /api/cursos — acepta nombre, descripcion, visible_alumnos, profesores_ids
 app.post('/api/cursos', async (req, res) => {
-  const { nombre, descripcion, profesores_ids } = req.body;
+  const { nombre, descripcion, visible_alumnos, profesores_ids } = req.body;
+  const isVisible = visible_alumnos !== undefined ? Boolean(visible_alumnos) : true;
   try {
     const r = await pool.query(
-      'INSERT INTO cursos (nombre, descripcion) VALUES ($1, $2) RETURNING *',
-      [nombre, descripcion || '']
+      'INSERT INTO cursos (nombre, descripcion, visible_alumnos) VALUES ($1, $2, $3) RETURNING *',
+      [nombre, descripcion || '', isVisible]
     );
     const nuevoCurso = r.rows[0];
 
@@ -783,21 +802,46 @@ app.post('/api/cursos', async (req, res) => {
 
 // PUT /api/cursos/:id
 app.put('/api/cursos/:id', async (req, res) => {
-  const { nombre, descripcion, profesores_ids } = req.body;
+  const { nombre, descripcion, visible_alumnos, profesores_ids } = req.body;
   try {
-    const r = await pool.query(
-      'UPDATE cursos SET nombre=COALESCE($1, nombre), descripcion=COALESCE($2, descripcion) WHERE id=$3 RETURNING *',
-      [nombre, descripcion, req.params.id]
-    );
-    
-    if (profesores_ids && Array.isArray(profesores_ids)) {
-      // Remover docentes previos
+    const updates = [];
+    const values = [];
+
+    if (nombre !== undefined && nombre !== null) {
+      values.push(String(nombre).trim());
+      updates.push(`nombre = $${values.length}`);
+    }
+
+    if (descripcion !== undefined && descripcion !== null) {
+      values.push(String(descripcion).trim());
+      updates.push(`descripcion = $${values.length}`);
+    }
+
+    if (visible_alumnos !== undefined && visible_alumnos !== null) {
+      values.push(Boolean(visible_alumnos));
+      updates.push(`visible_alumnos = $${values.length}`);
+    }
+
+    let cursoRow;
+    if (updates.length > 0) {
+      values.push(req.params.id);
+      const query = `UPDATE cursos SET ${updates.join(', ')} WHERE id = $${values.length} RETURNING *`;
+      const r = await pool.query(query, values);
+      if (r.rows.length === 0) return res.status(404).json({ error: 'Curso no encontrado' });
+      cursoRow = r.rows[0];
+    } else {
+      const r = await pool.query('SELECT * FROM cursos WHERE id = $1', [req.params.id]);
+      if (r.rows.length === 0) return res.status(404).json({ error: 'Curso no encontrado' });
+      cursoRow = r.rows[0];
+    }
+
+    // Only update profesores if explicitly sent and is a non-empty array
+    if (Array.isArray(profesores_ids) && profesores_ids.length > 0) {
       await pool.query(`
         DELETE FROM curso_usuarios 
         WHERE curso_id = $1 AND usuario_id IN (SELECT id FROM usuarios WHERE rol = 2)
       `, [req.params.id]);
 
-      // Insertar los nuevos
       for (const pId of profesores_ids) {
         await pool.query(
           'INSERT INTO curso_usuarios (curso_id, usuario_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
@@ -806,7 +850,7 @@ app.put('/api/cursos/:id', async (req, res) => {
       }
     }
     
-    res.json({ curso: r.rows[0] });
+    res.json({ curso: cursoRow });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 

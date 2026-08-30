@@ -71,6 +71,8 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
   const [showNewCurso, setShowNewCurso] = useState(false);
   const [editingCurso, setEditingCurso] = useState(null);
   const [newCursoName, setNewCursoName] = useState("");
+  const [newCursoDesc, setNewCursoDesc] = useState("");
+  const [newCursoVisible, setNewCursoVisible] = useState(true);
   const [profesores, setProfesores] = useState([]);
   const [selectedProfesoresIds, setSelectedProfesoresIds] = useState([]);
 
@@ -230,6 +232,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
   const [importPreview, setImportPreview] = useState(null); // null | { alumnos: [], stats: {} }
   const [importConfirmando, setImportConfirmando] = useState(false);
   const [editingAlumnoData, setEditingAlumnoData] = useState(null);
+  const [isDragging, setIsDragging] = useState(false);
 
 
   // ── Init: load courses ──────────────────────────────────
@@ -356,7 +359,12 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
     }
     try {
       const pIds = isAdmin ? selectedProfesoresIds : [user.id];
-      const { curso } = await api.crearCurso({ nombre: newCursoName.trim(), profesores_ids: pIds });
+      const { curso } = await api.crearCurso({ 
+        nombre: newCursoName.trim(), 
+        descripcion: newCursoDesc.trim(),
+        visible_alumnos: newCursoVisible,
+        profesores_ids: pIds 
+      });
       
       const selectedProfs = profesores.filter(p => pIds.includes(p.id));
       const newCursoFormatted = { 
@@ -370,6 +378,8 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
       setCursos((prev) => [newCursoFormatted, ...prev]);
       setCursoActivo(newCursoFormatted);
       setNewCursoName("");
+      setNewCursoDesc("");
+      setNewCursoVisible(true);
       setSelectedProfesoresIds([]);
       setShowNewCurso(false);
       setViewMode("curso");
@@ -387,26 +397,45 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
       return;
     }
     try {
-      const pIds = isAdmin ? selectedProfesoresIds : []; // If not admin, do not change teachers
-      const { curso } = await api.updateCurso(editingCurso.id, {
+      const updatePayload = {
         nombre: newCursoName.trim(),
-        profesores_ids: pIds
-      });
-      
-      const selectedProfs = profesores.filter(p => pIds.includes(p.id));
-      const updatedFormatted = { 
-        ...curso, 
-        total_alumnos: editingCurso.total_alumnos, 
-        total_clases: editingCurso.total_clases,
-        profesor_nombre: selectedProfs.length > 0 ? selectedProfs.map(p => p.nombre_completo).join(', ') : editingCurso.profesor_nombre,
-        profesor_codigo: selectedProfs.length > 0 ? selectedProfs.map(p => p.codigo).join(', ') : editingCurso.profesor_codigo
+        descripcion: newCursoDesc.trim(),
+        visible_alumnos: newCursoVisible,
       };
 
-      setCursos((prev) => prev.map((c) => (c.id === curso.id ? updatedFormatted : c)));
-      if (cursoActivo?.id === curso.id) setCursoActivo(updatedFormatted);
+      if (isAdmin && selectedProfesoresIds.length > 0) {
+        updatePayload.profesores_ids = selectedProfesoresIds;
+      }
+
+      const { curso } = await api.updateCurso(editingCurso.id, updatePayload);
+      
+      const updatedFormatted = { 
+        ...editingCurso,
+        ...curso,
+        visible_alumnos: newCursoVisible,
+        descripcion: newCursoDesc.trim(),
+        total_alumnos: editingCurso.total_alumnos, 
+        total_clases: editingCurso.total_clases,
+        profesor_nombre: editingCurso.profesor_nombre,
+        profesor_codigo: editingCurso.profesor_codigo
+      };
+
+      if (isAdmin && selectedProfesoresIds.length > 0) {
+        const selectedProfs = profesores.filter(p => selectedProfesoresIds.includes(p.id));
+        if (selectedProfs.length > 0) {
+          updatedFormatted.profesor_nombre = selectedProfs.map(p => p.nombre_completo).join(', ');
+          updatedFormatted.profesor_codigo = selectedProfs.map(p => p.codigo).join(', ');
+        }
+      }
+
+      setCursos((prev) => prev.map((c) => (c.id === editingCurso.id ? updatedFormatted : c)));
+      if (cursoActivo?.id === editingCurso.id) setCursoActivo(updatedFormatted);
       setNewCursoName("");
+      setNewCursoDesc("");
+      setNewCursoVisible(true);
       setSelectedProfesoresIds([]);
       setEditingCurso(null);
+      setShowNewCurso(false);
       toast.success("Curso actualizado");
     } catch (err) {
       toast.error(err.message);
@@ -797,8 +826,20 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
     toast.info("Plantilla descargada: plantilla_alumnos_adese.csv");
   };
 
-  const handleCsvImport = async (e) => {
-    const file = e.target.files[0];
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!isDragging) setIsDragging(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleFileProcess = async (fileInput) => {
+    const file = fileInput?.target?.files ? fileInput.target.files[0] : fileInput;
     if (!file) return;
     setCsvImportando(true);
     setImportLog([]);
@@ -815,9 +856,10 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
       const rows = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
 
       if (!rows || rows.length < 2) {
-        log('error', 'El archivo está vacío o no contiene filas válidas (se esperan al menos 1 fila de encabezado + 1 alumno).');
+        log('error', 'El archivo está vacío o no contiene filas válidas.');
+        toast.error('El archivo está vacío o no contiene filas válidas.');
         setCsvImportando(false);
-        e.target.value = '';
+        if (fileInput?.target) fileInput.target.value = '';
         return;
       }
 
@@ -844,9 +886,10 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
       if (saltados > 0) log('warn', `${saltados} filas vacías o sin CUI omitidas.`);
 
       if (alumnos.length === 0) {
-        log('error', 'No se encontraron alumnos válidos. Revisa que la columna CUI no esté vacía.');
+        log('error', 'No se encontraron alumnos válidos.');
+        toast.error('No se encontraron alumnos válidos. Revisa la columna CUI.');
         setCsvImportando(false);
-        e.target.value = '';
+        if (fileInput?.target) fileInput.target.value = '';
         return;
       }
 
@@ -866,7 +909,27 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
       toast.error('Error al procesar el archivo: ' + err.message);
     } finally {
       setCsvImportando(false);
-      e.target.value = '';
+      if (fileInput?.target) fileInput.target.value = '';
+    }
+  };
+
+  const handleCsvImport = handleFileProcess;
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    if (csvImportando || importConfirmando) return;
+
+    const files = e.dataTransfer?.files;
+    if (files && files.length > 0) {
+      const file = files[0];
+      const ext = file.name.split('.').pop().toLowerCase();
+      if (['csv', 'xlsx', 'xls'].includes(ext)) {
+        handleFileProcess(file);
+      } else {
+        toast.error('Formato no soportado. Sube un archivo .csv o .xlsx');
+      }
     }
   };
 
@@ -1205,9 +1268,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                 <form onSubmit={editingCurso ? updateCurso : crearCurso}>
                   <div className="tp-modal-body-pad">
                     <div className="form-group">
-                      <label
-                        className="form-label tp-modal-label"
-                      >
+                      <label className="form-label tp-modal-label">
                         Nombre del Curso
                       </label>
                       <input
@@ -1218,6 +1279,58 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                         placeholder="Ej: Programación I"
                         required
                       />
+                    </div>
+
+                    <div className="form-group tp-form-group--mt">
+                      <label className="form-label tp-modal-label">
+                        Descripción del Curso
+                      </label>
+                      <textarea
+                        className="form-input"
+                        rows={2}
+                        value={newCursoDesc}
+                        onChange={(e) => setNewCursoDesc(e.target.value)}
+                        placeholder="Ej: Asignatura correspondiente al I Semestre..."
+                        style={{ resize: 'vertical', minHeight: '60px' }}
+                      />
+                    </div>
+
+                    <div className="form-group tp-form-group--mt">
+                      <label className="form-label tp-modal-label" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                        <span>Visibilidad para Estudiantes</span>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: newCursoVisible ? '#16a34a' : '#dc2626' }}>
+                          {newCursoVisible ? '● Visible para alumnos' : '🔒 Oculto (Semestre Finalizado)'}
+                        </span>
+                      </label>
+                      <label 
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '12px',
+                          padding: '12px 14px',
+                          borderRadius: '8px',
+                          border: newCursoVisible ? '1.5px solid #86efac' : '1.5px solid #fca5a5',
+                          background: newCursoVisible ? '#f0fdf4' : '#fef2f2',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease',
+                          userSelect: 'none'
+                        }}
+                      >
+                        <input 
+                          type="checkbox" 
+                          checked={newCursoVisible} 
+                          onChange={(e) => setNewCursoVisible(e.target.checked)} 
+                          style={{ width: '20px', height: '20px', cursor: 'pointer', accentColor: '#16a34a' }}
+                        />
+                        <div style={{ fontSize: '0.85rem', color: 'var(--gray-800)' }}>
+                          <strong>{newCursoVisible ? 'Curso Activo y Visible' : 'Semestre Finalizado / Oculto'}</strong>
+                          <div style={{ fontSize: '0.75rem', color: 'var(--gray-500)', marginTop: '2px' }}>
+                            {newCursoVisible 
+                              ? 'Los alumnos matriculados pueden ver este curso y marcar asistencias.' 
+                              : 'Los estudiantes ya NO verán este curso en su panel (el semestre concluyó).'}
+                          </div>
+                        </div>
+                      </label>
                     </div>
                     {isAdmin && (
                       <div className="form-group tp-form-group--mt">
@@ -1316,8 +1429,8 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                 <CourseCard
                   key={c.id}
                   title={c.nombre}
-                  tagLabel="Curso"
-                  tagIcon={BookOpen}
+                  tagLabel={c.visible_alumnos === false ? "Finalizado" : "Curso"}
+                  tagIcon={c.visible_alumnos === false ? Lock : BookOpen}
                   docente={isAdmin && c.profesor_codigo ? { nombre: c.profesor_nombre, codigo: c.profesor_codigo } : null}
                   onClick={() => {
                     setCursoActivo(c);
@@ -1331,17 +1444,17 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                         onClick={(e) => {
                           e.stopPropagation();
                           setNewCursoName(c.nombre);
-                        const teacherIds = [];
-                        if (c.profesor_nombre && c.profesor_nombre.includes(',')) {
-                           // Try matching names since we don't return the IDs easily in GET /cursos, but let's query the teachers directly from their cursos_dictados
-                           // Actually a simpler way is to filter `profesores` that have `c.id` in their `cursos_dictados`.
-                           const enrolledTeachers = profesores.filter(p => (p.cursos_dictados || []).some(cd => cd.id === c.id));
-                           enrolledTeachers.forEach(t => teacherIds.push(t.id));
-                        } else {
-                           const enrolledTeachers = profesores.filter(p => (p.cursos_dictados || []).some(cd => cd.id === c.id));
-                           enrolledTeachers.forEach(t => teacherIds.push(t.id));
-                        }
-                        setSelectedProfesoresIds(teacherIds);
+                          setNewCursoDesc(c.descripcion || "");
+                          setNewCursoVisible(c.visible_alumnos ?? true);
+                          const teacherIds = [];
+                          if (c.profesor_nombre && c.profesor_nombre.includes(',')) {
+                             const enrolledTeachers = profesores.filter(p => (p.cursos_dictados || []).some(cd => cd.id === c.id));
+                             enrolledTeachers.forEach(t => teacherIds.push(t.id));
+                          } else {
+                             const enrolledTeachers = profesores.filter(p => (p.cursos_dictados || []).some(cd => cd.id === c.id));
+                             enrolledTeachers.forEach(t => teacherIds.push(t.id));
+                          }
+                          setSelectedProfesoresIds(teacherIds);
                           setEditingCurso(c);
                         }}
                         title="Editar curso"
@@ -1584,16 +1697,25 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                       <p className="tp-import-card__desc">
                         Sube tu lista para revisar y luego confirmar la matriculación:
                       </p>
-                      <label className={`tp-upload-dropzone ${csvImportando ? 'tp-upload-dropzone--loading' : ''}`}>
+                      <label
+                        className={`tp-upload-dropzone ${csvImportando ? 'tp-upload-dropzone--loading' : ''} ${isDragging ? 'tp-upload-dropzone--dragging' : ''}`}
+                        onDragOver={handleDragOver}
+                        onDragLeave={handleDragLeave}
+                        onDrop={handleDrop}
+                      >
                         <UploadCloud size={30} className="tp-upload-icon" />
                         <span className="tp-upload-text">
-                          {csvImportando ? 'Analizando archivo...' : (importPreview ? 'Cargar otro archivo' : 'Seleccionar archivo (CSV o Excel)')}
+                          {csvImportando
+                            ? 'Analizando archivo...'
+                            : isDragging
+                            ? '¡Suelta el archivo aquí para cargar!'
+                            : (importPreview ? 'Cargar otro archivo (arrastra o selecciona)' : 'Arrastra tu archivo aquí o haz clic para seleccionar')}
                         </span>
                         <span className="tp-upload-sub">Formatos admitidos: .csv, .xlsx, .xls</span>
                         <input
                           type="file"
                           accept=".csv, .xlsx, .xls"
-                          onChange={handleCsvImport}
+                          onChange={handleFileProcess}
                           disabled={csvImportando || importConfirmando}
                           style={{ display: 'none' }}
                         />
@@ -1665,22 +1787,6 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
                     </div>
                   )}
 
-                  {/* Log de Preprocesamiento */}
-                  {importLog.length > 0 && (
-                    <div className="tp-import-log-section">
-                      <div className="tp-import-log-title">Consola de Preprocesamiento en Vivo:</div>
-                      <div className="tp-import-log-box">
-                        {importLog.map((entry, i) => (
-                          <div key={i} className={`tp-log-line tp-log-line--${entry.type}`}>
-                            <span>{entry.type === 'ok' ? '✓' : entry.type === 'error' ? '✗' : entry.type === 'warn' ? '⚠' : '›'}</span>
-                            <span>{entry.msg}</span>
-                          </div>
-                        ))}
-                        {(csvImportando || importConfirmando) && <div className="tp-log-line tp-log-line--info">⋯ {csvImportando ? 'analizando archivo...' : 'matriculando alumnos...'}</div>}
-                      </div>
-                    </div>
-                  )}
-
                   {/* Resumen Final de Resultados */}
                   {importResult && !csvImportando && !importConfirmando && (
                     <div className="tp-import-result-card">
@@ -1725,7 +1831,7 @@ export default function TeacherPage({ user, onLogout, isAdmin = false, onUpdateU
               >
                 <div className="tp-alumnos-header">
                   <div className="card-title tp-alumnos-subtitle">
-                    Alumnos de {cursoActivo.nombre}
+                    Alumnos Matriculados
                   </div>
                   <div className="card-subtitle tp-card-subtitle-mt">
                     {estudiantesCurso.length} matriculados.

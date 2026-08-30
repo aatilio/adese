@@ -104,7 +104,10 @@ export default function StudentPage({ user, onLogout, onUpdateUser }) {
   useEffect(() => {
     api
       .getEstudianteCursos(user.id)
-      .then((res) => setCursos(res.cursos))
+      .then((res) => {
+        const list = Array.isArray(res?.cursos) ? res.cursos : [];
+        setCursos(list.filter((c) => c.visible_alumnos !== false));
+      })
       .catch(() => {});
     api
       .getEstados()
