@@ -123,7 +123,6 @@ export default function ProfileView({ user, roleLabel, onUpdateUser, onCancel })
             <div className="pv-field">
               <label className="pv-field__label">
                 Correo Electrónico
-                <span className="pv-optional">opcional</span>
               </label>
               <div className="pv-input-icon-wrap">
                 <Mail size={15} className="pv-input-icon" />
@@ -143,7 +142,6 @@ export default function ProfileView({ user, roleLabel, onUpdateUser, onCancel })
             <div className="pv-section__label">
               <KeyRound size={14} />
               Cambiar Contraseña
-              <span className="pv-optional">opcional</span>
             </div>
 
             <div className="pv-field">

@@ -599,13 +599,24 @@ app.put('/api/asistencias/:id/punto', async (req, res) => {
 app.get('/api/asistencias/alumno/:id', async (req, res) => {
   try {
     const r = await pool.query(
-      `SELECT a.id, ea.nombre AS estado, ea.color, ea.puntuacion, a.fecha_hora, a.valor,
-              s.nombre_clase, s.curso_id, s.tipo, s.visible_alumnos
-       FROM asistencias a
-       JOIN sesiones s ON a.sesion_id = s.id
-       JOIN estados_asistencia ea ON ea.id = a.estado_id
-       WHERE a.estudiante_id = $1 AND s.visible_alumnos = true
-       ORDER BY a.fecha_hora DESC`,
+      `SELECT 
+        COALESCE(a.id, -s.id) AS id,
+        ea.nombre AS estado,
+        ea.color,
+        ea.puntuacion,
+        COALESCE(a.fecha_hora, s.fecha_programada, s.fecha_inicio) AS fecha_hora,
+        COALESCE(a.valor, 0) AS valor,
+        s.nombre_clase,
+        s.curso_id,
+        s.tipo,
+        s.visible_alumnos
+       FROM sesiones s
+       JOIN curso_usuarios cu ON cu.curso_id = s.curso_id AND cu.usuario_id = $1
+       LEFT JOIN asistencias a ON a.sesion_id = s.id AND a.estudiante_id = $1
+       LEFT JOIN estados_asistencia ea ON ea.id = a.estado_id
+       WHERE COALESCE(s.visible_alumnos, true) = true
+         AND (s.tipo = 'puntos' OR a.id IS NOT NULL)
+       ORDER BY COALESCE(a.fecha_hora, s.fecha_programada, s.fecha_inicio) DESC`,
       [req.params.id]
     );
     res.json({ historial: r.rows });

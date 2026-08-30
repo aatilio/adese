@@ -12,6 +12,9 @@ import {
   Library,
   User,
   BarChart3,
+  Star,
+  Sparkles,
+  Check,
 } from "lucide-react";
 
 import Tabs from "../components/ui/Tabs";
@@ -73,10 +76,30 @@ export default function StudentPage({ user, onLogout, onUpdateUser }) {
   const [loading, setLoading] = useState(false);
   const [registered, setRegistered] = useState(null);
   const [historial, setHistorial] = useState([]);
+  const [historialFilter, setHistorialFilter] = useState("todos");
   const [currentTime, setCurrentTime] = useState(new Date());
   const [estadosDB, setEstadosDB] = useState([]);
   const [marcoEnSesionActual, setMarcoEnSesionActual] = useState(false);
   const [isCheckingAttendance, setIsCheckingAttendance] = useState(false);
+
+  const cursoHistorial = useMemo(() => {
+    return (historial || []).filter((h) => h.curso_id === cursoActivo?.id);
+  }, [historial, cursoActivo?.id]);
+
+  const totalPuntosAcumulados = useMemo(() => {
+    return cursoHistorial
+      .filter((h) => h.tipo === 'puntos')
+      .reduce((sum, h) => sum + (Number(h.valor) || 0), 0);
+  }, [cursoHistorial]);
+
+  const totalClasesAsistidas = useMemo(() => {
+    return cursoHistorial.filter((h) => (h.tipo || 'clase') === 'clase' && h.estado !== 'Falta' && h.estado !== 'Falto').length;
+  }, [cursoHistorial]);
+
+  const filteredHistorial = useMemo(() => {
+    if (historialFilter === 'todos') return cursoHistorial;
+    return cursoHistorial.filter((h) => (h.tipo || 'clase') === historialFilter);
+  }, [cursoHistorial, historialFilter]);
 
   // Ref para evitar múltiples envíos simultáneos
   const isProcessingRef = useRef(false);
@@ -446,51 +469,138 @@ export default function StudentPage({ user, onLogout, onUpdateUser }) {
                 <EconometricsPage onBack={() => setActiveTab("marcar")} />
               </div>
             ) : activeTab === "historial" ? (
-              <div className="attendance-list">
-                <h3 className="sp-historial-title">
-                  Historial
-                </h3>
-                {historial.filter((h) => h.curso_id === cursoActivo.id)
-                  .length === 0 ? (
-                  <p className="text-muted text-center mt-4">
-                    No hay asistencias.
-                  </p>
-                ) : (
-                  historial
-                    .filter((h) => h.curso_id === cursoActivo.id)
-                    .map((h) => (
-                      <div 
-                        key={h.id} 
-                        className="attendance-item sp-historial-item"
-                      >
-                        <span
-                          className="badge-status sp-historial-badge"
-                          style={{
-                            background: h.color ? `color-mix(in srgb, ${h.color} 15%, transparent)` : "#f1f5f9",
-                            border: `1px solid ${h.color || '#cbd5e1'}`,
-                            color: h.color || "#64748b",
-                          }}
-                        >
-                          {h.tipo === 'puntos' ? `${h.valor >= 0 ? '+' : ''}${h.valor ?? 0}` : h.estado}
-                        </span>
+              <div className="sp-historial-container">
+                {/* Header & Stats Banner */}
+                <div className="sp-historial-stats-card">
+                  <div className="sp-historial-stat-item">
+                    <div className="sp-historial-stat-icon sp-historial-stat-icon--star">
+                      <Star size={18} />
+                    </div>
+                    <div className="sp-historial-stat-val">
+                      {totalPuntosAcumulados > 0 ? `+${totalPuntosAcumulados}` : totalPuntosAcumulados}
+                    </div>
+                    <div className="sp-historial-stat-lbl">Puntos</div>
+                  </div>
+
+                  <div className="sp-historial-stat-item">
+                    <div className="sp-historial-stat-icon sp-historial-stat-icon--check">
+                      <CheckCircle size={18} />
+                    </div>
+                    <div className="sp-historial-stat-val">
+                      {totalClasesAsistidas}
+                    </div>
+                    <div className="sp-historial-stat-lbl">Asistencias</div>
+                  </div>
+
+                  <div className="sp-historial-stat-item">
+                    <div className="sp-historial-stat-icon sp-historial-stat-icon--records">
+                      <ClipboardList size={18} />
+                    </div>
+                    <div className="sp-historial-stat-val">
+                      {cursoHistorial.length}
+                    </div>
+                    <div className="sp-historial-stat-lbl">Registros</div>
+                  </div>
+                </div>
+
+                {/* Filtros por tipo (Chips) */}
+                <div className="sp-historial-chips">
+                  {[
+                    { id: 'todos', label: 'Todos', count: cursoHistorial.length },
+                    { id: 'clase', label: 'Clases', count: cursoHistorial.filter(h => (h.tipo || 'clase') === 'clase').length },
+                    { id: 'puntos', label: '⭐ Puntos', count: cursoHistorial.filter(h => h.tipo === 'puntos').length },
+                    { id: 'evento', label: '🎉 Eventos', count: cursoHistorial.filter(h => h.tipo === 'evento').length }
+                  ].filter(tab => tab.id === 'todos' || tab.count > 0).map(tab => (
+                    <button
+                      key={tab.id}
+                      type="button"
+                      className={`sp-historial-chip ${historialFilter === tab.id ? 'is-active' : ''}`}
+                      onClick={() => setHistorialFilter(tab.id)}
+                    >
+                      <span>{tab.label}</span>
+                      <span className="sp-historial-chip-count">{tab.count}</span>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Lista de Registros */}
+                <div className="sp-historial-list">
+                  {filteredHistorial.length === 0 ? (
+                    <div className="sp-historial-empty">
+                      <div className="sp-historial-empty-icon">📋</div>
+                      <h4>Sin registros aún</h4>
+                      <p>
+                        {historialFilter !== 'todos'
+                          ? `No tienes registros en la categoría seleccionada.`
+                          : "Aún no se han registrado asistencias ni puntos en este curso."}
+                      </p>
+                    </div>
+                  ) : (
+                    filteredHistorial.map((h) => {
+                      const esPuntos = h.tipo === 'puntos';
+                      const esEvento = h.tipo === 'evento';
+                      const valPuntos = Number(h.valor) || 0;
+
+                      return (
                         <div
-                          className="attendance-item-info sp-historial-item__meta"
+                          key={h.id}
+                          className={`sp-historial-card ${esPuntos ? 'sp-historial-card--puntos' : esEvento ? 'sp-historial-card--evento' : ''}`}
                         >
-                          {h.tipo === 'clase' ? (
-                            <div className="sp-historial-item__date-group">
-                              <span className="sp-historial-item__date">{fmtFecha(h.fecha_hora)}</span>
-                              <span className="sp-historial-item__class-name">{h.nombre_clase}</span>
+                          <div className="sp-historial-card-left">
+                            <div className={`sp-historial-icon-circle ${esPuntos ? 'is-puntos' : esEvento ? 'is-evento' : ''}`}>
+                              {esPuntos ? (
+                                <Star size={18} />
+                              ) : esEvento ? (
+                                <Sparkles size={18} />
+                              ) : (
+                                <Clock size={18} />
+                              )}
                             </div>
-                          ) : (
-                            <span className="fw-600">{h.nombre_clase}</span>
-                          )}
-                          {h.tipo === 'clase' && (
-                            <span className="attendance-item-time">{fmtHora(h.fecha_hora)}</span>
-                          )}
+                            <div className="sp-historial-card-info">
+                              <div className="sp-historial-card-title">
+                                {h.nombre_clase || (esPuntos ? 'Puntos de Participación' : 'Sesión de Clase')}
+                              </div>
+                              <div className="sp-historial-card-date">
+                                <span>{fmtFecha(h.fecha_hora)}</span>
+                                {!esPuntos && h.fecha_hora && (
+                                  <>
+                                    <span className="sp-dot-sep">•</span>
+                                    <span>{fmtHora(h.fecha_hora)}</span>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="sp-historial-card-right">
+                            {esPuntos ? (
+                              <div className={`sp-points-badge ${valPuntos >= 0 ? 'is-positive' : 'is-negative'}`}>
+                                <Star size={13} />
+                                <span>{valPuntos >= 0 ? `+${valPuntos}` : valPuntos} pts</span>
+                              </div>
+                            ) : esEvento ? (
+                              <div className="sp-event-badge">
+                                <Check size={13} />
+                                <span>{h.estado || 'Participó'}</span>
+                              </div>
+                            ) : (
+                              <div
+                                className="sp-status-badge"
+                                style={{
+                                  background: h.color ? `color-mix(in srgb, ${h.color} 12%, transparent)` : "#f1f5f9",
+                                  border: `1px solid ${h.color ? `color-mix(in srgb, ${h.color} 30%, transparent)` : '#cbd5e1'}`,
+                                  color: h.color || "#475569",
+                                }}
+                              >
+                                {h.estado}
+                              </div>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    ))
-                )}
+                      );
+                    })
+                  )}
+                </div>
               </div>
             ) : (
               <div className="sp-marcar-grid">
