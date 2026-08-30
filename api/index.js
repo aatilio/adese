@@ -463,7 +463,7 @@ app.get('/api/usuarios/buscar', async (req, res) => {
          AND rol = 3
        ORDER BY CASE WHEN UPPER(codigo) = UPPER($2) THEN 1 ELSE 2 END, nombre_completo ASC
        LIMIT 10`,
-      [\`%\${q}%\`, q]
+      [`%${q}%`, q]
     );
     res.json({ usuarios: r.rows, usuario: r.rows[0] || null });
   } catch (err) { res.status(500).json({ error: err.message }); }
